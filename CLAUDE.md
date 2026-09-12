@@ -44,7 +44,7 @@ Mocked voice-based active recall for Knowunity: a 390px dark-mode iOS web app, d
 | `app/layout.tsx` | Setting viewport, fonts or metadata. Still carries create-next-app defaults. |
 | `app/page.tsx` | Building the entry screen. Still the create-next-app template — replace it, don't extend it. |
 | `scripts/generate-globals-css.py` | When `npm run tokens:css` fails. It exits non-zero on any broken reference. |
-| `public/` | Adding a real app asset. Currently holds create-next-app boilerplate only. |
+| `public/` | Adding or looking up a real app asset. |
 | `package.json` | Before adding a script or dependency. |
 | `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `eslint.config.mjs` | Only when a build or lint fails. Stock create-next-app. |
 | `.claude/skills/` | Loaded automatically: ui-designer, ux-designer, ux-motion, interactive-prototype. |
