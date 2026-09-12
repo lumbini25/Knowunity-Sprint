@@ -1,26 +1,372 @@
 @import "tailwindcss";
 
+/* Generated from tokens.json (version 2025.10, mode: dark) by scripts/generate-globals-css.py.
+   Do not hand-edit. Run `npm run tokens:css` after changing tokens.json.
+   Dark is the only mode; there is no light palette in the semantic layer. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* ===== primitive layer =====
+     Raw values. The only place a literal appears.
+     Never consume these in a component -- use the semantic layer below. */
+
+  --primitive-color-navy-950: #090c18;
+  --primitive-color-navy-900: #1a1c26;
+  --primitive-color-navy-800: #22242f;
+  --primitive-color-neutral-0: #ffffff;
+  --primitive-color-neutral-950: #0a0a0a;
+  --primitive-color-neutral-warm-0: #fffcf4;
+  --primitive-color-violet-50: #f4f2ff;
+  --primitive-color-violet-50-interactive: #f4f2ff;
+  --primitive-color-violet-50-text: #f4f2ff;
+  --primitive-color-violet-50-surface: #f4f2ff;
+  --primitive-color-violet-50-on-secondary: #f4f2ff;
+  --primitive-color-violet-50-on-partial: #f4f2ff;
+  --primitive-color-violet-100: #e4e0ff;
+  --primitive-color-violet-200: #d2ccfa;
+  --primitive-color-violet-300: #a78bfa;
+  --primitive-color-violet-400: #7b65e0;
+  --primitive-color-violet-500: #9178e6;
+  --primitive-color-violet-900: #15103a;
+  --primitive-color-violet-950: #0e0a18;
+  --primitive-color-green-300: #4ae5b0;
+  --primitive-color-green-500: #00c386;
+  --primitive-color-green-900: #0a2e22;
+  --primitive-color-green-950: #0a1f18;
+  --primitive-color-red-200: #fca5a5;
+  --primitive-color-red-300: #ff8585;
+  --primitive-color-red-400: #ff6b6b;
+  --primitive-color-red-400-destructive: #ff6b6b;
+  --primitive-color-red-400-error: #ff6b6b;
+  --primitive-color-red-500: #e85555;
+  --primitive-color-red-900: #532831;
+  --primitive-color-red-950: #2a0808;
+  --primitive-color-coral-200: #ffb59b;
+  --primitive-color-coral-400: #fb7e5b;
+  --primitive-color-coral-900: #512e2c;
+  --primitive-color-coral-950: #2e0f06;
+  --primitive-color-blue-300: #7ba8f2;
+  --primitive-color-blue-400: #5fa0fc;
+  --primitive-color-blue-900: #0a1635;
+  --primitive-color-blue-950: #06173b;
+  --primitive-color-magenta-200: #f7b5de;
+  --primitive-color-magenta-400: #e879c0;
+  --primitive-color-magenta-900: #380d29;
+  --primitive-color-magenta-950: #2c0a20;
+  --primitive-color-gold-300: #fcd34d;
+  --primitive-color-gold-400: #f5b53d;
+  --primitive-color-gold-900: #3a2d0b;
+  --primitive-color-gold-950: #2a1d04;
+  --primitive-color-alpha-light-10: #ffffff1a;
+  --primitive-color-alpha-light-10-secondary: #ffffff1a;
+  --primitive-color-alpha-light-10-disabled: #ffffff1a;
+  --primitive-color-alpha-light-10-border: #ffffff1a;
+  --primitive-color-alpha-light-10-elevated: #ffffff1a;
+  --primitive-color-alpha-light-10-pressed: #ffffff1a;
+  --primitive-color-alpha-light-18: #ffffff2e;
+  --primitive-color-alpha-light-24: #ffffff3d;
+  --primitive-color-alpha-light-25: #ffffff40;
+  --primitive-color-alpha-light-30: #ffffff4d;
+  --primitive-color-alpha-light-40: #ffffff66;
+  --primitive-color-alpha-light-48: #f5f3ff7a;
+  --primitive-color-alpha-light-68: #f5f3ffad;
+  --primitive-color-alpha-dark-10: #0a0a0a1a;
+  --primitive-color-alpha-dark-50: #0a0a0a80;
+  --primitive-color-alpha-glass-60: #3d3d3d99;
+
+  --primitive-space-negative-600: -24px;
+  --primitive-space-negative-400: -16px;
+  --primitive-space-negative-300: -12px;
+  --primitive-space-negative-200: -8px;
+  --primitive-space-negative-100: -4px;
+  --primitive-space-0: 0px;
+  --primitive-space-050: 2px;
+  --primitive-space-100: 4px;
+  --primitive-space-150: 6px;
+  --primitive-space-200: 8px;
+  --primitive-space-300: 12px;
+  --primitive-space-400: 16px;
+  --primitive-space-500: 20px;
+  --primitive-space-600: 24px;
+  --primitive-space-700: 28px;
+  --primitive-space-800: 32px;
+  --primitive-space-1200: 48px;
+  --primitive-space-1600: 64px;
+  --primitive-space-2400: 96px;
+  --primitive-space-4000: 160px;
+
+  --primitive-radius-100: 4px;
+  --primitive-radius-150: 6px;
+  --primitive-radius-200: 8px;
+  --primitive-radius-300: 12px;
+  --primitive-radius-400: 16px;
+  --primitive-radius-600: 24px;
+  --primitive-radius-800: 32px;
+  --primitive-radius-900: 36px;
+  --primitive-radius-full: 9999px;
+
+  --primitive-stroke-border: 1px;
+  --primitive-stroke-heavy-border: 2px;
+
+  --primitive-icon-100: 8px;
+  --primitive-icon-150: 12px;
+  --primitive-icon-200: 16px;
+  --primitive-icon-250: 20px;
+  --primitive-icon-300: 24px;
+  --primitive-icon-400: 32px;
+
+  --primitive-illustration-500: 40px;
+  --primitive-illustration-800: 64px;
+  --primitive-illustration-1500: 120px;
+  --primitive-illustration-2500: 200px;
+  --primitive-illustration-4000: 320px;
+
+  --primitive-font-family-default: "Greed Standard-TRIAL";
+  --primitive-font-family-display: "Greed Standard-TRIAL";
+  --primitive-font-weight-regular: 400;
+  --primitive-font-weight-semibold: 600;
+  --primitive-font-weight-bold: 700;
+  --primitive-font-weight-heavy: 900;
+  --primitive-font-size-root: 16px;
+  --primitive-font-size-2xs: 9px;
+  --primitive-font-size-xs: 12px;
+  --primitive-font-size-sm: 15px;
+  --primitive-font-size-md: 18px;
+  --primitive-font-size-lg: 21px;
+  --primitive-font-size-xl: 28px;
+  --primitive-font-size-2xl: 33px;
+  --primitive-font-size-3xl: 44px;
+  --primitive-font-size-4xl: 59px;
+  --primitive-font-size-5xl: 76px;
+  --primitive-font-size-6xl: 103px;
+  --primitive-font-line-height-2xs: 12px;
+  --primitive-font-line-height-xs: 16px;
+  --primitive-font-line-height-sm: 20px;
+  --primitive-font-line-height-md: 24px;
+  --primitive-font-line-height-lg: 32px;
+  --primitive-font-line-height-xl: 36px;
+  --primitive-font-line-height-2xl: 44px;
+  --primitive-font-line-height-3xl: 60px;
+  --primitive-font-line-height-4xl: 76px;
+  --primitive-font-line-height-5xl: 104px;
+  --primitive-font-tracking-tight: -0.01em;
+  --primitive-font-tracking-none: 0em;
+  --primitive-font-tracking-loose: 0.01em;
+
+  /* ===== semantic layer =====
+     Every token is an alias into a primitive. This is the layer
+     components consume. No literals, no var() fallbacks. */
+
+  --semantic-background-page: var(--primitive-color-navy-950);
+  --semantic-background-surface: var(--primitive-color-navy-800);
+  --semantic-background-input: var(--primitive-color-navy-900);
+  --semantic-background-contrast: var(--primitive-color-violet-50-surface);
+  --semantic-background-elevated: var(--primitive-color-alpha-light-10-elevated);
+  --semantic-background-floating: var(--primitive-color-alpha-glass-60);
+  --semantic-background-scrim: var(--primitive-color-alpha-dark-50);
+
+  --semantic-interactive-primary: var(--primitive-color-violet-50-interactive);
+  --semantic-interactive-primary-hover: var(--primitive-color-violet-100);
+  --semantic-interactive-primary-active: var(--primitive-color-violet-200);
+  --semantic-interactive-secondary: var(--primitive-color-alpha-light-10-secondary);
+  --semantic-interactive-secondary-hover: var(--primitive-color-alpha-light-18);
+  --semantic-interactive-secondary-active: var(--primitive-color-alpha-light-24);
+  --semantic-interactive-disabled: var(--primitive-color-alpha-light-30);
+  --semantic-interactive-pressed: var(--primitive-color-alpha-light-10-pressed);
+  --semantic-interactive-pressed-inverse: var(--primitive-color-alpha-dark-10);
+  --semantic-interactive-label-primary: var(--primitive-color-navy-950);
+  --semantic-interactive-label-secondary: var(--primitive-color-violet-50-on-secondary);
+
+  --semantic-text-primary: var(--primitive-color-violet-50-text);
+  --semantic-text-secondary: var(--primitive-color-alpha-light-68);
+  --semantic-text-tertiary: var(--primitive-color-alpha-light-48);
+  --semantic-text-disabled: var(--primitive-color-alpha-light-40);
+  --semantic-text-inverse: var(--primitive-color-navy-950);
+  --semantic-text-on-brand: var(--primitive-color-violet-950);
+  --semantic-text-link: var(--primitive-color-violet-500);
+  --semantic-text-link-hover: var(--primitive-color-violet-300);
+  --semantic-text-success: var(--primitive-color-green-300);
+  --semantic-text-error: var(--primitive-color-red-200);
+  --semantic-text-warning: var(--primitive-color-gold-300);
+
+  --semantic-border-default: var(--primitive-color-alpha-light-10-border);
+  --semantic-border-strong: var(--primitive-color-alpha-light-25);
+  --semantic-border-focus: var(--primitive-color-violet-300);
+  --semantic-border-selected: var(--primitive-color-violet-500);
+  --semantic-border-success: var(--primitive-color-green-500);
+  --semantic-border-error: var(--primitive-color-red-400);
+
+  --semantic-state-selected-surface: var(--primitive-color-violet-900);
+  --semantic-state-selected-border: var(--primitive-color-violet-400);
+
+  --semantic-mascot-primary: var(--primitive-color-violet-500);
+  --semantic-mascot-eyes: var(--primitive-color-neutral-0);
+  --semantic-mascot-pupils: var(--primitive-color-neutral-950);
+
+  --semantic-pro-bold: var(--primitive-color-gold-400);
+  --semantic-pro-label-bold: var(--primitive-color-gold-950);
+  --semantic-pro-label-subtle: var(--primitive-color-gold-300);
+  --semantic-pro-subtle: var(--primitive-color-gold-900);
+
+  --semantic-accent-brand-bold: var(--primitive-color-violet-500);
+  --semantic-accent-brand-label-bold: var(--primitive-color-violet-950);
+  --semantic-accent-brand-label-subtle: var(--primitive-color-violet-400);
+  --semantic-accent-brand-subtle: var(--primitive-color-violet-900);
+  --semantic-accent-green-bold: var(--primitive-color-green-500);
+  --semantic-accent-green-label-bold: var(--primitive-color-green-950);
+  --semantic-accent-green-label-subtle: var(--primitive-color-green-300);
+  --semantic-accent-green-subtle: var(--primitive-color-green-900);
+  --semantic-accent-coral-bold: var(--primitive-color-coral-400);
+  --semantic-accent-coral-label-bold: var(--primitive-color-coral-950);
+  --semantic-accent-coral-label-subtle: var(--primitive-color-coral-200);
+  --semantic-accent-coral-subtle: var(--primitive-color-coral-900);
+  --semantic-accent-blue-bold: var(--primitive-color-blue-400);
+  --semantic-accent-blue-label-bold: var(--primitive-color-blue-950);
+  --semantic-accent-blue-label-subtle: var(--primitive-color-blue-300);
+  --semantic-accent-blue-subtle: var(--primitive-color-blue-900);
+  --semantic-accent-magenta-bold: var(--primitive-color-magenta-400);
+  --semantic-accent-magenta-label-bold: var(--primitive-color-magenta-950);
+  --semantic-accent-magenta-label-subtle: var(--primitive-color-magenta-200);
+  --semantic-accent-magenta-subtle: var(--primitive-color-magenta-900);
+
+  --semantic-feedback-success-bold: var(--primitive-color-green-500);
+  --semantic-feedback-success-label-bold: var(--primitive-color-green-950);
+  --semantic-feedback-success-label-subtle: var(--primitive-color-green-300);
+  --semantic-feedback-success-subtle: var(--primitive-color-green-900);
+  --semantic-feedback-error-bold: var(--primitive-color-red-400-error);
+  --semantic-feedback-error-label-bold: var(--primitive-color-red-950);
+  --semantic-feedback-error-label-subtle: var(--primitive-color-red-200);
+  --semantic-feedback-error-subtle: var(--primitive-color-red-900);
+  --semantic-feedback-warning-bold: var(--primitive-color-gold-400);
+  --semantic-feedback-warning-label-bold: var(--primitive-color-navy-950);
+  --semantic-feedback-warning-label-subtle: var(--primitive-color-gold-300);
+  --semantic-feedback-warning-subtle: var(--primitive-color-gold-900);
+  --semantic-feedback-partial-bold: var(--primitive-color-violet-400);
+  --semantic-feedback-partial-label-bold: var(--primitive-color-violet-50-on-partial);
+  --semantic-feedback-partial-label-subtle: var(--primitive-color-violet-300);
+  --semantic-feedback-partial-subtle: var(--primitive-color-violet-900);
+  --semantic-feedback-destructive-bold: var(--primitive-color-red-400-destructive);
+  --semantic-feedback-destructive-bold-hover: var(--primitive-color-red-300);
+  --semantic-feedback-destructive-bold-active: var(--primitive-color-red-500);
+  --semantic-feedback-destructive-label-bold: var(--primitive-color-red-950);
+
+  --semantic-type-scale-display-l-font-family: var(--primitive-font-family-display);
+  --semantic-type-scale-display-l-font-weight: var(--primitive-font-weight-heavy);
+  --semantic-type-scale-display-l-font-size: var(--primitive-font-size-6xl);
+  --semantic-type-scale-display-l-line-height: var(--primitive-font-line-height-5xl);
+  --semantic-type-scale-display-l-letter-spacing: var(--primitive-font-tracking-tight);
+  --semantic-type-scale-display-m-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-display-m-font-weight: var(--primitive-font-weight-bold);
+  --semantic-type-scale-display-m-font-size: var(--primitive-font-size-5xl);
+  --semantic-type-scale-display-m-line-height: var(--primitive-font-line-height-4xl);
+  --semantic-type-scale-display-m-letter-spacing: var(--primitive-font-tracking-tight);
+  --semantic-type-scale-display-s-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-display-s-font-weight: var(--primitive-font-weight-bold);
+  --semantic-type-scale-display-s-font-size: var(--primitive-font-size-4xl);
+  --semantic-type-scale-display-s-line-height: var(--primitive-font-line-height-3xl);
+  --semantic-type-scale-display-s-letter-spacing: var(--primitive-font-tracking-tight);
+  --semantic-type-scale-headline-xl-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-xl-font-weight: var(--primitive-font-weight-bold);
+  --semantic-type-scale-headline-xl-font-size: var(--primitive-font-size-3xl);
+  --semantic-type-scale-headline-xl-line-height: var(--primitive-font-line-height-2xl);
+  --semantic-type-scale-headline-xl-letter-spacing: var(--primitive-font-tracking-tight);
+  --semantic-type-scale-headline-l-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-l-font-weight: var(--primitive-font-weight-bold);
+  --semantic-type-scale-headline-l-font-size: var(--primitive-font-size-2xl);
+  --semantic-type-scale-headline-l-line-height: var(--primitive-font-line-height-xl);
+  --semantic-type-scale-headline-l-letter-spacing: var(--primitive-font-tracking-tight);
+  --semantic-type-scale-headline-m-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-m-font-weight: var(--primitive-font-weight-bold);
+  --semantic-type-scale-headline-m-font-size: var(--primitive-font-size-xl);
+  --semantic-type-scale-headline-m-line-height: var(--primitive-font-line-height-lg);
+  --semantic-type-scale-headline-m-letter-spacing: var(--primitive-font-tracking-tight);
+  --semantic-type-scale-headline-s-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-s-font-weight: var(--primitive-font-weight-bold);
+  --semantic-type-scale-headline-s-font-size: var(--primitive-font-size-lg);
+  --semantic-type-scale-headline-s-line-height: var(--primitive-font-line-height-md);
+  --semantic-type-scale-headline-s-letter-spacing: var(--primitive-font-tracking-none);
+  --semantic-type-scale-headline-xs-bold-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-xs-bold-font-weight: var(--primitive-font-weight-semibold);
+  --semantic-type-scale-headline-xs-bold-font-size: var(--primitive-font-size-md);
+  --semantic-type-scale-headline-xs-bold-line-height: var(--primitive-font-line-height-sm);
+  --semantic-type-scale-headline-xs-bold-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-headline-xs-regular-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-xs-regular-font-weight: var(--primitive-font-weight-regular);
+  --semantic-type-scale-headline-xs-regular-font-size: var(--primitive-font-size-md);
+  --semantic-type-scale-headline-xs-regular-line-height: var(--primitive-font-line-height-sm);
+  --semantic-type-scale-headline-xs-regular-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-headline-xxs-bold-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-xxs-bold-font-weight: var(--primitive-font-weight-semibold);
+  --semantic-type-scale-headline-xxs-bold-font-size: var(--primitive-font-size-sm);
+  --semantic-type-scale-headline-xxs-bold-line-height: var(--primitive-font-line-height-xs);
+  --semantic-type-scale-headline-xxs-bold-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-headline-xxs-regular-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-headline-xxs-regular-font-weight: var(--primitive-font-weight-regular);
+  --semantic-type-scale-headline-xxs-regular-font-size: var(--primitive-font-size-sm);
+  --semantic-type-scale-headline-xxs-regular-line-height: var(--primitive-font-line-height-xs);
+  --semantic-type-scale-headline-xxs-regular-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-body-m-bold-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-body-m-bold-font-weight: var(--primitive-font-weight-semibold);
+  --semantic-type-scale-body-m-bold-font-size: var(--primitive-font-size-md);
+  --semantic-type-scale-body-m-bold-line-height: var(--primitive-font-line-height-md);
+  --semantic-type-scale-body-m-bold-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-body-m-regular-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-body-m-regular-font-weight: var(--primitive-font-weight-regular);
+  --semantic-type-scale-body-m-regular-font-size: var(--primitive-font-size-md);
+  --semantic-type-scale-body-m-regular-line-height: var(--primitive-font-line-height-md);
+  --semantic-type-scale-body-m-regular-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-body-s-bold-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-body-s-bold-font-weight: var(--primitive-font-weight-semibold);
+  --semantic-type-scale-body-s-bold-font-size: var(--primitive-font-size-sm);
+  --semantic-type-scale-body-s-bold-line-height: var(--primitive-font-line-height-sm);
+  --semantic-type-scale-body-s-bold-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-body-s-regular-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-body-s-regular-font-weight: var(--primitive-font-weight-regular);
+  --semantic-type-scale-body-s-regular-font-size: var(--primitive-font-size-sm);
+  --semantic-type-scale-body-s-regular-line-height: var(--primitive-font-line-height-sm);
+  --semantic-type-scale-body-s-regular-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-caption-m-bold-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-caption-m-bold-font-weight: var(--primitive-font-weight-semibold);
+  --semantic-type-scale-caption-m-bold-font-size: var(--primitive-font-size-xs);
+  --semantic-type-scale-caption-m-bold-line-height: var(--primitive-font-line-height-xs);
+  --semantic-type-scale-caption-m-bold-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-caption-m-regular-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-caption-m-regular-font-weight: var(--primitive-font-weight-regular);
+  --semantic-type-scale-caption-m-regular-font-size: var(--primitive-font-size-xs);
+  --semantic-type-scale-caption-m-regular-line-height: var(--primitive-font-line-height-xs);
+  --semantic-type-scale-caption-m-regular-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-caption-s-bold-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-caption-s-bold-font-weight: var(--primitive-font-weight-semibold);
+  --semantic-type-scale-caption-s-bold-font-size: var(--primitive-font-size-2xs);
+  --semantic-type-scale-caption-s-bold-line-height: var(--primitive-font-line-height-2xs);
+  --semantic-type-scale-caption-s-bold-letter-spacing: var(--primitive-font-tracking-loose);
+  --semantic-type-scale-caption-s-regular-font-family: var(--primitive-font-family-default);
+  --semantic-type-scale-caption-s-regular-font-weight: var(--primitive-font-weight-regular);
+  --semantic-type-scale-caption-s-regular-font-size: var(--primitive-font-size-2xs);
+  --semantic-type-scale-caption-s-regular-line-height: var(--primitive-font-line-height-2xs);
+  --semantic-type-scale-caption-s-regular-letter-spacing: var(--primitive-font-tracking-loose);
 }
 
+/* Bridges the two tokens the create-next-app boilerplate still references
+   (bg-foreground / text-background in app/page.tsx). Remove both once that
+   page is replaced with real screens. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--semantic-background-page);
+  --color-foreground: var(--semantic-text-primary);
+  --font-sans: var(--semantic-type-scale-body-m-regular-font-family);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--semantic-background-page);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--semantic-background-page);
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
 }

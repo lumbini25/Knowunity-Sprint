@@ -1,0 +1,25 @@
+# Knowunity voice recall prototype
+
+## What this is
+A mocked voice-based active recall prototype for Knowunity, built as a 390px dark-mode iOS web app and deployed to Vercel.
+
+## Hard rules
+- Mobile only, 390px, dark mode only. No light mode, no desktop.
+- Every color, size and spacing value comes from tokens.json.
+  Never invent one. If something is missing, stop and tell me.
+- Build from the components that already exist. If nothing fits,
+  stop and tell me before you make a new one.
+- The recall is mocked. No speech-to-text, no audio, no model calls.
+- Knowie replies in text. Never speaks.
+- Sentence case on every label and button.
+
+## Never
+- No CSS fallback values like var(--token, #333).
+- No new dependencies without asking.
+
+## Where things are
+- tokens.json         every value. read before writing any style
+- design-system.md    which component to use, and when not to
+- design-brief.md     read when building a state I haven't specified
+- voice-ux.md         read when designing any recall state
+- reference/          screenshots. look when matching a layout

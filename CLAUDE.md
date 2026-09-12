@@ -1,1 +1,53 @@
 @AGENTS.md
+
+# Knowunity voice recall prototype
+
+Mocked voice-based active recall for Knowunity: a 390px dark-mode iOS web app, deployed to Vercel.
+
+## Hard rules
+
+- 390px, dark mode, iOS only. No light mode, no desktop, no breakpoints.
+- Every colour, size, spacing, radius and type value comes from `tokens.json`. If a value is missing, stop and ask.
+- Build from the components in `design-system.md`. If nothing fits, stop and ask before making one.
+- Components consume the semantic layer only.
+- `app/globals.css` is generated. Change `tokens.json`, then run `npm run tokens:css`.
+- The recall is mocked: no speech-to-text, no audio capture, no model calls.
+- Knowie replies in text. Knowie never speaks.
+- Sentence case on every label, button, heading and message. Proper nouns only: Knowie, Knowunity, PRO.
+- Every screen uses the scaffold in `design-system.md` and applies safe-area insets top and bottom.
+- Every recall screen keeps a text fallback and a way out, per the hard constraints in `design-brief.md`.
+- Check `sprint-context.md` before proposing anything — the decision may already be made, or explicitly out of scope.
+
+## Never
+
+- Never a CSS fallback value: `var(--token, #333)`.
+- Never a primitive token in a component.
+- Never hand-edit `app/globals.css`.
+- Never invent a token to close a gap. The known gaps are listed in `design-system.md`; surface them as requests.
+- Never design a recall state without `reference/Voice_UX.md`.
+- Never put reference material in `public/`.
+- Never add a dependency without asking.
+- The remaining component-level prohibitions live in `design-system.md` under "Never do this". Read it before styling anything.
+
+## Files
+
+| File | Read it when |
+| --- | --- |
+| `tokens.json` | Before writing any style value. Every value in the system. |
+| `design-system.md` | Before building or styling anything. Which component to use, how to bind tokens, what never to do. |
+| `design-brief.md` | Before building a state I haven't specified. Constraints, mandate, open questions. |
+| `sprint-context.md` | Before proposing a flow or a screen. Decisions made, and what we are not building. |
+| `reference/Voice_UX.md` | Before designing any recall state. Six principles, and the "States to design" checklist to work against when building screens. |
+| `reference/` | When matching a layout. Screenshots of the existing app and the recall flow, alongside `reference/Voice_UX.md`. |
+| `app/` | Building a screen. Read `AGENTS.md` first — this is not the Next.js you know. |
+| `app/globals.css` | To look up a generated custom-property name. Generated output, never an input. |
+| `app/layout.tsx` | Setting viewport, fonts or metadata. Still carries create-next-app defaults. |
+| `app/page.tsx` | Building the entry screen. Still the create-next-app template — replace it, don't extend it. |
+| `scripts/generate-globals-css.py` | When `npm run tokens:css` fails. It exits non-zero on any broken reference. |
+| `public/` | Adding a real app asset. Currently holds create-next-app boilerplate only. |
+| `package.json` | Before adding a script or dependency. |
+| `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `eslint.config.mjs` | Only when a build or lint fails. Stock create-next-app. |
+| `.claude/skills/` | Loaded automatically: ui-designer, ux-designer, ux-motion, interactive-prototype. |
+| `.claude/launch.json` | Changing how `next dev` starts. |
+| `README.md` | Never. Stale create-next-app boilerplate. |
+| `hello.html` | Never. Leftover scratch file — delete it. |
