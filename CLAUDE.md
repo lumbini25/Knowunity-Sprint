@@ -29,6 +29,10 @@ Mocked voice-based active recall for Knowunity: a 390px dark-mode iOS web app, d
 - Never add a dependency without asking.
 - The remaining component-level prohibitions live in `design-system.md` under "Never do this". Read it before styling anything.
 
+## Storybook
+
+When working on UI, use the storybook tools to read the component library before answering or writing anything. Never assume a component prop exists. Query the documentation, and use only props that are documented or shown in a story. If a prop isn't there, stop and ask me.
+
 ## Files
 
 | File | Read it when |

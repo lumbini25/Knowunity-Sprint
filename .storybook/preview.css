@@ -1,0 +1,18 @@
+/* Applies the Knowunity design system to the Storybook canvas.
+   Mirrors the body rules in app/globals.css so a story renders the same way
+   it will in the app. Semantic tokens only -- no literals, no var() fallbacks.
+   Values come from build/css/tokens.css, imported ahead of this file. */
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--semantic-background-page);
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
