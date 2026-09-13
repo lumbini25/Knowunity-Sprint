@@ -1,0 +1,323 @@
+/**
+ * This file is generated. Do not edit it by hand.
+ * Source: tokens/tokens.json
+ * Regenerate: npm run tokens
+ */
+
+:root {
+  --primitive-color-navy-800: #22242f;
+  --primitive-color-navy-900: #1a1c26;
+  --primitive-color-navy-950: #090c18;
+  --primitive-color-neutral-0: #ffffff;
+  --primitive-color-neutral-950: #0a0a0a;
+  --primitive-color-neutral-warm-0: #fffcf4;
+  --primitive-color-violet-50: #f4f2ff;
+  --primitive-color-violet-100: #e4e0ff;
+  --primitive-color-violet-200: #d2ccfa;
+  --primitive-color-violet-300: #a78bfa;
+  --primitive-color-violet-400: #7b65e0;
+  --primitive-color-violet-500: #9178e6;
+  --primitive-color-violet-900: #15103a;
+  --primitive-color-violet-950: #0e0a18;
+  --primitive-color-violet-50-interactive: #f4f2ff;
+  --primitive-color-violet-50-text: #f4f2ff;
+  --primitive-color-violet-50-surface: #f4f2ff;
+  --primitive-color-violet-50-on-secondary: #f4f2ff;
+  --primitive-color-violet-50-on-partial: #f4f2ff;
+  --primitive-color-green-300: #4ae5b0;
+  --primitive-color-green-500: #00c386;
+  --primitive-color-green-900: #0a2e22;
+  --primitive-color-green-950: #0a1f18;
+  --primitive-color-red-200: #fca5a5;
+  --primitive-color-red-300: #ff8585;
+  --primitive-color-red-400: #ff6b6b;
+  --primitive-color-red-500: #e85555;
+  --primitive-color-red-900: #532831;
+  --primitive-color-red-950: #2a0808;
+  --primitive-color-red-400-destructive: #ff6b6b;
+  --primitive-color-red-400-error: #ff6b6b;
+  --primitive-color-coral-200: #ffb59b;
+  --primitive-color-coral-400: #fb7e5b;
+  --primitive-color-coral-900: #512e2c;
+  --primitive-color-coral-950: #2e0f06;
+  --primitive-color-blue-300: #7ba8f2;
+  --primitive-color-blue-400: #5fa0fc;
+  --primitive-color-blue-900: #0a1635;
+  --primitive-color-blue-950: #06173b;
+  --primitive-color-magenta-200: #f7b5de;
+  --primitive-color-magenta-400: #e879c0;
+  --primitive-color-magenta-900: #380d29;
+  --primitive-color-magenta-950: #2c0a20;
+  --primitive-color-gold-300: #fcd34d;
+  --primitive-color-gold-400: #f5b53d;
+  --primitive-color-gold-900: #3a2d0b;
+  --primitive-color-gold-950: #2a1d04;
+  --primitive-color-alpha-light-10: rgba(255, 255, 255, 0.10196078431372549);
+  --primitive-color-alpha-light-10-secondary: rgba(255, 255, 255, 0.10196078431372549);
+  --primitive-color-alpha-light-10-disabled: rgba(255, 255, 255, 0.10196078431372549);
+  --primitive-color-alpha-light-10-border: rgba(255, 255, 255, 0.10196078431372549);
+  --primitive-color-alpha-light-10-elevated: rgba(255, 255, 255, 0.10196078431372549);
+  --primitive-color-alpha-light-10-pressed: rgba(255, 255, 255, 0.10196078431372549);
+  --primitive-color-alpha-light-18: rgba(255, 255, 255, 0.1803921568627451);
+  --primitive-color-alpha-light-24: rgba(255, 255, 255, 0.23921568627450981);
+  --primitive-color-alpha-light-25: rgba(255, 255, 255, 0.25098039215686274);
+  --primitive-color-alpha-light-30: rgba(255, 255, 255, 0.30196078431372547);
+  --primitive-color-alpha-light-40: rgba(255, 255, 255, 0.4);
+  --primitive-color-alpha-light-48: rgba(245, 243, 255, 0.47843137254901963);
+  --primitive-color-alpha-light-68: rgba(245, 243, 255, 0.6784313725490196);
+  --primitive-color-alpha-dark-10: rgba(10, 10, 10, 0.10196078431372549);
+  --primitive-color-alpha-dark-50: rgba(10, 10, 10, 0.5019607843137255);
+  --primitive-color-alpha-glass-60: rgba(61, 61, 61, 0.6);
+  --primitive-space-0: 0px;
+  --primitive-space-100: 4px;
+  --primitive-space-150: 6px;
+  --primitive-space-200: 8px;
+  --primitive-space-300: 12px;
+  --primitive-space-400: 16px;
+  --primitive-space-500: 20px;
+  --primitive-space-600: 24px;
+  --primitive-space-700: 28px;
+  --primitive-space-800: 32px;
+  --primitive-space-1200: 48px;
+  --primitive-space-1600: 64px;
+  --primitive-space-2400: 96px;
+  --primitive-space-4000: 160px;
+  --primitive-space-negative-600: -24px;
+  --primitive-space-negative-400: -16px;
+  --primitive-space-negative-300: -12px;
+  --primitive-space-negative-200: -8px;
+  --primitive-space-negative-100: -4px;
+  --primitive-space-050: 2px;
+  --primitive-radius-100: 4px;
+  --primitive-radius-150: 6px;
+  --primitive-radius-200: 8px;
+  --primitive-radius-300: 12px;
+  --primitive-radius-400: 16px;
+  --primitive-radius-600: 24px;
+  --primitive-radius-800: 32px;
+  --primitive-radius-900: 36px;
+  --primitive-radius-full: 9999px;
+  --primitive-stroke-border: 1px;
+  --primitive-stroke-heavy-border: 2px;
+  --primitive-icon-100: 8px;
+  --primitive-icon-150: 12px;
+  --primitive-icon-200: 16px;
+  --primitive-icon-250: 20px;
+  --primitive-icon-300: 24px;
+  --primitive-icon-400: 32px;
+  --primitive-illustration-500: 40px;
+  --primitive-illustration-800: 64px;
+  --primitive-illustration-1500: 120px;
+  --primitive-illustration-2500: 200px;
+  --primitive-illustration-4000: 320px;
+  --primitive-font-family-default: 'Greed Standard-TRIAL';
+  --primitive-font-family-display: 'Greed Standard-TRIAL';
+  --primitive-font-weight-regular: 400;
+  --primitive-font-weight-semibold: 600;
+  --primitive-font-weight-bold: 700;
+  --primitive-font-weight-heavy: 900;
+  --primitive-font-size-root: 16px;
+  --primitive-font-size-2xs: 9px;
+  --primitive-font-size-xs: 12px;
+  --primitive-font-size-sm: 15px;
+  --primitive-font-size-md: 18px;
+  --primitive-font-size-lg: 21px;
+  --primitive-font-size-xl: 28px;
+  --primitive-font-size-2xl: 33px;
+  --primitive-font-size-3xl: 44px;
+  --primitive-font-size-4xl: 59px;
+  --primitive-font-size-5xl: 76px;
+  --primitive-font-size-6xl: 103px;
+  --primitive-font-line-height-2xs: 12px;
+  --primitive-font-line-height-xs: 16px;
+  --primitive-font-line-height-sm: 20px;
+  --primitive-font-line-height-md: 24px;
+  --primitive-font-line-height-lg: 32px;
+  --primitive-font-line-height-xl: 36px;
+  --primitive-font-line-height-2xl: 44px;
+  --primitive-font-line-height-3xl: 60px;
+  --primitive-font-line-height-4xl: 76px;
+  --primitive-font-line-height-5xl: 104px;
+  --primitive-font-tracking-tight: -0.01em;
+  --primitive-font-tracking-none: 0em;
+  --primitive-font-tracking-loose: 0.01em;
+  --semantic-background-page: var(--primitive-color-navy-950); /** Root screen canvas. Every screen's base background. */
+  --semantic-background-surface: var(--primitive-color-navy-800); /** Elevated container fill. Cards, bottom sheets, modals, dropdowns. */
+  --semantic-background-input: var(--primitive-color-navy-900); /** Editable field fill. Text inputs, textareas, search fields at rest. */
+  --semantic-background-contrast: var(--primitive-color-violet-50-surface); /** Light surface on the dark page. Tooltips, toasts that must read as light against page. */
+  --semantic-background-elevated: var(--primitive-color-alpha-light-10-elevated); /** Additive white overlay for subtle lift. Toasts, snackbars a step above surface. */
+  --semantic-background-floating: var(--primitive-color-alpha-glass-60); /** Translucent floating surface. Dropdowns, tooltips, popovers with frosted-glass effect. */
+  --semantic-background-scrim: var(--primitive-color-alpha-dark-50); /** Semi-transparent overlay behind modals, dialogs, bottom sheets. */
+  --semantic-interactive-primary: var(--primitive-color-violet-50-interactive); /** Primary CTA fill. One per screen. Pair with interactive.label.primary. */
+  --semantic-interactive-primary-hover: var(--primitive-color-violet-100); /** Primary CTA hover state. */
+  --semantic-interactive-primary-active: var(--primitive-color-violet-200); /** Primary CTA pressed/active state. */
+  --semantic-interactive-secondary: var(--primitive-color-alpha-light-10-secondary); /** Secondary action fill. Skip, Cancel, filter chips. */
+  --semantic-interactive-secondary-hover: var(--primitive-color-alpha-light-18); /** Secondary action hover state. */
+  --semantic-interactive-secondary-active: var(--primitive-color-alpha-light-24); /** Secondary action pressed/active state. */
+  --semantic-interactive-disabled: var(--primitive-color-alpha-light-30); /** Unavailable control fill. Apply to the whole component, not just text. */
+  --semantic-interactive-pressed: var(--primitive-color-alpha-light-10-pressed); /** Tap feedback overlay on light or vivid surfaces. Layer over resting fill. */
+  --semantic-interactive-pressed-inverse: var(--primitive-color-alpha-dark-10); /** Tap feedback overlay on dark surfaces. Layer over secondary or card fills. */
+  --semantic-interactive-label-primary: var(--primitive-color-navy-950); /** Text and icons inside a primary button. Pair with interactive.primary. */
+  --semantic-interactive-label-secondary: var(--primitive-color-violet-50-on-secondary); /** Text and icons inside a secondary button. Pair with interactive.secondary. */
+  --semantic-text-primary: var(--primitive-color-violet-50-text); /** Default body and heading text. Maximum contrast on dark backgrounds. */
+  --semantic-text-secondary: var(--primitive-color-alpha-light-68); /** Supporting content, subtitles, captions, timestamps. */
+  --semantic-text-tertiary: var(--primitive-color-alpha-light-48); /** Lowest readable emphasis. Inline hints, counts, timestamps. */
+  --semantic-text-disabled: var(--primitive-color-alpha-light-40); /** Unavailable or placeholder text. Pair with interactive.disabled. */
+  --semantic-text-inverse: var(--primitive-color-navy-950); /** Dark text on light or vivid surfaces. Pair with background.contrast. */
+  --semantic-text-on-brand: var(--primitive-color-violet-950); /** Violet-tinted dark text on accent.brand.bold surfaces. Not interchangeable with text.inverse. */
+  --semantic-text-link: var(--primitive-color-violet-500); /** Inline hyperlink text only. */
+  --semantic-text-link-hover: var(--primitive-color-violet-300); /** Inline hyperlink hover state. */
+  --semantic-text-success: var(--primitive-color-green-300); /** Validation success message text. */
+  --semantic-text-error: var(--primitive-color-red-200); /** Validation error message text below a failed field. */
+  --semantic-text-warning: var(--primitive-color-gold-300); /** Caution text. One attempt left, expiry notices. */
+  --semantic-border-default: var(--primitive-color-alpha-light-10-border); /** Standard container edge. Cards, dividers, resting inputs. */
+  --semantic-border-strong: var(--primitive-color-alpha-light-25); /** Higher contrast edge. Dividers on busy surfaces. */
+  --semantic-border-focus: var(--primitive-color-violet-300); /** Keyboard focus ring. Always visible. Pair with stroke.heavy-border at 2px. */
+  --semantic-border-selected: var(--primitive-color-violet-500); /** Edge of a chosen element. Selected cards, active tabs. */
+  --semantic-border-success: var(--primitive-color-green-500); /** Validated input edge. */
+  --semantic-border-error: var(--primitive-color-red-400); /** Invalid input edge. Pair with text.error. */
+  --semantic-state-selected-surface: var(--primitive-color-violet-900); /** Fill of a chosen element. Selected answer cards, active tabs. */
+  --semantic-state-selected-border: var(--primitive-color-violet-400); /** Edge of a chosen element. Always pair with state.selected.surface, never alone. */
+  --semantic-mascot-primary: var(--primitive-color-violet-500); /** Knowie mascot body fill. Illustration use only. */
+  --semantic-mascot-eyes: var(--primitive-color-neutral-0); /** Knowie eye whites. Illustration use only. */
+  --semantic-mascot-pupils: var(--primitive-color-neutral-950); /** Knowie pupils. Illustration use only. */
+  --semantic-pro-bold: var(--primitive-color-gold-400); /** PRO badge and upgrade banner fill. */
+  --semantic-pro-label-bold: var(--primitive-color-gold-950); /** Text on pro.bold. Pair with pro.bold. */
+  --semantic-pro-label-subtle: var(--primitive-color-gold-300); /** Text on pro.subtle. Pair with pro.subtle. */
+  --semantic-pro-subtle: var(--primitive-color-gold-900); /** Tinted PRO background. */
+  --semantic-accent-brand-bold: var(--primitive-color-violet-500); /** Solid brand violet. Brand moments, onboarding hero panels. */
+  --semantic-accent-brand-label-bold: var(--primitive-color-violet-950); /** Text on accent.brand.bold. */
+  --semantic-accent-brand-label-subtle: var(--primitive-color-violet-400); /** Text on accent.brand.subtle. */
+  --semantic-accent-brand-subtle: var(--primitive-color-violet-900); /** Tinted brand panel background. */
+  --semantic-accent-green-bold: var(--primitive-color-green-500); /** Decorative green. Streak counters, positive stat chips. Not for validation. */
+  --semantic-accent-green-label-bold: var(--primitive-color-green-950); /** Text on accent.green.bold. */
+  --semantic-accent-green-label-subtle: var(--primitive-color-green-300); /** Text on accent.green.subtle. */
+  --semantic-accent-green-subtle: var(--primitive-color-green-900); /** Tinted green background. Behind positive stat chips. */
+  --semantic-accent-coral-bold: var(--primitive-color-coral-400); /** Decorative coral. Category tags, illustration accents. Not for errors. */
+  --semantic-accent-coral-label-bold: var(--primitive-color-coral-950); /** Text on accent.coral.bold. */
+  --semantic-accent-coral-label-subtle: var(--primitive-color-coral-200); /** Text on accent.coral.subtle. */
+  --semantic-accent-coral-subtle: var(--primitive-color-coral-900); /** Tinted coral background. */
+  --semantic-accent-blue-bold: var(--primitive-color-blue-400); /** Decorative blue. Informational chips, secondary category tags. */
+  --semantic-accent-blue-label-bold: var(--primitive-color-blue-950); /** Text on accent.blue.bold. */
+  --semantic-accent-blue-label-subtle: var(--primitive-color-blue-300); /** Text on accent.blue.subtle. */
+  --semantic-accent-blue-subtle: var(--primitive-color-blue-900); /** Tinted blue background. */
+  --semantic-accent-magenta-bold: var(--primitive-color-magenta-400); /** Decorative magenta. Category tags. */
+  --semantic-accent-magenta-label-bold: var(--primitive-color-magenta-950); /** Text on accent.magenta.bold. */
+  --semantic-accent-magenta-label-subtle: var(--primitive-color-magenta-200); /** Text on accent.magenta.subtle. */
+  --semantic-accent-magenta-subtle: var(--primitive-color-magenta-900); /** Tinted magenta background. */
+  --semantic-feedback-success-bold: var(--primitive-color-green-500); /** Correct answer fill. Completion states. Not for decorative green. */
+  --semantic-feedback-success-label-bold: var(--primitive-color-green-950); /** Text on feedback.success.bold. */
+  --semantic-feedback-success-label-subtle: var(--primitive-color-green-300); /** Text on feedback.success.subtle. */
+  --semantic-feedback-success-subtle: var(--primitive-color-green-900); /** Tinted background behind a correct result. */
+  --semantic-feedback-error-bold: var(--primitive-color-red-400-error); /** Incorrect answer fill. Failed validation. Not for destructive buttons. */
+  --semantic-feedback-error-label-bold: var(--primitive-color-red-950); /** Text on feedback.error.bold. */
+  --semantic-feedback-error-label-subtle: var(--primitive-color-red-200); /** Text on feedback.error.subtle. */
+  --semantic-feedback-error-subtle: var(--primitive-color-red-900); /** Tinted background behind a wrong result. */
+  --semantic-feedback-warning-bold: var(--primitive-color-gold-400); /** Warning fill. One attempt left chips, time-pressure banners. */
+  --semantic-feedback-warning-label-bold: var(--primitive-color-navy-950); /** Text on feedback.warning.bold. */
+  --semantic-feedback-warning-label-subtle: var(--primitive-color-gold-300); /** Text on feedback.warning.subtle. */
+  --semantic-feedback-warning-subtle: var(--primitive-color-gold-900); /** Tinted background behind a warning chip or banner. */
+  --semantic-feedback-partial-bold: var(--primitive-color-violet-400); /** Almost there fill. Distinguishes partial from success (green) and error (red). */
+  --semantic-feedback-partial-label-bold: var(--primitive-color-violet-50-on-partial); /** Text on feedback.partial.bold. */
+  --semantic-feedback-partial-label-subtle: var(--primitive-color-violet-300); /** Text on feedback.partial.subtle. */
+  --semantic-feedback-partial-subtle: var(--primitive-color-violet-900); /** Tinted background behind a partial result card. */
+  --semantic-feedback-destructive-bold: var(--primitive-color-red-400-destructive); /** Irreversible action fill. Delete, remove, block buttons at rest. */
+  --semantic-feedback-destructive-bold-hover: var(--primitive-color-red-300); /** Destructive button hover state. */
+  --semantic-feedback-destructive-bold-active: var(--primitive-color-red-500); /** Destructive button pressed/active state. */
+  --semantic-feedback-destructive-label-bold: var(--primitive-color-red-950); /** Text on feedback.destructive.bold. */
+  --semantic-type-scale-display-l-font-family: var(--primitive-font-family-display); /** Display L — hero moments only, one per screen. */
+  --semantic-type-scale-display-l-font-weight: var(--primitive-font-weight-heavy); /** Display L weight. */
+  --semantic-type-scale-display-l-font-size: var(--primitive-font-size-6xl); /** Display L size: 103px. */
+  --semantic-type-scale-display-l-line-height: var(--primitive-font-line-height-5xl); /** Display L line-height: 104px. */
+  --semantic-type-scale-display-l-letter-spacing: var(--primitive-font-tracking-tight); /** Display L tracking: -1% (not variable-bound in Figma). */
+  --semantic-type-scale-display-m-font-family: var(--primitive-font-family-default); /** Display M — large numeric stats, XP totals. */
+  --semantic-type-scale-display-m-font-weight: var(--primitive-font-weight-bold); /** Display M weight. */
+  --semantic-type-scale-display-m-font-size: var(--primitive-font-size-5xl); /** Display M size: 76px. */
+  --semantic-type-scale-display-m-line-height: var(--primitive-font-line-height-4xl); /** Display M line-height: 76px. */
+  --semantic-type-scale-display-m-letter-spacing: var(--primitive-font-tracking-tight); /** Display M tracking: -1%. */
+  --semantic-type-scale-display-s-font-family: var(--primitive-font-family-default); /** Display S — scores, countdowns, prominent single-line results. */
+  --semantic-type-scale-display-s-font-weight: var(--primitive-font-weight-bold); /** Display S weight. */
+  --semantic-type-scale-display-s-font-size: var(--primitive-font-size-4xl); /** Display S size: 59px. */
+  --semantic-type-scale-display-s-line-height: var(--primitive-font-line-height-3xl); /** Display S line-height: 60px. */
+  --semantic-type-scale-display-s-letter-spacing: var(--primitive-font-tracking-tight); /** Display S tracking: -1%. */
+  --semantic-type-scale-headline-xl-font-family: var(--primitive-font-family-default); /** Headline XL — primary screen titles. One per screen. */
+  --semantic-type-scale-headline-xl-font-weight: var(--primitive-font-weight-bold); /** Headline XL weight. */
+  --semantic-type-scale-headline-xl-font-size: var(--primitive-font-size-3xl); /** Headline XL size: 44px. */
+  --semantic-type-scale-headline-xl-line-height: var(--primitive-font-line-height-2xl); /** Headline XL line-height: 44px. */
+  --semantic-type-scale-headline-xl-letter-spacing: var(--primitive-font-tracking-tight); /** Headline XL tracking: -1%. */
+  --semantic-type-scale-headline-l-font-family: var(--primitive-font-family-default); /** Headline L — section headings, modal titles, recall prompt terms. */
+  --semantic-type-scale-headline-l-font-weight: var(--primitive-font-weight-bold); /** Headline L weight. */
+  --semantic-type-scale-headline-l-font-size: var(--primitive-font-size-2xl); /** Headline L size: 33px. */
+  --semantic-type-scale-headline-l-line-height: var(--primitive-font-line-height-xl); /** Headline L line-height: 36px. */
+  --semantic-type-scale-headline-l-letter-spacing: var(--primitive-font-tracking-tight); /** Headline L tracking: -1%. */
+  --semantic-type-scale-headline-m-font-family: var(--primitive-font-family-default); /** Headline M — sub-section titles, stat tile labels. */
+  --semantic-type-scale-headline-m-font-weight: var(--primitive-font-weight-bold); /** Headline M weight. */
+  --semantic-type-scale-headline-m-font-size: var(--primitive-font-size-xl); /** Headline M size: 28px. */
+  --semantic-type-scale-headline-m-line-height: var(--primitive-font-line-height-lg); /** Headline M line-height: 32px. Note: not variable-bound in Figma (font/lineHeight variable missing for this step). */
+  --semantic-type-scale-headline-m-letter-spacing: var(--primitive-font-tracking-tight); /** Headline M tracking: -1%. */
+  --semantic-type-scale-headline-s-font-family: var(--primitive-font-family-default); /** Headline S — card headings, bottom sheet titles, step labels. */
+  --semantic-type-scale-headline-s-font-weight: var(--primitive-font-weight-bold); /** Headline S weight. */
+  --semantic-type-scale-headline-s-font-size: var(--primitive-font-size-lg); /** Headline S size: 21px. */
+  --semantic-type-scale-headline-s-line-height: var(--primitive-font-line-height-md); /** Headline S line-height: 24px. */
+  --semantic-type-scale-headline-s-letter-spacing: var(--primitive-font-tracking-none); /** Headline S tracking: 0%. */
+  --semantic-type-scale-headline-xs-bold-font-family: var(--primitive-font-family-default); /** Headline XS Bold — emphasized sub-headings, chip labels, tab labels. */
+  --semantic-type-scale-headline-xs-bold-font-weight: var(--primitive-font-weight-semibold); /** Headline XS Bold weight. */
+  --semantic-type-scale-headline-xs-bold-font-size: var(--primitive-font-size-md); /** Headline XS size: 18px. */
+  --semantic-type-scale-headline-xs-bold-line-height: var(--primitive-font-line-height-sm); /** Headline XS line-height: 20px. */
+  --semantic-type-scale-headline-xs-bold-letter-spacing: var(--primitive-font-tracking-loose); /** Headline XS tracking: +1%. */
+  --semantic-type-scale-headline-xs-regular-font-family: var(--primitive-font-family-default); /** Headline XS Regular — paired with XS Bold for mixed-weight headings. */
+  --semantic-type-scale-headline-xs-regular-font-weight: var(--primitive-font-weight-regular); /** Headline XS Regular weight. */
+  --semantic-type-scale-headline-xs-regular-font-size: var(--primitive-font-size-md); /** Headline XS size: 18px. */
+  --semantic-type-scale-headline-xs-regular-line-height: var(--primitive-font-line-height-sm); /** Headline XS line-height: 20px. */
+  --semantic-type-scale-headline-xs-regular-letter-spacing: var(--primitive-font-tracking-loose); /** Headline XS tracking: +1%. */
+  --semantic-type-scale-headline-xxs-bold-font-family: var(--primitive-font-family-default); /** Headline XXS Bold — small card labels, badge text, list item titles. */
+  --semantic-type-scale-headline-xxs-bold-font-weight: var(--primitive-font-weight-semibold); /** Headline XXS Bold weight. */
+  --semantic-type-scale-headline-xxs-bold-font-size: var(--primitive-font-size-sm); /** Headline XXS size: 15px. */
+  --semantic-type-scale-headline-xxs-bold-line-height: var(--primitive-font-line-height-xs); /** Headline XXS line-height: 16px. */
+  --semantic-type-scale-headline-xxs-bold-letter-spacing: var(--primitive-font-tracking-loose); /** Headline XXS tracking: +1%. */
+  --semantic-type-scale-headline-xxs-regular-font-family: var(--primitive-font-family-default); /** Headline XXS Regular — secondary list items, supporting labels. */
+  --semantic-type-scale-headline-xxs-regular-font-weight: var(--primitive-font-weight-regular); /** Headline XXS Regular weight. */
+  --semantic-type-scale-headline-xxs-regular-font-size: var(--primitive-font-size-sm); /** Headline XXS size: 15px. */
+  --semantic-type-scale-headline-xxs-regular-line-height: var(--primitive-font-line-height-xs); /** Headline XXS line-height: 16px. */
+  --semantic-type-scale-headline-xxs-regular-letter-spacing: var(--primitive-font-tracking-loose); /** Headline XXS tracking: +1%. */
+  --semantic-type-scale-body-m-bold-font-family: var(--primitive-font-family-default); /** Body M Bold — emphasized body copy, key terms in recall prompts. */
+  --semantic-type-scale-body-m-bold-font-weight: var(--primitive-font-weight-semibold); /** Body M Bold weight. */
+  --semantic-type-scale-body-m-bold-font-size: var(--primitive-font-size-md); /** Body M size: 18px. */
+  --semantic-type-scale-body-m-bold-line-height: var(--primitive-font-line-height-md); /** Body M line-height: 24px. */
+  --semantic-type-scale-body-m-bold-letter-spacing: var(--primitive-font-tracking-loose); /** Body M tracking: +1%. */
+  --semantic-type-scale-body-m-regular-font-family: var(--primitive-font-family-default); /** Body M Regular — default reading style. Recall prompts, feedback text, answer cards. */
+  --semantic-type-scale-body-m-regular-font-weight: var(--primitive-font-weight-regular); /** Body M Regular weight. */
+  --semantic-type-scale-body-m-regular-font-size: var(--primitive-font-size-md); /** Body M size: 18px. */
+  --semantic-type-scale-body-m-regular-line-height: var(--primitive-font-line-height-md); /** Body M line-height: 24px. */
+  --semantic-type-scale-body-m-regular-letter-spacing: var(--primitive-font-tracking-loose); /** Body M tracking: +1%. */
+  --semantic-type-scale-body-s-bold-font-family: var(--primitive-font-family-default); /** Body S Bold — emphasized text in compact contexts. */
+  --semantic-type-scale-body-s-bold-font-weight: var(--primitive-font-weight-semibold); /** Body S Bold weight. */
+  --semantic-type-scale-body-s-bold-font-size: var(--primitive-font-size-sm); /** Body S size: 15px. */
+  --semantic-type-scale-body-s-bold-line-height: var(--primitive-font-line-height-sm); /** Body S line-height: 20px. */
+  --semantic-type-scale-body-s-bold-letter-spacing: var(--primitive-font-tracking-loose); /** Body S tracking: +1%. */
+  --semantic-type-scale-body-s-regular-font-family: var(--primitive-font-family-default); /** Body S Regular — secondary reading copy, helper text, transcript display. */
+  --semantic-type-scale-body-s-regular-font-weight: var(--primitive-font-weight-regular); /** Body S Regular weight. */
+  --semantic-type-scale-body-s-regular-font-size: var(--primitive-font-size-sm); /** Body S size: 15px. */
+  --semantic-type-scale-body-s-regular-line-height: var(--primitive-font-line-height-sm); /** Body S line-height: 20px. */
+  --semantic-type-scale-body-s-regular-letter-spacing: var(--primitive-font-tracking-loose); /** Body S tracking: +1%. */
+  --semantic-type-scale-caption-m-bold-font-family: var(--primitive-font-family-default); /** Caption M Bold — progress labels, XP counter values, stat tile units. */
+  --semantic-type-scale-caption-m-bold-font-weight: var(--primitive-font-weight-semibold); /** Caption M Bold weight. */
+  --semantic-type-scale-caption-m-bold-font-size: var(--primitive-font-size-xs); /** Caption M size: 12px. System readable minimum. */
+  --semantic-type-scale-caption-m-bold-line-height: var(--primitive-font-line-height-xs); /** Caption M line-height: 16px. */
+  --semantic-type-scale-caption-m-bold-letter-spacing: var(--primitive-font-tracking-loose); /** Caption M tracking: +1%. */
+  --semantic-type-scale-caption-m-regular-font-family: var(--primitive-font-family-default); /** Caption M Regular — timestamps, secondary metadata, helper text. */
+  --semantic-type-scale-caption-m-regular-font-weight: var(--primitive-font-weight-regular); /** Caption M Regular weight. */
+  --semantic-type-scale-caption-m-regular-font-size: var(--primitive-font-size-xs); /** Caption M size: 12px. */
+  --semantic-type-scale-caption-m-regular-line-height: var(--primitive-font-line-height-xs); /** Caption M line-height: 16px. */
+  --semantic-type-scale-caption-m-regular-letter-spacing: var(--primitive-font-tracking-loose); /** Caption M tracking: +1%. */
+  --semantic-type-scale-caption-s-bold-font-family: var(--primitive-font-family-default); /** Caption S Bold — fine print, badge superscripts, legal text. Check WCAG contrast at 9px. */
+  --semantic-type-scale-caption-s-bold-font-weight: var(--primitive-font-weight-semibold); /** Caption S Bold weight. */
+  --semantic-type-scale-caption-s-bold-font-size: var(--primitive-font-size-2xs); /** Caption S size: 9px. System fine-print minimum. */
+  --semantic-type-scale-caption-s-bold-line-height: var(--primitive-font-line-height-2xs); /** Caption S line-height: 12px. */
+  --semantic-type-scale-caption-s-bold-letter-spacing: var(--primitive-font-tracking-loose); /** Caption S tracking: +1%. */
+  --semantic-type-scale-caption-s-regular-font-family: var(--primitive-font-family-default); /** Caption S Regular — watermarks, attribution, decorative labels. */
+  --semantic-type-scale-caption-s-regular-font-weight: var(--primitive-font-weight-regular); /** Caption S Regular weight. */
+  --semantic-type-scale-caption-s-regular-font-size: var(--primitive-font-size-2xs); /** Caption S size: 9px. */
+  --semantic-type-scale-caption-s-regular-line-height: var(--primitive-font-line-height-2xs); /** Caption S line-height: 12px. */
+  --semantic-type-scale-caption-s-regular-letter-spacing: var(--primitive-font-tracking-loose); /** Caption S tracking: +1%. */
+}

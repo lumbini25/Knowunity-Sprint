@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* Generated from tokens.json (version 2025.10, mode: dark) by scripts/generate-globals-css.py.
-   Do not hand-edit. Run `npm run tokens:css` after changing tokens.json.
+/* Generated from tokens/tokens.json (version 2025.10, mode: dark) by scripts/generate-globals-css.py.
+   Do not hand-edit. Run `npm run tokens:css` after changing tokens/tokens.json.
    Dark is the only mode; there is no light palette in the semantic layer. */
 
 :root {

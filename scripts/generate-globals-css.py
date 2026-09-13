@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate app/globals.css from tokens.json.
+"""Generate app/globals.css from tokens/tokens.json.
 
 Dark is the only mode; the semantic layer has no light palette.
 
@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "tokens.json"
+SRC = ROOT / "tokens" / "tokens.json"
 OUT = ROOT / "app" / "globals.css"
 
 # Font weights are stored as Figma style names ("SemiBold"), which are not
@@ -87,9 +87,9 @@ def main():
     lines = [
         '@import "tailwindcss";',
         "",
-        f'/* Generated from tokens.json (version {meta.get("version")}, '
+        f'/* Generated from tokens/tokens.json (version {meta.get("version")}, '
         f'mode: {meta.get("mode")}) by scripts/generate-globals-css.py.',
-        "   Do not hand-edit. Run `npm run tokens:css` after changing tokens.json.",
+        "   Do not hand-edit. Run `npm run tokens:css` after changing tokens/tokens.json.",
         "   Dark is the only mode; there is no light palette in the semantic layer. */",
         "",
         ":root {",

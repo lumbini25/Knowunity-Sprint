@@ -1,6 +1,6 @@
 # Knowunity Design System
 
-Rules, not values. Every value lives in `tokens.json`. This file tells you how to use the system.
+Rules, not values. Every value lives in `tokens/tokens.json`. This file tells you how to use the system.
 
 ---
 
@@ -132,7 +132,7 @@ Result surface for one evaluated recall attempt in the Explain Out Loud loop. Sh
 
 ### Layer anatomy
 
-All values are token names. See `tokens.json` for resolved values.
+All values are token names. See `tokens/tokens.json` for resolved values.
 
 ```
 recallResponseCard
@@ -683,7 +683,7 @@ Text nodes that wrap get their width set to a concrete pixel value before `textA
 
 ### Token binding
 
-Every color fill, stroke color, spacing value, radius, stroke weight, and all five typography properties (`fontSize`, `lineHeight`, `letterSpacing`, `fontFamily`, `fontStyle`) must be bound to a variable from `tokens.json`. No hardcoded values. If the right token does not exist, stop and request it — document the gap in the component description and in the Gaps section below.
+Every color fill, stroke color, spacing value, radius, stroke weight, and all five typography properties (`fontSize`, `lineHeight`, `letterSpacing`, `fontFamily`, `fontStyle`) must be bound to a variable from `tokens/tokens.json`. No hardcoded values. If the right token does not exist, stop and request it — document the gap in the component description and in the Gaps section below.
 
 SVG vector paths inside icon frames cannot be variable-bound through the plugin API. This is a known API limitation; document it in the component description.
 
@@ -746,7 +746,7 @@ The role describes the job, never the appearance. `feedback/success/surface/bold
 
 ### Reference syntax
 
-Semantic tokens reference primitives using curly brace syntax in `tokens.json`: `{primitive.color.violet.500}`. In CSS this becomes a custom property chain: `var(--semantic-feedback-success-bold)`. Never write a value directly.
+Semantic tokens reference primitives using curly brace syntax in `tokens/tokens.json`: `{primitive.color.violet.500}`. In CSS this becomes a custom property chain: `var(--semantic-feedback-success-bold)`. Never write a value directly.
 
 ### Text content
 
@@ -756,7 +756,7 @@ Sentence case everywhere: labels, buttons, headings, error messages. Capitalise 
 
 ## Never do this
 
-**Never invent a value that is not in `tokens.json`.** If a spacing, color, radius, or size value is missing, stop and request it. The absence of a token is a gap to surface, not a gap to fill silently.
+**Never invent a value that is not in `tokens/tokens.json`.** If a spacing, color, radius, or size value is missing, stop and request it. The absence of a token is a gap to surface, not a gap to fill silently.
 
 **Never use a CSS fallback value.** `var(--semantic-text-primary, #f4f2ff)` hides a broken reference. Fix the pipeline; do not paper over it.
 
@@ -804,8 +804,8 @@ Known absences. Do not fill them with invented values. Surface them as requests.
 
 ## Relationship between files
 
-`tokens.json` — every value in the system. Source of truth for what exists. Consult it before writing any value in code or Figma.
+`tokens/tokens.json` — every value in the system. Source of truth for what exists. Consult it before writing any value in code or Figma.
 
-`design-system.md` — this file. Rules for how to use what exists. No values are repeated here; if a rule refers to a color or size, the name it uses is the token name and the value lives in `tokens.json`.
+`design-system.md` — this file. Rules for how to use what exists. No values are repeated here; if a rule refers to a color or size, the name it uses is the token name and the value lives in `tokens/tokens.json`.
 
-When the two files conflict, fix the conflict rather than choosing one over the other. A rule that references a token that does not exist in `tokens.json` is a broken rule. A token in `tokens.json` that has no rule in `design-system.md` is an undocumented token.
+When the two files conflict, fix the conflict rather than choosing one over the other. A rule that references a token that does not exist in `tokens/tokens.json` is a broken rule. A token in `tokens/tokens.json` that has no rule in `design-system.md` is an undocumented token.

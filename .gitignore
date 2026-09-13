@@ -18,7 +18,11 @@
 /out/
 
 # production
-/build
+/build/*
+
+# ...except the generated design tokens, which are tracked so a fresh clone
+# builds without running `npm run tokens` first.
+!/build/css
 
 # misc
 .DS_Store
