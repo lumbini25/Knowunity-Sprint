@@ -1,0 +1,213 @@
+/* Chrome for the foundation pages.
+
+   Colour and type bind to the semantic layer. Spacing and radius bind to
+   primitives because the semantic layer covers colour and type only -- there
+   is no semantic spacing or radius to consume. No literals, no var() fallbacks. */
+
+.fnd {
+  padding: var(--primitive-space-800);
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-1200);
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+}
+
+.fnd-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-200);
+}
+
+.fnd-title {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-l-font-family);
+  font-weight: var(--semantic-type-scale-headline-l-font-weight);
+  font-size: var(--semantic-type-scale-headline-l-font-size);
+  line-height: var(--semantic-type-scale-headline-l-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-l-letter-spacing);
+}
+
+.fnd-intro {
+  margin: 0;
+  /* A readable measure for prose. Derived from the spacing scale rather than
+     invented: there is no token for text measure. */
+  max-width: calc(var(--primitive-space-4000) * 4);
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+/* A layer of the system: primitive or semantic. */
+.fnd-layer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-600);
+}
+
+.fnd-layer-name {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+.fnd-layer-note {
+  margin: 0;
+  max-width: calc(var(--primitive-space-4000) * 4);
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.fnd-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-400);
+}
+
+/* A token with no visual of its own: just its name, value and description. */
+.fnd-row-plain {
+  display: block;
+}
+
+.fnd-group-name {
+  margin: 0;
+  padding-bottom: var(--primitive-space-200);
+  border-bottom: var(--primitive-stroke-border) solid var(--semantic-border-default);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+.fnd-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-300);
+}
+
+/* One token: the visual on the left, its name, value and description on the right. */
+.fnd-row {
+  display: grid;
+  grid-template-columns: var(--primitive-space-4000) minmax(0, 1fr);
+  gap: var(--primitive-space-400);
+  align-items: center;
+}
+
+.fnd-row-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-200);
+  padding-bottom: var(--primitive-space-400);
+  border-bottom: var(--primitive-stroke-border) solid var(--semantic-border-default);
+}
+
+.fnd-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-space-050);
+  min-width: 0;
+}
+
+.fnd-name {
+  overflow-wrap: anywhere;
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+.fnd-value {
+  color: var(--semantic-text-secondary);
+  overflow-wrap: anywhere;
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+.fnd-alias {
+  color: var(--semantic-text-tertiary);
+}
+
+.fnd-desc {
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* A token with no $description states that, rather than showing an empty cell. */
+.fnd-desc-missing {
+  color: var(--semantic-text-disabled);
+  font-style: italic;
+}
+
+/* ----- colour ----- */
+
+.fnd-swatch {
+  height: var(--primitive-space-1600);
+  border-radius: var(--primitive-radius-200);
+  border: var(--primitive-stroke-border) solid var(--semantic-border-default);
+}
+
+/* ----- spacing ----- */
+
+.fnd-bar {
+  height: var(--primitive-space-300);
+  border-radius: var(--primitive-radius-100);
+  background: var(--semantic-border-selected);
+}
+
+/* Negative steps pull layout back; drawn as an outline so they never read as
+   a positive amount of space. */
+.fnd-bar-negative {
+  background: transparent;
+  border: var(--primitive-stroke-border) dashed var(--semantic-text-error);
+}
+
+/* ----- radius ----- */
+
+.fnd-radius-box {
+  width: var(--primitive-space-1600);
+  height: var(--primitive-space-1600);
+  background: var(--semantic-background-surface);
+  border: var(--primitive-stroke-heavy-border) solid var(--semantic-border-selected);
+}
+
+/* ----- sizing ----- */
+
+/* A square at the token's exact size: icon and illustration scales. */
+.fnd-size-box {
+  background: var(--semantic-border-selected);
+  border-radius: var(--primitive-radius-100);
+  flex: none;
+}
+
+/* A rule drawn at the token's stroke weight. */
+.fnd-stroke-line {
+  width: var(--primitive-space-2400);
+  border-top-style: solid;
+  border-top-color: var(--semantic-border-strong);
+}
+
+/* ----- type ----- */
+
+.fnd-specimen {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
