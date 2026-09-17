@@ -1,0 +1,124 @@
+/* listItem — built from the Row inside the Figma components "strongCard"
+   (15676:16060) and "reviewTopicCard" (15676:16081).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives. */
+
+/* Figma's Container: HORIZONTAL, gap Space/300, padding Space/400 inline and
+   Space/0 block. The row takes its height from the checkbox inside it — 48 on
+   the first row, 49 once the divider stroke is added — rather than from block
+   padding of its own. */
+.knw-listitem {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+  box-sizing: border-box;
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+/* Figma draws a top stroke on every row after the first. */
+.knw-listitem--divided {
+  border-top: var(--semantic-stroke-default) solid var(--semantic-border-default);
+}
+
+/* The `Checkbox` instance: 48×48, no fill. It exists to give the 24px disc a
+   full tap target, which is why the row itself needs no block padding. */
+.knw-listitem__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-tap-target-min);
+  height: var(--semantic-size-tap-target-min);
+}
+
+/* Figma's Box: Icon/300 square, Radius/Full, a 2px stroke. Fill and stroke are
+   set per variant below.
+
+   NO PADDING RULE, deliberately. Figma pads Space/100 inside a 24 box around a
+   16 icon, but its stroke is drawn over the frame rather than inside it. In CSS
+   the 2px border does sit inside a border-box, so repeating the 4 as padding
+   would squeeze the icon to 12. Border 2 + the 2 of slack a centred 16 leaves
+   in a 20 content box comes to the same 4 Figma draws. */
+.knw-listitem__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+  border-style: solid;
+  border-width: var(--semantic-stroke-strong);
+  border-radius: var(--semantic-radius-pill);
+}
+
+/* Figma's Icon Slot: Icon/200. */
+.knw-listitem__icon {
+  display: inline-flex;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+.knw-listitem__label {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+/* ===== variant ===== */
+
+/* Checkbox State=Default: a solid disc, fill and stroke both the same colour,
+   with the tick in text/primary.
+
+   TOKEN NOTE. Figma binds fill and stroke to `highlight/indicator`. The
+   semantic layer carries that exact value (violet/highlight, #9d85ff) under one
+   name only — `highlight/border`, documented as the edge of the active tab — so
+   that is what this takes. A `highlight/indicator` alias is requested in
+   design-system.md's Gaps; the value is right, the name is one role narrow. */
+.knw-listitem--Strong .knw-listitem__box {
+  border-color: var(--semantic-highlight-border);
+  background: var(--semantic-highlight-border);
+}
+
+.knw-listitem--Strong .knw-listitem__icon {
+  color: var(--semantic-text-primary);
+}
+
+/* Checkbox State=Error: the same tick, ringed rather than filled, so a row the
+   student missed still reads as a completed item rather than an empty one.
+
+   TOKEN NOTE. Figma's fill is `feedback/errorSurface` (#3a1417). No token
+   resolves to it — red/950 is darker (#2a0808) and red/900 lighter (#532831).
+   red/900 is the nearer step and is already the semantic fill behind a wrong
+   result, so `feedback/error/subtle` is what this takes. The stroke and the
+   tick are both `feedback/error` exactly. */
+.knw-listitem--Review .knw-listitem__box {
+  border-color: var(--semantic-feedback-error-bold);
+  background: var(--semantic-feedback-error-subtle);
+}
+
+.knw-listitem--Review .knw-listitem__icon {
+  color: var(--semantic-feedback-error-bold);
+}
+
+/* ===== the card these rows sit in ===== */
+
+.knw-listitem-group {
+  display: flex;
+  flex-direction: column;
+  /* Figma uses Space/150 here; the layout scale has no 6, but the gap scale does. */
+  gap: var(--semantic-space-gap-s);
+  width: 100%;
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+}

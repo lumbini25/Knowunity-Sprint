@@ -1,0 +1,120 @@
+/* textBlock — built from the Figma component set "textBlock" (node 9003:9039).
+
+   Every value is a semantic token. Nothing in this file is a primitive, a raw
+   hex or a raw pixel number — this is the first component in the project where
+   every single Figma binding landed on an exact semantic match. */
+
+.knw-textblock {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.knw-textblock__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+}
+
+.knw-textblock__caption {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+}
+
+/* ===== variant =====
+
+   Each size changes four things: the two type styles, the gap between them,
+   and the alignment. XL and L are centred screen-level blocks; M and S are
+   left-aligned and sit inside cards. */
+
+/* --- XL --- */
+
+.knw-textblock--XL {
+  gap: var(--semantic-space-layout-xs);
+  align-items: center;
+  text-align: center;
+}
+
+.knw-textblock--XL .knw-textblock__title {
+  font-family: var(--semantic-type-scale-display-m-font-family);
+  font-weight: var(--semantic-type-scale-display-m-font-weight);
+  font-size: var(--semantic-type-scale-display-m-font-size);
+  line-height: var(--semantic-type-scale-display-m-line-height);
+  letter-spacing: var(--semantic-type-scale-display-m-letter-spacing);
+}
+
+/* --- L --- */
+
+.knw-textblock--L {
+  gap: var(--semantic-space-layout-xs);
+  align-items: center;
+  text-align: center;
+}
+
+.knw-textblock--L .knw-textblock__title {
+  font-family: var(--semantic-type-scale-headline-xl-font-family);
+  font-weight: var(--semantic-type-scale-headline-xl-font-weight);
+  font-size: var(--semantic-type-scale-headline-xl-font-size);
+  line-height: var(--semantic-type-scale-headline-xl-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xl-letter-spacing);
+}
+
+/* XL and L share one caption style. Figma draws both at 18/20 regular, which
+   is headline/XS-regular — a headline style doing caption duty. The four
+   values match exactly, so the token is right even though the name reads oddly
+   here. */
+.knw-textblock--XL .knw-textblock__caption,
+.knw-textblock--L .knw-textblock__caption {
+  font-family: var(--semantic-type-scale-headline-xs-regular-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-regular-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-regular-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-regular-letter-spacing);
+}
+
+/* --- M --- */
+
+.knw-textblock--M {
+  gap: var(--semantic-space-layout-xxs);
+  align-items: flex-start;
+  text-align: left;
+}
+
+.knw-textblock--M .knw-textblock__title {
+  font-family: var(--semantic-type-scale-body-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-m-bold-font-size);
+  line-height: var(--semantic-type-scale-body-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-bold-letter-spacing);
+}
+
+.knw-textblock--M .knw-textblock__caption {
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* --- S --- */
+
+.knw-textblock--S {
+  gap: var(--semantic-space-layout-xxs);
+  align-items: flex-start;
+  text-align: left;
+}
+
+.knw-textblock--S .knw-textblock__title {
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+.knw-textblock--S .knw-textblock__caption {
+  font-family: var(--semantic-type-scale-caption-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-regular-letter-spacing);
+}

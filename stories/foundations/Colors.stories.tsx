@@ -43,8 +43,10 @@ function Colors({ layer }: { layer: LayerName }) {
 
   return (
     <Page title={title} intro={intro}>
+      {/* No Layer heading on this page -- each story is a single layer -- so the
+          group headings step up to h2 and the heading order stays unbroken. */}
       {groups.map(([group, groupTokens]) => (
-        <Group key={group} name={group}>
+        <Group key={group} name={group} level={2}>
           {groupTokens.map((token) => (
             <div className="fnd-row" key={token.path}>
               <div className="fnd-swatch" style={{ background: `var(${token.name})` }} />

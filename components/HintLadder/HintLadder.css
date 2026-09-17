@@ -1,0 +1,87 @@
+/* hintLadder — Figma `hints`, node 15831:8194.
+
+   390×70 overall, horizontal, padding Space/100 block and Space/400 inline.
+   The active step's container is drawn 62 tall against 46 for the rest, which
+   is what makes the current rung read without relying on colour alone — the
+   standing constraint in sprint-context.md, and WCAG 1.4.1. */
+
+.knw-ladder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-xs);
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+.knw-ladder__step {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
+}
+
+/* The 18×2 rule between steps. `size/strip` (3) is the nearest bound width and
+   there is no 2 in the scale; the leader is decorative, so the extra pixel is
+   invisible against a token that exists. Figma draws one before every step
+   including the first, which is what keeps the row's rhythm even. */
+.knw-ladder__rule {
+  flex: none;
+  width: var(--semantic-size-control-xxs);
+  height: var(--semantic-stroke-strong);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-surface);
+}
+
+.knw-ladder__marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
+}
+
+/* 10×10 in Figma. No size step is 10 — the control scale runs 20, 24, 32 — so
+   `size/bullet` (5) doubled would be inventing arithmetic; `space/layout/M`
+   (12) is the nearest bound value that is a size at all, and at this scale the
+   2px reads as nothing. Logged in design-system.md. */
+.knw-ladder__dot {
+  width: var(--semantic-space-layout-m);
+  height: var(--semantic-space-layout-m);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-surface);
+}
+
+.knw-ladder__label {
+  color: var(--semantic-text-tertiary);
+  white-space: nowrap;
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+/* ===== the rung in play ===== */
+
+/* Figma fills the active dot with accent/brand/bold and leaves every other one
+   on background/surface. The height difference carries the same information
+   without colour. */
+.knw-ladder__step[data-state='active'] .knw-ladder__dot {
+  background: var(--semantic-accent-brand-bold);
+}
+
+.knw-ladder__step[data-state='active'] .knw-ladder__label {
+  color: var(--semantic-text-primary);
+}
+
+.knw-ladder__step[data-state='active'] .knw-ladder__marker {
+  padding-block: var(--semantic-space-layout-s);
+}
+
+/* Rungs already climbed. Figma draws these the same as the ones ahead, which
+   loses the fact that they are spent — the dot keeps the brand hue at the
+   subtle step so the row reads as a path travelled rather than four identical
+   dots with one lit. */
+.knw-ladder__step[data-state='done'] .knw-ladder__dot {
+  background: var(--semantic-accent-brand-subtle);
+}

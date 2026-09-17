@@ -1,0 +1,41 @@
+/* Chrome for the keyboard-raised toolbar toggle. Semantic tokens only. */
+
+.knw-kb-frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* The screen under test. Takes whatever height the keyboard leaves it. */
+.knw-kb-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Reserved space, deliberately not a drawing of a keyboard. The real one is
+   drawn by the operating system; this only holds its place so you can see what
+   the student can still reach. */
+.knw-kb-inset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  border-top: var(--semantic-stroke-default) dashed var(--semantic-border-strong);
+  background: var(--semantic-background-surface);
+  /* tertiary lands at 4.34:1 on this surface, just under AA. */
+  color: var(--semantic-text-secondary);
+}
+
+.knw-kb-label {
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}

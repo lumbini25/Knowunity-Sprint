@@ -1,0 +1,71 @@
+/* percentage — built from the Figma component "percentage" (node 15676:15985).
+
+   Every value is a semantic token. The ring's geometry is set here rather than
+   in the markup: the circle carries pathLength="100", so its dash array is
+   expressed in percent and the only number React writes is the score itself —
+   data, not a design value. */
+
+.knw-percentage {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  /* Figma pads the 121px ring out to a 154px frame. */
+  padding: var(--semantic-space-layout-l);
+}
+
+.knw-percentage__ring {
+  display: block;
+  width: var(--semantic-size-score-ring);
+  height: var(--semantic-size-score-ring);
+  /* Figma rotates the ring −90° so the arc starts at twelve o'clock. */
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.knw-percentage__arc {
+  cx: 50%;
+  cy: 50%;
+  /* The stroke straddles the path, so the radius pulls in by half of it to
+     keep the ring inside the token diameter. */
+  r: calc((var(--semantic-size-score-ring) - var(--semantic-size-score-stroke)) / 2);
+  stroke-width: var(--semantic-size-score-stroke);
+  fill: none;
+  stroke: var(--semantic-accent-brand-bold);
+  /* Round caps give the arc the same soft ends as Figma's Radius/150 corners,
+     without needing a radius value. */
+  stroke-linecap: round;
+}
+
+/* The score sits over the ring, centred in the frame. */
+.knw-percentage__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.knw-percentage__score {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+.knw-percentage__label {
+  margin: 0;
+  color: var(--semantic-text-tertiary);
+  /* Figma moved the label up from 15/20 to 18/24, which is body/M-regular. */
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}

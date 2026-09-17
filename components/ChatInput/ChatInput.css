@@ -1,0 +1,159 @@
+/* Chat Input — built from the Figma component set "Chat Input" (node 3249:84007).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives. */
+
+.knw-chat {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-xxs);
+  width: 100%;
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-xxs);
+  padding-inline: var(--semantic-space-layout-s);
+}
+
+/* ===== leading action ===== */
+
+/* 56px circle carrying a 24px icon. Figma binds its radius to a Scale variable
+   that is not part of the token file; at 32 on a 56px square it renders as a
+   circle, which is exactly what the pill radius gives. */
+.knw-chat__leading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-control-l);
+  height: var(--semantic-size-control-l);
+  padding: 0;
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-interactive-secondary);
+  color: var(--semantic-background-contrast);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-chat__leading:active {
+  background: var(--semantic-interactive-secondary-active);
+}
+
+/* ===== input container ===== */
+
+.knw-chat__field {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: var(--semantic-size-control-l);
+  padding-inline: var(--semantic-space-layout-l);
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-input);
+}
+
+/* Once the text runs past one line the container squares off. */
+.knw-chat--long-input .knw-chat__field {
+  align-items: flex-end;
+  border-radius: var(--semantic-radius-input);
+}
+
+.knw-chat__text {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+  /* Placeholder colour; the typed states override it. Figma binds this to
+     text/disabled, which is 3.8:1 on the field and fails AA -- and a placeholder
+     is a prompt, not a disabled control. text/tertiary passes at 4.86:1 and
+     still reads as quieter than typed text. */
+  color: var(--semantic-text-tertiary);
+}
+
+.knw-chat--ready-to-send .knw-chat__text,
+.knw-chat--long-input .knw-chat__text {
+  color: var(--semantic-text-primary);
+}
+
+.knw-chat--long-input .knw-chat__text {
+  align-items: flex-start;
+  /* Long input wraps rather than truncating. */
+  white-space: normal;
+}
+
+.knw-chat__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knw-chat--long-input .knw-chat__value {
+  overflow: visible;
+  white-space: normal;
+}
+
+/* The text cursor shown while typing: a hairline rule the height of the line. */
+.knw-chat__caret {
+  flex: none;
+  width: var(--semantic-stroke-default);
+  align-self: stretch;
+  background: var(--semantic-background-contrast);
+}
+
+/* ===== trailing action ===== */
+
+/* Microphone and loading sit bare on the field at 24px. */
+.knw-chat__trailing-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--semantic-background-contrast);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-chat--loading .knw-chat__trailing-icon {
+  color: var(--semantic-interactive-label-secondary);
+  cursor: default;
+}
+
+/* Send is different: a 40px light circle with a 16px mark on it. */
+.knw-chat__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-control-m);
+  height: var(--semantic-size-control-m);
+  padding: 0;
+  border: none;
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-contrast);
+  /* Figma binds this mark to interactive/secondary, which is 10% white on a
+     near-white fill and so invisible. This is the pairing the system documents
+     for a light fill, as used by the Primary button. */
+  color: var(--semantic-interactive-label-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-chat__send-icon {
+  display: inline-flex;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}

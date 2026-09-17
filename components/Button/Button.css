@@ -1,0 +1,204 @@
+/* button — built from the Figma component set "button" (node 9003:6667).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every
+   one is a semantic token. No literals, no var() fallbacks, no primitives. */
+
+/* The tap target. Figma sets a 48px minimum on the component frame, which the
+   S (32px) and M (40px) pills sit inside. Transparent -- the pill below paints. */
+.knw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--semantic-size-tap-target-min);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-button:disabled {
+  cursor: not-allowed;
+}
+
+/* The visible pill. */
+.knw-button__surface {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-radius: var(--semantic-radius-pill);
+  overflow: hidden;
+}
+
+/* Content row: icons and label. Figma carries a small bottom padding here to
+   optically centre the label against the pill. */
+.knw-button__content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.knw-button__label {
+  white-space: nowrap;
+}
+
+/* Icon slots size from the icon scale, one step per button size. */
+.knw-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+/* ===== size ===== */
+
+.knw-button--S .knw-button__surface {
+  height: var(--semantic-size-control-s);
+  padding-inline: var(--semantic-space-inset-s);
+}
+
+.knw-button--M .knw-button__surface {
+  height: var(--semantic-size-control-m);
+  padding-inline: var(--semantic-space-inset-m);
+}
+
+.knw-button--L .knw-button__surface {
+  height: var(--semantic-size-control-l);
+  padding-inline: var(--semantic-space-inset-l);
+}
+
+.knw-button--S .knw-button__content {
+  gap: var(--semantic-space-gap-s);
+  padding-bottom: var(--semantic-space-optical-shift-s);
+}
+
+.knw-button--M .knw-button__content {
+  gap: var(--semantic-space-gap-m);
+  padding-bottom: var(--semantic-space-optical-shift-m);
+}
+
+.knw-button--L .knw-button__content {
+  gap: var(--semantic-space-gap-l);
+  padding-bottom: var(--semantic-space-optical-shift-l);
+}
+
+/* S and M share body S bold; L steps up to headline S. */
+.knw-button--S .knw-button__label,
+.knw-button--M .knw-button__label {
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+.knw-button--L .knw-button__label {
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+.knw-button--S .knw-button__icon {
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+.knw-button--M .knw-button__icon {
+  width: var(--semantic-size-icon-m);
+  height: var(--semantic-size-icon-m);
+}
+
+.knw-button--L .knw-button__icon {
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+}
+
+/* ===== variant ===== */
+
+.knw-button--Primary .knw-button__surface {
+  background: var(--semantic-interactive-primary);
+}
+
+.knw-button--Primary .knw-button__label {
+  color: var(--semantic-interactive-label-primary);
+}
+
+.knw-button--Secondary .knw-button__surface {
+  background: var(--semantic-background-surface);
+}
+
+.knw-button--Secondary .knw-button__label {
+  color: var(--semantic-text-primary);
+}
+
+/* Tertiary is label only: no fill and no horizontal padding. Figma builds it
+   without the content wrapper the other variants use, so it carries no
+   optical bottom nudge either. */
+.knw-button--Tertiary .knw-button__surface {
+  padding-inline: 0;
+  background: none;
+}
+
+/* S and M hug the label (20px in Figma). L is the exception: it keeps the L
+   control height, so a Tertiary L sits level with a Primary L beside it. */
+.knw-button--Tertiary.knw-button--S .knw-button__surface,
+.knw-button--Tertiary.knw-button--M .knw-button__surface {
+  height: auto;
+}
+
+.knw-button--Tertiary .knw-button__content {
+  padding-bottom: 0;
+}
+
+.knw-button--Tertiary .knw-button__label {
+  color: var(--semantic-text-primary);
+}
+
+/* ===== state ===== */
+
+/* Pressed lays a translucent wash over the resting fill, the way Figma stacks
+   a second paint on the pill. Applied on real press as well as when the state
+   prop is set, so the component behaves and not just poses. */
+.knw-button--Primary[data-state='Pressed'] .knw-button__surface::after,
+.knw-button--Primary:not([data-state='Disabled']):not([data-state='Loading']):active
+  .knw-button__surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--semantic-interactive-pressed);
+}
+
+.knw-button--Secondary[data-state='Pressed'] .knw-button__surface::after,
+.knw-button--Secondary:not([data-state='Disabled']):not([data-state='Loading']):active
+  .knw-button__surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--semantic-background-elevated);
+}
+
+/* Disabled: Primary drops its brand fill for a flat surface; every variant
+   moves the label to the disabled token. */
+.knw-button--Primary[data-state='Disabled'] .knw-button__surface {
+  background: var(--semantic-background-surface);
+}
+
+.knw-button[data-state='Disabled'] .knw-button__label {
+  color: var(--semantic-text-disabled);
+}
+
+/* Loading: the label is hidden and a centre icon takes its place. The pill
+   keeps its resting fill. */
+.knw-button[data-state='Loading'] .knw-button__label {
+  display: none;
+}
+
+.knw-button--Tertiary[data-state='Loading'] .knw-button__icon {
+  color: var(--semantic-text-link);
+}

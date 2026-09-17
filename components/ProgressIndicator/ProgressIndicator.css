@@ -1,0 +1,99 @@
+/* progressIndicator — built from the Figma component set "progressIndicator"
+   (node 9003:8923).
+
+   Every value is a semantic token. The only number in this file is the fill
+   width, which is the progress percentage itself — data, not a design value,
+   and it arrives from the component as a custom property. */
+
+.knw-progress {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-elevated);
+}
+
+/* The track holds the fill. On thickness=24 it sits inside the outer pill with
+   a gutter showing; on thickness=16 it fills the pill edge to edge. */
+.knw-progress__track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* border/subtle now exists; it is what Figma binds, and resolves to the
+     same white-10% as border/default. */
+  border: var(--semantic-stroke-default) solid var(--semantic-border-subtle);
+  /* Figma binds Radius/300 (12) here, which is more than half the track height
+     in both thicknesses, so the browser clamps it to a pill either way. The
+     pill token renders identically and the system has no radius at 12. */
+  border-radius: var(--semantic-radius-pill);
+}
+
+.knw-progress__fill {
+  height: 100%;
+  border-radius: var(--semantic-radius-pill);
+  /* --knw-progress-fill is the progress value, passed in by the component. */
+  width: var(--knw-progress-fill);
+  /* Figma draws progress=0 as a dot the width of the track's own height rather
+     than as nothing, so the bar never reads as broken. */
+  min-width: var(--knw-progress-min);
+}
+
+/* The numeric label is centred over the whole bar, not over the fill. */
+.knw-progress__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+  color: var(--semantic-interactive-label-secondary);
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+/* ===== thickness ===== */
+
+.knw-progress--24 {
+  height: var(--semantic-size-bar-m);
+  /* The 2px gutter that makes the outer pill read as a ring. */
+  padding: var(--semantic-space-layout-xxs);
+}
+
+.knw-progress--24 .knw-progress__track {
+  height: var(--semantic-size-bar-track);
+}
+
+.knw-progress--24 .knw-progress__fill {
+  --knw-progress-min: var(--semantic-size-bar-track);
+}
+
+/* thickness=16 has no gutter and, in Figma, no label node at all. */
+.knw-progress--16 {
+  height: var(--semantic-size-bar-s);
+  padding: 0;
+}
+
+.knw-progress--16 .knw-progress__track {
+  height: var(--semantic-size-bar-s);
+}
+
+.knw-progress--16 .knw-progress__fill {
+  --knw-progress-min: var(--semantic-size-bar-s);
+}
+
+/* ===== variant ===== */
+
+.knw-progress--Primary .knw-progress__fill {
+  background: var(--semantic-accent-brand-bold);
+}
+
+.knw-progress--Coral .knw-progress__fill {
+  background: var(--semantic-accent-coral-bold);
+}

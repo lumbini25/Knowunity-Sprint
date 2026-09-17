@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/nextjs-vite'
 import { themes } from 'storybook/theming'
+import { withKeyboardInset } from './withKeyboardInset'
 
 // The design system itself. tokens.css declares every custom property;
 // preview.css applies them to the canvas. Order matters -- tokens first.
@@ -45,9 +46,30 @@ const preview: Preview = {
     viewport: { options: { iphone390: IPHONE_390 } },
   },
 
+  // Reserves the space an iOS keyboard takes, so any screen can be checked
+  // keyboard-raised. The keyboard itself is drawn by the operating system --
+  // the Figma asset exists only to answer "can the student still reach the CTA".
+  globalTypes: {
+    keyboard: {
+      description: 'Reserve the space an iOS keyboard occupies',
+      toolbar: {
+        title: 'Keyboard',
+        icon: 'mobile',
+        items: [
+          { value: 'hidden', title: 'Keyboard hidden' },
+          { value: 'raised', title: 'Keyboard raised' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+
+  decorators: [withKeyboardInset],
+
   // The viewport each story opens with. Still switchable from the toolbar.
   initialGlobals: {
     viewport: { value: 'iphone390', isRotated: false },
+    keyboard: 'hidden',
   },
 };
 

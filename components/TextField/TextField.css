@@ -1,0 +1,145 @@
+/* Text Field — built from the Figma component set "Text Field" (node 4517:2132).
+
+   Every colour, size, spacing, radius and type value is a semantic token. There
+   are no primitives and no raw numbers in this file. */
+
+.knw-textfield {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* Figma: root gap Space/150. */
+  gap: var(--semantic-space-gap-m);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.knw-textfield__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+/* The field and its caption are one block: Figma nests them in their own frame
+   with a Space/050 gap, tighter than the title gap above. */
+.knw-textfield__block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--semantic-space-layout-xxs);
+}
+
+.knw-textfield__field {
+  display: flex;
+  align-items: center;
+  /* Figma: field gap Space/150. */
+  gap: var(--semantic-space-gap-s);
+  box-sizing: border-box;
+  /* Figma: Space/300 on all four sides. The horizontal padding sits on the
+     field; the vertical padding sits on the input wrapper, exactly as Figma
+     splits it across two frames. */
+  padding-inline: var(--semantic-space-layout-m);
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  /* Figma binds Radius/400 here. radius/input exists but is 24, a different
+     value for a different component — see the story docs. */
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-input);
+}
+
+.knw-textfield__leading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+  /* Figma binds the search glyph to background/contrast, not an icon or text
+     role. Kept faithful — flagged in the story docs. */
+  color: var(--semantic-background-contrast);
+}
+
+.knw-textfield__input-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-block: var(--semantic-space-layout-m);
+}
+
+.knw-textfield__input {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.knw-textfield__input:focus {
+  outline: none;
+}
+
+.knw-textfield__input::placeholder {
+  color: var(--semantic-text-secondary);
+  opacity: 1;
+}
+
+/* The trailing slot is an empty Button icon in Figma — a 32px circular target
+   holding a 16px icon slot with nothing in it. */
+.knw-textfield__trailing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-control-s);
+  height: var(--semantic-size-control-s);
+  padding: 0;
+  border: none;
+  border-radius: var(--semantic-radius-pill);
+  background: none;
+  color: var(--semantic-text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-textfield__trailing-icon {
+  display: inline-flex;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+.knw-textfield__caption {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* ===== Variant ===== */
+
+/* Default and Placeholder are the same box. They differ only in whether the
+   input holds a value, which is why Figma draws two variants of one frame. */
+
+.knw-textfield--Error .knw-textfield__field {
+  border-color: var(--semantic-feedback-error-bold);
+}
+
+/* The Error variant's caption is not behind showCaption in Figma — it is always
+   drawn, and in the error colour. */
+.knw-textfield--Error .knw-textfield__caption {
+  color: var(--semantic-feedback-error-bold);
+}

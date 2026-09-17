@@ -41,6 +41,7 @@ When working on UI, use the storybook tools to read the component library before
 | `design-system.md` | Before building or styling anything. Which component to use, how to bind tokens, what never to do. |
 | `design-brief.md` | Before building a state I haven't specified. Constraints, mandate, open questions. |
 | `sprint-context.md` | Before proposing a flow or a screen. Decisions made, and what we are not building. |
+| `component-gaps.md` | Before building a new screen. A running list of things built inline during a screen build because Storybook had nothing — if what you need is already on it, build it properly as a component instead. |
 | `reference/Voice_UX.md` | Before designing any recall state. Six principles, and the "States to design" checklist to work against when building screens. |
 | `reference/` | When matching a layout. Screenshots of the existing app and the recall flow, alongside `reference/Voice_UX.md`. |
 | `app/` | Building a screen. Read `AGENTS.md` first — this is not the Next.js you know. |

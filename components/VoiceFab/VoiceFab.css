@@ -1,0 +1,339 @@
+/* voiceFab — built from the Figma component set "voiceFab" (node 15703:17937).
+
+   Every colour, size, spacing and effect is a semantic token. The one asset is
+   the recording highlight, exported from Figma rather than redrawn. */
+
+.knw-fab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Figma: root auto-layout, gap Space/300, padding Space/400 all round. */
+  gap: var(--semantic-space-layout-m);
+  padding: var(--semantic-space-layout-l);
+}
+
+/* Figma stacks Idle's label above the button and the other states' below.
+   design-system.md's anatomy puts the label last in every state, so it is
+   below everywhere here — see the story docs. */
+.knw-fab__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-fab-ring);
+  height: var(--semantic-size-fab-ring);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The halo. Its size is tied to the button's by the token pair, never set
+   independently — Figma's DON'T says the two scale together. */
+.knw-fab__ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--semantic-size-fab-ring);
+  height: var(--semantic-size-fab-ring);
+  border-radius: var(--semantic-radius-pill);
+}
+
+.knw-fab__button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-fab-button);
+  height: var(--semantic-size-fab-button);
+  border-radius: var(--semantic-radius-pill);
+}
+
+.knw-fab__glyph {
+  display: block;
+  width: var(--semantic-size-fab-glyph);
+  height: var(--semantic-size-fab-glyph);
+}
+
+.knw-fab__label {
+  margin: 0;
+  text-align: center;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* ===== state ===== */
+
+/* --- Idle --- */
+
+.knw-fab--Idle .knw-fab__ring {
+  background: var(--semantic-mascot-ring-idle);
+}
+
+/* Figma moved this from interactive/primary (near-white) to accent/brand/bold,
+   so the resting button is now the same violet as the orb states. */
+.knw-fab--Idle .knw-fab__button {
+  background: var(--semantic-accent-brand-bold);
+}
+
+.knw-fab--Idle .knw-fab__glyph {
+  color: var(--semantic-interactive-label-primary);
+}
+
+/* --- Deny --- */
+
+/* From `state=Deny` in the set. Idle's structure recoloured: the same
+   mascot/primary ring, the button turned destructive, and the mic glyph
+   dropped to the error wash so it reads as struck through rather than live.
+
+   TOKEN NOTE: Figma binds the button to `feedback/destructive/surface/bold 2`,
+   a name the token file does not carry; `feedback/destructive/bold` is the
+   semantic equivalent and is what is bound here. */
+.knw-fab--Deny .knw-fab__ring {
+  background: var(--semantic-mascot-ring-idle);
+}
+
+.knw-fab--Deny .knw-fab__button {
+  background: var(--semantic-feedback-destructive-bold);
+}
+
+.knw-fab--Deny .knw-fab__glyph {
+  color: var(--semantic-feedback-error-surface-subtle);
+}
+
+/* --- Sent --- */
+
+/* Same surface as Idle; only the halo lifts and the glyph changes. */
+.knw-fab--Sent .knw-fab__ring {
+  background: var(--semantic-mascot-ring-sent);
+}
+
+.knw-fab--Sent .knw-fab__button {
+  background: var(--semantic-accent-brand-bold);
+}
+
+.knw-fab--Sent .knw-fab__icon {
+  display: flex;
+  color: var(--semantic-interactive-label-primary);
+}
+
+/* --- Disabled --- */
+
+/* No ring at all, so the stage shrinks to the button. */
+.knw-fab--Disabled .knw-fab__stage {
+  width: var(--semantic-size-fab-button);
+  height: var(--semantic-size-fab-button);
+  cursor: not-allowed;
+}
+
+.knw-fab--Disabled .knw-fab__button {
+  background: var(--semantic-interactive-disabled);
+}
+
+.knw-fab--Disabled .knw-fab__glyph {
+  color: var(--semantic-text-disabled);
+}
+
+.knw-fab--Disabled .knw-fab__label {
+  color: var(--semantic-text-tertiary);
+}
+
+/* --- Recording --- */
+
+/* Figma draws Recording as the orb, larger than the resting button, with a
+   white glow behind it. */
+.knw-fab--Recording .knw-fab__stage {
+  width: var(--semantic-size-fab-orb);
+  height: var(--semantic-size-fab-orb);
+}
+
+.knw-fab--Recording .knw-fab__sheen {
+  background-image: url('/images/voicefab-recording-orb.png');
+}
+
+.knw-fab--Recording .knw-fab__button {
+  width: var(--semantic-size-fab-orb);
+  height: var(--semantic-size-fab-orb);
+  overflow: hidden;
+  background: var(--semantic-mascot-primary);
+  box-shadow: 0 0 var(--semantic-effect-glow) var(--semantic-mascot-glow);
+}
+
+/* The highlight, exported from Figma. It is a greyscale image on black, meant
+   for screen blending — black drops out and only the highlight shows. */
+.knw-fab__sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--semantic-radius-pill);
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* --- Thinking --- */
+
+/* Figma's Mask Group paints nothing — its gradient ellipse is the mask, not a
+   fill — so Thinking is the violet orb with a slight defocus. */
+.knw-fab--Thinking .knw-fab__stage {
+  width: var(--semantic-size-fab-thinking);
+  height: var(--semantic-size-fab-thinking);
+  cursor: default;
+}
+
+.knw-fab--Thinking .knw-fab__button {
+  width: var(--semantic-size-fab-thinking);
+  height: var(--semantic-size-fab-thinking);
+  overflow: hidden;
+  background: var(--semantic-mascot-primary);
+  filter: blur(var(--semantic-effect-blur-soft));
+}
+
+/* Thinking gained its own overlay in the rebuild — a much fainter sheen than
+   Recording's, exported from Figma and layered the same way. */
+.knw-fab--Thinking .knw-fab__sheen {
+  background-image: url('/images/voicefab-thinking-orb.png');
+}
+
+.knw-fab--Thinking .knw-fab__label {
+  color: var(--semantic-text-tertiary);
+}
+
+.knw-fab__stage:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xs);
+  border-radius: var(--semantic-radius-pill);
+}
+
+/* The discard control. Not in Figma's voiceFab set — its description calls for
+   a trash discard icon but carries no axis for one. The `answer sent` screen
+   is where the file actually draws it, so that node is what it follows. */
+
+/* The orb row. The trash sits to its left; the orb keeps the centre line by
+   absolutely positioning the trash rather than letting it push the orb right. */
+.knw-fab__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* `answer sent` (node 15793:19582) draws it as a 40×40 pill on
+   interactive/secondary at Radius/Full, its right edge 16px clear of the orb's
+   bounding box, vertically centred on the orb. */
+.knw-fab__discard {
+  position: absolute;
+  right: calc(100% + var(--semantic-space-layout-l));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-control-m);
+  height: var(--semantic-size-control-m);
+  padding: 0;
+  border: none;
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-interactive-secondary);
+  /* Figma binds the glyph to mascot/eyes, which resolves to pure white. That is
+     the mascot's colour role, not an icon's — text/primary is the same white at
+     the right name. Logged in design-system.md. */
+  color: var(--semantic-text-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-fab__discard:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* ===== motion: the orb breathing while it listens ===== */
+
+/* VOICE_UX PRINCIPLE 1: "if the student can't tell whether the app is
+   recording, they freeze." Recording and Idle differ in size and colour, but a
+   still orb on a screen whose waveform is also static reads as a screenshot —
+   the student cannot tell listening from hung, which is the exact failure the
+   principle names.
+
+   SO THE MOTION IS STATUS, NOT DECORATION. It says one thing: I am still
+   hearing you. That rules out a bounce or a spring — those read as a reaction
+   to something, and nothing has happened yet. It is a slow symmetric breath, so
+   no frame of the cycle looks like a beginning or an end, and `breath` is
+   1600ms on purpose: a fast pulse reads as urgency or as a timer running out,
+   and the student is meant to keep talking.
+
+   IT BREATHES THE SHEEN, NOT THE BUTTON, and that is the important part. The
+   button is the tap target — the primary control on the screen — and a target
+   that moves under a thumb is harder to hit, which is a real cost to pay for a
+   status cue. Animating the layer over it says the same thing and leaves the
+   control still. It also stops the orb from hanging anything that waits for the
+   element to settle before clicking, which is how this was caught: the
+   Storybook runner timed out on every Recording story. */
+@keyframes knw-fab-breathe {
+  from {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.knw-fab--Recording .knw-fab__sheen {
+  animation: knw-fab-breathe var(--semantic-motion-duration-breath)
+    var(--semantic-motion-easing-continuous) infinite alternate;
+}
+
+/* The glow swells with it. On the button, but as a box-shadow only — nothing
+   that changes the element's box, so the target stays exactly where it was. */
+@keyframes knw-fab-glow {
+  from {
+    box-shadow: 0 0 var(--semantic-effect-glow) var(--semantic-mascot-glow);
+  }
+  to {
+    box-shadow: 0 0 calc(var(--semantic-effect-glow) * 2) var(--semantic-mascot-glow);
+  }
+}
+
+.knw-fab--Recording .knw-fab__button {
+  animation: knw-fab-glow var(--semantic-motion-duration-breath)
+    var(--semantic-motion-easing-continuous) infinite alternate;
+}
+
+/* The orb changing size between states is the student's own tap answering
+   them, so it takes the standard curve at `quick`. Not the breath — that is
+   the loop, and the two are different things. */
+.knw-fab__button,
+.knw-fab__stage {
+  transition:
+    width var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard),
+    height var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard);
+}
+
+/* NOT OPTIONAL, and not a nicety. A looping scale is exactly what vestibular
+   sensitivity reacts to, and this one runs for as long as the student talks.
+   Reduced motion holds the orb at the lit end of the cycle — the state stays
+   legible, it just stops moving — because removing the cue entirely would put
+   the student back in front of the screen principle 1 warns about. */
+@media (prefers-reduced-motion: reduce) {
+  .knw-fab--Recording .knw-fab__sheen {
+    animation: none;
+    transform: scale(1.06);
+  }
+
+  .knw-fab--Recording .knw-fab__button {
+    animation: none;
+    box-shadow: 0 0 calc(var(--semantic-effect-glow) * 2) var(--semantic-mascot-glow);
+  }
+
+  .knw-fab__button,
+  .knw-fab__stage {
+    transition: none;
+  }
+}

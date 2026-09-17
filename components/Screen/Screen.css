@@ -1,0 +1,98 @@
+/* scaffold — built from the Figma component set "scaffold" (node 3085:9242),
+   size=iPhone 13.
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives.
+
+   Two things Figma draws are left to the operating system: the status bar and
+   the device's rounded corners. Both are device chrome, not design decisions,
+   so the scaffold reserves space for the first with a safe-area inset and
+   leaves the second alone. */
+
+.knw-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* THE HEIGHT IS FIXED, NOT A FLOOR.
+     `min-height` alone let the column grow past the viewport on the first
+     screen with enough content — the summary came out 887 tall against 844 —
+     and `overflow: hidden` then clipped the last 43px, taking half of the
+     bottom slot's second button with no way to scroll to it. A phone screen
+     does not get taller; the MIDDLE scrolls and the slots stay put, which is
+     what `.knw-screen__middle`'s `flex: 1 1 auto; min-height: 0` was always
+     written for. It could only do that job against a definite height. */
+  height: 100vh;
+  box-sizing: border-box;
+  background: var(--semantic-background-page);
+  overflow: hidden;
+}
+
+/*
+ * Reserves the status bar. On a device with viewport-fit=cover this is the
+ * real inset; in a browser it resolves to zero, which is correct -- there is no
+ * status bar to clear. design-system.md asks for exactly this.
+ */
+.knw-screen__statusbar {
+  flex: none;
+  height: env(safe-area-inset-top);
+}
+
+/* Figma SLOT: navigation chrome. Sits above the content, never scrolls. */
+.knw-screen__top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  flex: none;
+}
+
+/* Figma SLOT: the body. Takes the remaining height and scrolls. */
+.knw-screen__middle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+/*
+ * Figma SLOT: the primary action. Pinned to the bottom of the safe area, because
+ * design-system.md puts CTAs low "so thumbs reach them without shifting grip".
+ */
+.knw-screen__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  flex: none;
+  box-sizing: border-box;
+  padding: var(--semantic-space-layout-l);
+  padding-bottom: max(var(--semantic-space-layout-l), env(safe-area-inset-bottom));
+}
+
+/* Dims the screen behind a raised bottom sheet. */
+.knw-screen__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--semantic-background-scrim);
+}
+
+/* Figma SLOT: a bottom sheet, which sits above the scrim and against the edge.
+
+   ABSOLUTE, not in flow. A raised sheet overlays the screen — that is what the
+   scrim behind it is for. In flow it instead adds its own height to the column,
+   so a 468-tall sheet on an 844 screen started at y460 and ran 68px past the
+   bottom, clipping its own last action. */
+.knw-screen__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  flex: none;
+}

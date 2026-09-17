@@ -1,0 +1,54 @@
+/* mascotSlot — built from the Figma component set "mascotSlot" (node 9003:8873).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives.
+
+   This is the container only, which is what the Figma description calls it. The
+   illustration is passed in, the same way iconSlot takes an icon. */
+
+.knw-mascot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  /* Constant at every size in Figma: the pose is inset from the slot edge. */
+  padding: var(--semantic-space-layout-m);
+}
+
+/* Whatever is slotted in fills the padded box. */
+.knw-mascot > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== size ===== */
+
+.knw-mascot--XL {
+  width: var(--semantic-size-illustration-xl);
+  height: var(--semantic-size-illustration-xl);
+}
+
+.knw-mascot--2XL {
+  width: var(--semantic-size-illustration-2-xl);
+  height: var(--semantic-size-illustration-2-xl);
+}
+
+.knw-mascot--3XL {
+  width: var(--semantic-size-illustration-3-xl);
+  height: var(--semantic-size-illustration-3-xl);
+}
+
+.knw-mascot--4XL {
+  width: var(--semantic-size-illustration-4-xl);
+  height: var(--semantic-size-illustration-4-xl);
+}
+
+/* Stand-in shown when nothing is slotted, so the sizes can be compared without
+   shipping the 269 KB standby artwork. Uses the mascot's own body token. */
+.knw-mascot__placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-mascot-primary);
+}

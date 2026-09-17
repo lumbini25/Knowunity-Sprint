@@ -1,0 +1,58 @@
+/* waveformCard — built from the Figma component set "waveformCard"
+   (node 15667:13354).
+
+   Every value is a semantic token. Bar heights are the exception and are not
+   design values: the component's own description calls them "animation data —
+   overridden by the motion layer in production", so they arrive as a prop and
+   are applied as a percentage of the row. */
+
+.knw-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  /* Figma: Space/400 block, Space/800 inline. */
+  padding-block: var(--semantic-space-layout-l);
+  padding-inline: var(--semantic-space-layout-2-xl);
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+}
+
+.knw-waveform__bars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Figma: Space/200 between bars. */
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+  /* The row Figma draws the bars in. */
+  height: var(--semantic-size-fab-glyph);
+}
+
+.knw-waveform__bar {
+  flex: none;
+  /* Figma draws 3.5; size/strip is 3, the nearest token. See the story docs. */
+  width: var(--semantic-size-strip);
+  border-radius: var(--semantic-radius-pill);
+  /* --knw-bar is the amplitude, passed in by the component. */
+  height: var(--knw-bar);
+}
+
+/* ===== state ===== */
+
+/* Figma's Idle bars carry no fill binding at all; the component's own
+   description specifies background/contrast. The description is followed. */
+.knw-waveform--Idle .knw-waveform__bar {
+  background: var(--semantic-background-contrast);
+}
+
+.knw-waveform--Talking .knw-waveform__bar {
+  background: var(--semantic-mascot-primary);
+}
+
+/* The last four bars are the fading amplitude tail. */
+.knw-waveform--Talking .knw-waveform__bar[data-tail='true'] {
+  background: var(--semantic-interactive-secondary);
+}

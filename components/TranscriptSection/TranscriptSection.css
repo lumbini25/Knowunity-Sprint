@@ -1,0 +1,41 @@
+/* transcriptSection — built from the Figma component "transcriptSection"
+   (node 15676:16088). Every value is a semantic token. */
+
+.knw-transcript {
+  display: flex;
+  flex-direction: column;
+  /* Figma: gap Space/200. */
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+.knw-transcript__label {
+  margin: 0;
+  /* Figma binds text/disabled, which reads 3.79:1 and fails AA. text/secondary
+     is the same fix applied to typeAnswerComponent. See the story docs. */
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+.knw-transcript__box {
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-block: var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-m);
+  border-radius: var(--semantic-radius-tab);
+  background: var(--semantic-background-elevated);
+}
+
+.knw-transcript__text {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}

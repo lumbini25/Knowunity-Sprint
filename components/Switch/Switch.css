@@ -1,0 +1,81 @@
+/* switch — built from the Figma component set "switch" (node 4154:16180).
+
+   Every colour, size, spacing and radius is a semantic token. The track width
+   is the one composed value: Figma draws 52, which is one control height plus
+   one knob travel, so it is written as that sum rather than as a number. */
+
+.knw-switch {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  height: var(--semantic-size-control-s);
+  /* 52 = 32 + 20. The system has no token at 52; see the story docs. */
+  width: calc(var(--semantic-size-control-s) + var(--semantic-size-control-xxs));
+
+  border-radius: var(--semantic-radius-pill);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-switch__knob {
+  position: absolute;
+  top: var(--semantic-space-layout-xs);
+  left: var(--semantic-space-layout-xs);
+
+  width: var(--semantic-size-control-xs);
+  height: var(--semantic-size-control-xs);
+  border-radius: var(--semantic-radius-pill);
+}
+
+/* Anchoring the on position to the right inset means the travel distance never
+   has to be written down — it falls out of the track width. */
+.knw-switch--True .knw-switch__knob {
+  left: auto;
+  right: var(--semantic-space-layout-xs);
+}
+
+/* ===== state × isActive ===== */
+
+.knw-switch--Default.knw-switch--False {
+  background: var(--semantic-background-elevated);
+}
+
+.knw-switch--Default.knw-switch--False .knw-switch__knob {
+  background: var(--semantic-interactive-label-secondary);
+}
+
+.knw-switch--Default.knw-switch--True {
+  background: var(--semantic-interactive-primary);
+}
+
+.knw-switch--Default.knw-switch--True .knw-switch__knob {
+  background: var(--semantic-interactive-label-primary);
+}
+
+/* Off and disabled keeps the resting track — only the knob dims. */
+.knw-switch--Disabled.knw-switch--False {
+  background: var(--semantic-background-elevated);
+}
+
+/* On and disabled dims the track too, so the switch does not read as live. */
+.knw-switch--Disabled.knw-switch--True {
+  background: var(--semantic-interactive-disabled);
+}
+
+.knw-switch--Disabled .knw-switch__knob {
+  background: var(--semantic-interactive-disabled);
+}
+
+.knw-switch--Disabled {
+  cursor: not-allowed;
+}
+
+.knw-switch:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}

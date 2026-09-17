@@ -1,0 +1,156 @@
+/* bottomSheet — built from the Figma component set "bottomSheet" (node 3675:30952).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives. */
+
+.knw-sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--semantic-background-surface);
+  /* Rises from the bottom edge, so only the top corners round. */
+  border-start-start-radius: var(--semantic-radius-sheet);
+  border-start-end-radius: var(--semantic-radius-sheet);
+  /* The sheet hugs its content, the way the Figma component does, up to the
+     cap set by the height variant. The body scrolls past that. */
+  max-height: var(--semantic-size-sheet-s);
+  overflow: hidden;
+}
+
+.knw-sheet--S {
+  max-height: var(--semantic-size-sheet-s);
+}
+
+.knw-sheet--M {
+  max-height: var(--semantic-size-sheet-m);
+}
+
+.knw-sheet--L {
+  max-height: var(--semantic-size-sheet-l);
+}
+
+/* ===== app bar ===== */
+
+.knw-sheet__appbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: none;
+}
+
+.knw-sheet__handle {
+  width: var(--semantic-size-handle-width);
+  height: var(--semantic-size-handle-height);
+  /* Pill on a bar this short is exactly the 2px the design carries. */
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-floating);
+  flex: none;
+}
+
+.knw-sheet__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-xs);
+}
+
+/* The app bar actions, as Figma builds them: a 24px icon in a circular 40px
+   button, centred inside a 48px tap target. */
+.knw-sheet__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-tap-target-min);
+  height: var(--semantic-size-tap-target-min);
+  flex: none;
+}
+
+.knw-sheet__action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-control-m);
+  height: var(--semantic-size-control-m);
+  padding: 0;
+  border: none;
+  /* Figma carries no fill on this button -- the icon sits on the sheet. */
+  background: none;
+  border-radius: var(--semantic-radius-pill);
+  /* The icon paths inherit this; Figma binds them to text/primary. */
+  color: var(--semantic-text-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-sheet__action-button:active {
+  background: var(--semantic-interactive-pressed);
+}
+
+.knw-sheet__action-icon {
+  display: inline-flex;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+}
+
+.knw-sheet__titles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.knw-sheet__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-m-bold-font-size);
+  line-height: var(--semantic-type-scale-body-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-bold-letter-spacing);
+}
+
+.knw-sheet__descriptor {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* ===== slots ===== */
+
+/* The body. Takes the leftover height and scrolls once the sheet hits its cap. */
+.knw-sheet__middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xl);
+  box-sizing: border-box;
+  padding-inline: var(--semantic-space-layout-l);
+  padding-bottom: var(--semantic-space-layout-s);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Actions, pinned below the body and never scrolled away. */
+.knw-sheet__bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xl);
+  box-sizing: border-box;
+  padding: var(--semantic-space-layout-l);
+  flex: none;
+  /* The sheet sits against the home indicator. */
+  padding-bottom: max(var(--semantic-space-layout-l), env(safe-area-inset-bottom));
+}

@@ -1,0 +1,33 @@
+/* typeAnswerComponent — built from the Figma component "typeAnswerComponent"
+   (node 15676:16031).
+
+   Every value is a semantic token. */
+
+.knw-typeanswer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Figma: gap Space/200. */
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Figma binds text/disabled, which reads 3.79:1 on the page and fails AA.
+     text/secondary is 8.36:1 — see the story docs. */
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+.knw-typeanswer:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xs);
+  border-radius: var(--semantic-radius-tab);
+}

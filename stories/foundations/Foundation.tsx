@@ -49,10 +49,24 @@ export function Layer({
   );
 }
 
-export function Group({ name, children }: { name: string; children: ReactNode }) {
+/**
+ * A group of tokens. Sits under a Layer by default, so its heading is an h3.
+ * Pages that show a single layer and so have no Layer heading pass level 2,
+ * which keeps the heading order unbroken.
+ */
+export function Group({
+  name,
+  level = 3,
+  children,
+}: {
+  name: string;
+  level?: 2 | 3;
+  children: ReactNode;
+}) {
+  const Heading = level === 2 ? 'h2' : 'h3';
   return (
     <section className="fnd-group">
-      <h3 className="fnd-group-name">{name}</h3>
+      <Heading className="fnd-group-name">{name}</Heading>
       <div className="fnd-rows">{children}</div>
     </section>
   );

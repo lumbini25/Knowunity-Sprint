@@ -1,0 +1,51 @@
+/* chipFeedback — built from the Figma component set "chipFeedback"
+   (node 15676:15999).
+
+   Every value is a semantic token. The three verdicts share one pill and
+   differ only in fill, stroke and label colour. */
+
+.knw-chipfb {
+  display: inline-flex;
+  align-items: center;
+  /* Figma: gap Space/200, padding Space/100 block / Space/300 inline. */
+  gap: var(--semantic-space-layout-s);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-xs);
+  padding-inline: var(--semantic-space-layout-m);
+  border-radius: var(--semantic-radius-pill);
+  /* The DON'T: the pill hugs its label, it is never resized. */
+  width: fit-content;
+
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+  white-space: nowrap;
+}
+
+/* ===== verdict ===== */
+
+.knw-chipfb--Correct {
+  background: var(--semantic-feedback-success-bold);
+  color: var(--semantic-feedback-success-label-bold);
+}
+
+/* Figma binds Wrong's label to feedback/success/surface/label/bold — a green
+   token on a red pill. It is a near-black and reads correctly, so the file's
+   binding is kept. See the story docs. */
+.knw-chipfb--Wrong {
+  background: var(--semantic-feedback-error-bold);
+  color: var(--semantic-feedback-success-label-bold);
+}
+
+/* Partial is the outlined one: no fill, a 2px stroke, label in the same
+   violet. Figma aligns that stroke inside, so it is drawn as an inset ring —
+   a border would push the pill 4px taller than its siblings. */
+.knw-chipfb--Partial {
+  background: none;
+  box-shadow: inset 0 0 0 var(--semantic-stroke-strong) var(--semantic-feedback-partial-bold);
+  /* The ring keeps partial/bold — a border carries no text-contrast rule. The
+     label moves to the pair's text token: 4.44:1 becomes 7.16:1. */
+  color: var(--semantic-feedback-partial-label-subtle);
+}

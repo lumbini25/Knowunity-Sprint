@@ -1,0 +1,71 @@
+/* The prototype index. Scaffolding, not a designed screen — but it still binds
+   semantic tokens only, because a file that reaches for a literal "just here"
+   is how literals get everywhere. */
+
+.knw-index {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 390px;
+  margin-inline: auto;
+  padding-block: var(--semantic-space-layout-2-xl);
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+.knw-index__title {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-l-font-family);
+  font-weight: var(--semantic-type-scale-headline-l-font-weight);
+  font-size: var(--semantic-type-scale-headline-l-font-size);
+  line-height: var(--semantic-type-scale-headline-l-line-height);
+  color: var(--semantic-text-primary);
+}
+
+.knw-index__lede {
+  margin: 0;
+  padding-block: var(--semantic-space-layout-m) var(--semantic-space-layout-xl);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  color: var(--semantic-text-secondary);
+}
+
+.knw-index__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.knw-index__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xxs);
+  padding: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+  text-decoration: none;
+}
+
+.knw-index__link:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+.knw-index__state {
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+  color: var(--semantic-text-secondary);
+}
+
+.knw-index__name {
+  font-family: var(--semantic-type-scale-body-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-m-bold-font-size);
+  line-height: var(--semantic-type-scale-body-m-bold-line-height);
+  color: var(--semantic-text-primary);
+}

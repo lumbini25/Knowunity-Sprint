@@ -1,0 +1,114 @@
+/* summaryStatTile — Figma component "Summary Stat tile" (node 15857:10047).
+
+   Every value is a semantic token. The one departure is the figure's type step,
+   noted where it is bound. */
+
+/* Figma root: 357x64, horizontal, gap Space/300, padding Space/200 inline.
+   Three equal columns rather than three 106s, so the row still divides evenly
+   at any width — it is one split, not three fixed boxes. */
+.knw-statrow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding-inline: var(--semantic-space-layout-s);
+}
+
+/* A tinted card wrapping a dark panel. The tint is the tile's meaning and the
+   panel is where the figure lives, which is what keeps a bright accent behind
+   a large number legible. */
+.knw-statrow__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: var(--semantic-radius-card);
+  overflow: hidden;
+}
+
+/* Figma: Space/200 inline, Radius/100, 15/20 SemiBold — body/S-bold exactly.
+   The file types two of the three labels in capitals and one in sentence case;
+   the capitals are a type treatment, so they are applied here and the source
+   stays sentence case, per CLAUDE.md. */
+.knw-statrow__label {
+  padding-inline: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-strip);
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+/* The dark panel the figure sits on: Figma pads Space/300 and fills
+   background/page, so the accent reads as a band around it rather than a
+   colour behind text.
+
+   TOKEN NOTE: Figma sets the figure at 24/20 Heavy. Neither half is in the
+   system — 24 sits between 21 and 28, and the only semantic step carrying
+   Heavy is display/L at 76, so 24/Heavy has no step to take. headline/S
+   (21, Bold) is the nearest bound one. */
+.knw-statrow__value {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  /* Space/200, not Space/300. Figma pads the panel Space/300 around a 24/20
+     figure, which lands the tile at its drawn 64. The figure here is headline/S
+     at 21/28 — a taller line box, since 24/20 is tighter than any step in the
+     scale — so the same padding came out 72. Holding the tile at 64 keeps the
+     row the height the file draws, which is what the screen is laid out
+     against. */
+  padding: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-page);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+/* Each tile takes ONE accent pair — the bold surface, the label made for that
+   surface, and the same bold again for the figure on the dark panel. Mixing a
+   label from one family onto another's surface is the swap "Never do this"
+   exists to stop. */
+.knw-statrow__tile[data-tone='hinted'] {
+  background: var(--semantic-accent-blue-bold);
+}
+
+.knw-statrow__tile[data-tone='hinted'] .knw-statrow__label {
+  color: var(--semantic-accent-blue-label-bold);
+}
+
+.knw-statrow__tile[data-tone='hinted'] .knw-statrow__value {
+  color: var(--semantic-accent-blue-bold);
+}
+
+.knw-statrow__tile[data-tone='perfect'] {
+  background: var(--semantic-accent-green-bold);
+}
+
+.knw-statrow__tile[data-tone='perfect'] .knw-statrow__label {
+  color: var(--semantic-accent-green-label-bold);
+}
+
+.knw-statrow__tile[data-tone='perfect'] .knw-statrow__value {
+  color: var(--semantic-accent-green-bold);
+}
+
+.knw-statrow__tile[data-tone='missed'] {
+  background: var(--semantic-accent-brand-bold);
+}
+
+.knw-statrow__tile[data-tone='missed'] .knw-statrow__label {
+  color: var(--semantic-accent-brand-label-bold);
+}
+
+.knw-statrow__tile[data-tone='missed'] .knw-statrow__value {
+  color: var(--semantic-accent-brand-bold);
+}

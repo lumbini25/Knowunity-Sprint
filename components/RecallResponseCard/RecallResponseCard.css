@@ -1,0 +1,550 @@
+/* recallResponseCard — built from the Figma component set "recallResponseCard"
+   (node 15712:18958) on the Knowunity Components page.
+
+   Every colour, size, spacing, radius and type value is a semantic token.
+   Bindings were read off the nodes rather than from the prose description,
+   which names several tokens that do not exist — see the story docs. */
+
+/* text-align is set explicitly rather than inherited: the recall screens centre
+   their column, and the card's label, transcript and bullets are all left-set
+   in Figma. Only the next-action link below it is right-aligned. */
+.knw-rrc {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  /* Figma root: gap Space/300, padding Space/300 block / Space/400 inline. */
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-m);
+  /* The recall gutter, not the scaffold's 16: `recall-partial` and
+     `recall-correct` both draw this card's surface at 350, matching every
+     other recall surface. Figma's root pads 16 and yields 358. */
+  padding-inline: var(--semantic-space-gutter);
+}
+
+/* Correct hangs an accent strip off the card, so the wrapper anchors it. */
+.knw-rrc__wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.knw-rrc__card {
+  display: flex;
+  flex-direction: column;
+  /* Figma: Space/800 between the body and anything below it inside the card. */
+  gap: var(--semantic-space-layout-2-xl);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-l);
+  padding-inline: var(--semantic-space-layout-m);
+  /* Radius 24, measured off the app: recall-processing, recall-partial and
+     recall-correct all show a 23px corner inset. Figma draws this at
+     Radius/400 (16) and the question bubble at Radius/200 (8) — the app is
+     consistent where the file is not. */
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-background-surface);
+}
+
+/* A hint tightens the card. Figma's Card gap is Space/800 on the two frames
+   that carry no hint and Space/200 on the two that do — the hint belongs to
+   the verdict above it, and 32 would read as a separate block. */
+.knw-rrc__card--with-hint {
+  gap: var(--semantic-space-layout-s);
+}
+
+/* NO card border. The rebuilt set draws none on any of the five variants —
+   Default used to carry one, and Default no longer exists. */
+
+/* ===== the hint, on rungs 1 and 2 ===== */
+
+.knw-rrc__hint {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  text-align: left;
+}
+
+/* TOKEN NOTES, two of them.
+
+   SIZE. Figma sets this label at 10/12. No step is 10 — the scale runs 9, 12,
+   15, 16, 18 — so caption/S (9) is the nearest bound one.
+
+   COLOUR. Figma binds `text/link` (violet/500, #9178E6). On the card's
+   `background/surface` that is 4.43:1 — it fails AA by seven hundredths, and
+   at 9px nothing qualifies as large text, so the 3:1 allowance does not apply.
+   `feedback/partial/label/subtle` (#A78BFA) is the same violet one step
+   lighter at 5.67:1, and it is the better name anyway: a hint is feedback on a
+   partial answer, not a link. Same move as the misheard chip, which took the
+   system's own warning pairing rather than the failing one. */
+.knw-rrc__hint-label {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
+  margin: 0;
+  color: var(--semantic-feedback-partial-label-subtle);
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+.knw-rrc__hint-body {
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-rrc__hint-body strong {
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+}
+
+.knw-rrc__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+}
+
+/* Correct opens the body up and pads the card evenly on all four sides. */
+.knw-rrc--Correct .knw-rrc__body {
+  gap: var(--semantic-space-layout-l);
+}
+
+.knw-rrc--Correct .knw-rrc__card {
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+/* ===== badge ===== */
+
+.knw-rrc__badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--semantic-space-layout-s);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-xs);
+  padding-inline: var(--semantic-space-layout-m);
+  border: var(--semantic-stroke-default) solid transparent;
+  border-radius: var(--semantic-radius-pill);
+}
+
+.knw-rrc__badge-label {
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+  white-space: nowrap;
+}
+
+/* Wrong. */
+.knw-rrc--Wrong .knw-rrc__badge {
+  background: var(--semantic-feedback-error-bold);
+}
+
+/* Misheard. An amber pill rather than a red one, because a transcript the app
+   got wrong is not the student being wrong — the colour carries that
+   distinction before the label does.
+
+   ONE TOKEN DIFFERS FROM FIGMA, DELIBERATELY. The file fills this with
+   `Pro Background` (#E88C30, the PRO chip's fill borrowed across) and labels it
+   `feedback/warning/surface/label/subtle` — a light gold on orange, which is
+   1.77:1 and fails AA badly. `label/subtle` is the light half of the warning
+   pair, meant for the DARK `warning/subtle` surface, not a bright fill. The
+   amber direction is Figma's decision and is kept; the pairing is the system's
+   own, and clears at 10.73:1. */
+.knw-rrc--Misheard .knw-rrc__badge {
+  background: var(--semantic-feedback-warning-bold);
+}
+
+.knw-rrc--Misheard .knw-rrc__badge-label,
+.knw-rrc--Misheard .knw-iconslot {
+  color: var(--semantic-feedback-warning-label-bold);
+}
+
+/* Partial. Figma redrew this as an outlined pill: no fill, a 2px stroke, and
+   the label in the same violet. */
+.knw-rrc--Partial .knw-rrc__badge {
+  border-width: var(--semantic-stroke-strong);
+  border-color: var(--semantic-feedback-partial-bold);
+  background: none;
+}
+
+/* The ring keeps partial/bold; the label and glyph move to the pair's text
+   token, taking 3.51:1 to 5.67:1 on the card surface. */
+.knw-rrc--Partial .knw-rrc__badge-label,
+.knw-rrc--Partial .knw-iconslot {
+  color: var(--semantic-feedback-partial-label-subtle);
+}
+
+/* Reveal: a neutral outlined pill, tighter than the others. */
+.knw-rrc--Reveal .knw-rrc__badge {
+  padding-inline: var(--semantic-space-layout-s);
+  border-color: var(--semantic-border-default);
+  background: var(--semantic-background-surface);
+}
+
+.knw-rrc--Reveal .knw-rrc__badge-label {
+  color: var(--semantic-text-secondary);
+}
+
+/* Correct. */
+.knw-rrc--Correct .knw-rrc__badge {
+  background: var(--semantic-feedback-success-bold);
+}
+
+/* Figma sets the badge label at 12/16 everywhere except Reveal, which stays
+   at the 9/12 base above. Misheard moved up from 9/12 with the amber redesign. */
+.knw-rrc--Wrong .knw-rrc__badge-label,
+.knw-rrc--Misheard .knw-rrc__badge-label,
+.knw-rrc--Partial .knw-rrc__badge-label,
+.knw-rrc--Correct .knw-rrc__badge-label {
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* Figma binds both the incorrect and the correct badge label to
+   feedback/success/surface/label/bold. On the red chip that is almost certainly
+   a slip, but the value is what the file draws — see the story docs. */
+.knw-rrc--Wrong .knw-rrc__badge-label,
+.knw-rrc--Wrong .knw-iconslot,
+.knw-rrc--Correct .knw-rrc__badge-label,
+.knw-rrc--Correct .knw-iconslot {
+  color: var(--semantic-feedback-success-label-bold);
+}
+
+/* ===== score header row (Partial and Correct) ===== */
+
+.knw-rrc__header {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-l);
+}
+
+.knw-rrc__score {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-score-badge);
+  height: var(--semantic-size-score-badge);
+}
+
+.knw-rrc__score-ring {
+  position: absolute;
+  inset: 0;
+  border: var(--semantic-stroke-strong) solid var(--semantic-feedback-success-bold);
+  border-radius: var(--semantic-radius-pill);
+}
+
+/* Partial's ring and figure take the violet pair, matching its own badge. */
+.knw-rrc--Partial .knw-rrc__score-ring {
+  border-color: var(--semantic-feedback-partial-bold);
+}
+
+.knw-rrc--Partial .knw-rrc__score-text {
+  color: var(--semantic-feedback-partial-label-subtle);
+}
+
+.knw-rrc__score-text {
+  margin: 0;
+  color: var(--semantic-feedback-success-label-subtle);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* ===== transcript =====
+
+   The card no longer styles a transcript box of its own: the rebuilt set
+   instances `transcriptSection`, which brings its own label, surface and
+   radius. Only the model answer below is still the card's to style. */
+
+.knw-rrc__model-text {
+  margin: 0;
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-rrc__model-text {
+  color: var(--semantic-text-primary);
+}
+
+/* ===== action buttons ===== */
+
+.knw-rrc__actions {
+  display: flex;
+  gap: var(--semantic-space-layout-m);
+  padding-block: var(--semantic-space-layout-s);
+}
+
+.knw-rrc__action {
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-m);
+  border: var(--semantic-stroke-default) solid;
+  border-radius: var(--semantic-radius-pill);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+.knw-rrc__action--primary {
+  border-color: var(--semantic-feedback-error-bold);
+  background: var(--semantic-feedback-error-surface-subtle);
+  /* error/label/subtle is the text half of this pair: 4.41:1 becomes 5.28:1. */
+  color: var(--semantic-feedback-error-label-subtle);
+}
+
+.knw-rrc__action--secondary {
+  border-color: var(--semantic-border-default);
+  background: var(--semantic-background-surface);
+  color: var(--semantic-text-secondary);
+}
+
+.knw-rrc__action:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* ===== missing section ===== */
+
+.knw-rrc__missing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+}
+
+.knw-rrc__divider {
+  height: var(--semantic-stroke-default);
+  background: var(--semantic-border-default);
+}
+
+.knw-rrc__missing-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+}
+
+.knw-rrc__missing-label {
+  margin: 0;
+  color: var(--semantic-feedback-error-bold);
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+.knw-rrc__missing-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.knw-rrc__missing-item {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+}
+
+.knw-rrc__bullet {
+  flex: none;
+  width: var(--semantic-size-bullet);
+  height: var(--semantic-size-bullet);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-feedback-error-bold);
+}
+
+.knw-rrc__missing-text {
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* ===== below the card ===== */
+
+.knw-rrc__next {
+  margin: 0;
+  text-align: right;
+  color: var(--semantic-text-tertiary);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* The same link, once it is a real control. Everything visual is inherited
+   from the rule above — this only strips the button chrome, so the two forms
+   are indistinguishable on screen and differ only in what a screen reader and
+   a keyboard get. */
+.knw-rrc__next--button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-rrc__next--button:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* Figma right-aligns this, matching the next-action link it replaces — the
+   set description still says centre. */
+.knw-rrc__helper {
+  margin: 0;
+  text-align: right;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* Correct only. Figma insets it 2px top and bottom from the card. */
+.knw-rrc__strip {
+  position: absolute;
+  left: 0;
+  top: var(--semantic-space-layout-xxs);
+  bottom: var(--semantic-space-layout-xxs);
+  width: var(--semantic-size-strip);
+  border-radius: var(--semantic-radius-strip);
+  background: var(--semantic-feedback-success-bold);
+}
+
+/* ===== the Partial breakdown: what landed, and what did not ===== */
+
+/* `partial` (15620:9496) draws it under the transcript as two labelled lists,
+   Frame 2147207629: VERTICAL, gap Space/400 between the groups and Space/200
+   inside one.
+
+   IT IS DRAWN LARGER THAN WRONG'S LIST, and that is the file's call, not a
+   slip on one side: Wrong's "WHAT WAS MISSING" is 12 on text/secondary, this
+   is 15 on text/primary. The two lists mean different things — Wrong's is a
+   footnote to a verdict, Partial's is the part the student is meant to read
+   and act on before the next attempt. Logged in design-system.md, because a
+   designer may well want them to match. */
+.knw-rrc__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-l);
+}
+
+.knw-rrc__breakdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+}
+
+/* 9/SemiBold — caption/S-bold, the same step Wrong's label takes. */
+.knw-rrc__breakdown-label {
+  margin: 0;
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+.knw-rrc__breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.knw-rrc__breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+}
+
+.knw-rrc__breakdown-dot {
+  flex: none;
+  width: var(--semantic-size-bullet);
+  height: var(--semantic-size-bullet);
+  border-radius: var(--semantic-radius-pill);
+}
+
+/* 15 Regular on text/primary — body/S-regular. */
+.knw-rrc__breakdown-text {
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+/* TOKEN NOTE, and one deliberate departure.
+
+   Figma binds the two labels to `feedback/success/surface/bold` and
+   `feedback/partial/surface/bold`, names with no counterpart in tokens.json,
+   which resolve to #00C386 and the violet analogue — `feedback/{x}/bold`. Its
+   dots are unbound and render #4AE5B0, which is `feedback/success/label/subtle`
+   exactly. So the mapping is by value, not by guess.
+
+   BOTH LABELS TAKE THE `label/subtle` TIER ANYWAY, one step lighter than the
+   file. `feedback/partial/bold` (violet/400, #7B65E0) at 9px on
+   background/surface measures **3.51:1** — under AA, and caught by axe in the
+   story rather than by looking at it. `label/subtle` (violet/300, #A78BFA)
+   clears it, which is the same call design-system.md already records for the
+   in-card hint label. Green follows to the same tier rather than leaving one
+   label bold and the other not, and it lands on the colour the file already
+   uses for that group's dot. */
+.knw-rrc__breakdown-group[data-part='got'] .knw-rrc__breakdown-label {
+  color: var(--semantic-feedback-success-label-subtle);
+}
+
+.knw-rrc__breakdown-group[data-part='got'] .knw-rrc__breakdown-dot {
+  background: var(--semantic-feedback-success-label-subtle);
+}
+
+.knw-rrc__breakdown-group[data-part='missing'] .knw-rrc__breakdown-label {
+  color: var(--semantic-feedback-partial-label-subtle);
+}
+
+.knw-rrc__breakdown-group[data-part='missing'] .knw-rrc__breakdown-dot {
+  background: var(--semantic-feedback-partial-label-subtle);
+}
+
+/* The breakdown's own wrapper, so it is not confused with Wrong's list. Figma
+   separates it from the transcript with the same hairline. */
+.knw-rrc__breakdown-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+}

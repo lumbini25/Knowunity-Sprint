@@ -1,0 +1,55 @@
+/* iconSlot — built from the Figma component set "iconSlot" (node 9003:8809).
+
+   The scaffold is size and nothing else. It sets no colour: the icon inside
+   inherits `currentColor` from whatever component the slot is placed in, which
+   is how every icon in this project is already drawn. */
+
+.knw-iconslot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+/* The icon fills the box exactly. Figma draws the swap instance at FILL/FILL
+   inside a fixed square. */
+.knw-iconslot > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== size =====
+
+   The six steps are the Icon token scale, one to one. Figma names them by the
+   raw step number (100–400); the semantic layer names them XXS–XL. */
+
+.knw-iconslot--100 {
+  width: var(--semantic-size-icon-xxs);
+  height: var(--semantic-size-icon-xxs);
+}
+
+.knw-iconslot--150 {
+  width: var(--semantic-size-icon-xs);
+  height: var(--semantic-size-icon-xs);
+}
+
+.knw-iconslot--200 {
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+.knw-iconslot--250 {
+  width: var(--semantic-size-icon-m);
+  height: var(--semantic-size-icon-m);
+}
+
+.knw-iconslot--300 {
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+}
+
+.knw-iconslot--400 {
+  width: var(--semantic-size-icon-xl);
+  height: var(--semantic-size-icon-xl);
+}

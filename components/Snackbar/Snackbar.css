@@ -1,0 +1,111 @@
+/* snackbar — built from the Figma component set "snackbar" (node 9003:8995).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives. */
+
+.knw-snackbar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  /* Figma binds the block padding to a Padding/sm variable that no longer
+     exists; it paints 8px, the same as the inline padding beside it. */
+  padding: var(--semantic-space-layout-s);
+}
+
+/* The bar itself. Always the light surface, whatever the variant -- only the
+   icon and the action carry the status colour. */
+.knw-snackbar__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-l);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-contrast);
+}
+
+.knw-snackbar__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+}
+
+/* Figma wraps the label in a container carrying this padding, which is what
+   makes a two-line bar 64px rather than 56px. It sits outside the clamped box
+   so the clip lands on the line, not on the padding. */
+.knw-snackbar__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-block: var(--semantic-space-layout-xs);
+}
+
+/* Up to two lines, per the Figma description. */
+.knw-snackbar__label {
+  margin: 0;
+  color: var(--semantic-text-inverse);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The action. Shares the chip's geometry but carries the status colour and a
+   larger label than the chips component set -- see the story docs. */
+.knw-snackbar__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: var(--semantic-size-control-s);
+  padding-block: 0;
+  padding-inline: var(--semantic-space-inset-s);
+  border: none;
+  border-radius: var(--semantic-radius-pill);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== variant ===== */
+
+.knw-snackbar--Default .knw-snackbar__icon {
+  color: var(--semantic-accent-blue-bold);
+}
+
+.knw-snackbar--Default .knw-snackbar__action {
+  background: var(--semantic-accent-blue-bold);
+  color: var(--semantic-accent-blue-label-bold);
+}
+
+.knw-snackbar--Success .knw-snackbar__icon {
+  color: var(--semantic-feedback-success-bold);
+}
+
+.knw-snackbar--Success .knw-snackbar__action {
+  background: var(--semantic-feedback-success-bold);
+  color: var(--semantic-feedback-success-label-bold);
+}
+
+.knw-snackbar--Error .knw-snackbar__icon {
+  color: var(--semantic-feedback-error-bold);
+}
+
+.knw-snackbar--Error .knw-snackbar__action {
+  background: var(--semantic-feedback-error-bold);
+  color: var(--semantic-feedback-error-label-bold);
+}

@@ -63,6 +63,15 @@ def literal(value, type_, path):
         return WEIGHT[value]
     if type_ == "fontFamily":
         return f'"{value}"'
+    if type_ == "duration":
+        # DTCG duration values carry their own unit ("200ms"), unlike dimension,
+        # which is a bare number the CSS layer has always suffixed with px.
+        return str(value)
+    if type_ == "cubicBezier":
+        # Already a CSS timing function. Written as a string rather than the
+        # DTCG four-number array because that is what a custom property has to
+        # hold, and splitting it would make every consumer reassemble it.
+        return str(value)
     if type_ == "number":
         # $metadata: letterSpacing values are raw percent. CSS letter-spacing
         # takes no percentage, so express as em.

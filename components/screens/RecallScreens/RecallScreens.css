@@ -1,0 +1,1753 @@
+/* Recall-state screens.
+
+   Compositions, not new visuals: every element is an existing component and
+   every value a semantic token. Layout only — no colour, type or size is
+   defined here that a component does not already own.
+
+   States 5, 7, 8 and the skip pattern have no Figma design. Their anatomy is
+   specified in design-system.md under "specified in code first". */
+
+/* The recall gutter is 20, not the scaffold's 16. Measured off the app:
+   recall-processing, recall-partial, recall-correct and recall-result all draw
+   content at x20-369, a 350 column, and agree to the pixel. So the slot's
+   gutter is cancelled and `space/gutter` applied in its place — expressing the
+   20 directly rather than as "the slot's 16 plus 4", which is the same result
+   but reads as an accident. */
+.knw-recall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xl);
+  box-sizing: border-box;
+  width: calc(100% + var(--semantic-space-layout-l) * 2);
+  margin-inline: calc(var(--semantic-space-layout-l) * -1);
+  padding-block: var(--semantic-space-layout-xl);
+  padding-inline: var(--semantic-space-gutter);
+  text-align: center;
+}
+
+/* ===== header ===== */
+
+/* `answer sent`: one 56-high row, gap Space/300, padding 20/16/8/16. The XP
+   counter that sits at its right end is not built — Figma's blue has no token.
+   See design-system.md. */
+.knw-recall__header {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  /* border-box, or the inline padding is added to the 100% and the row runs
+     32px past the screen — which clips the XP figure off the right edge. */
+  box-sizing: border-box;
+  width: 100%;
+  /* Figma's Top Nav Default pads 0 top and Space/200 bottom, and is 56 tall
+     with a 44 tap target inside. A 48 target (the system's own
+     size/tapTarget/min) plus that 8 comes to the same 56. */
+  padding-block: 0 var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+/* progressIndicator takes the space between the exit control and the XP.
+   min-width:0 lets it actually shrink — without it the track's own width keeps
+   the row wider than the screen and the XP figure clips off the right edge. */
+.knw-recall__header > .knw-progress {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The XP cluster. Figma's gap is Space/100, the figure is 18/20 semibold —
+   headline/XS-bold. Both the bolt and the number take accent/blue/bold, which
+   is the exact colour the app renders XP in; Figma binds them one step lighter
+   at accent/blue/label/subtle. See design-system.md. */
+.knw-recall__xp {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--semantic-space-layout-xs);
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+  color: var(--semantic-accent-blue-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Height only — the bolt is taller than it is wide (17.93 x 22), so sizing by
+   height keeps it on the icon scale and lets the width follow the glyph's own
+   aspect, rather than inventing an untokened 22. Figma draws it 18 x 22;
+   size/icon/M (20) is the nearest step the scale has. */
+.knw-recall__xp-icon {
+  display: block;
+  flex: none;
+  height: var(--semantic-size-icon-m);
+}
+
+.knw-recall__xp-icon > svg {
+  display: block;
+  width: auto;
+  height: 100%;
+}
+
+/* THE GLYPH IS 24; THE TAP TARGET IS NOT.
+   This was `size/control/XS` (24) square — the size of the ✕ itself — which is
+   the WCAG 2.5.8 floor exactly and well under what a thumb needs on the most
+   pressed-by-accident control in the loop. Nothing caught it: axe only checks
+   target size under WCAG 2.2, and the harness runs 2.1.
+
+   Figma draws a 44×44 `App Bar Button Icon` around the glyph. The system has
+   its own answer at `size/tapTarget/min` (48), which clears Figma's 44 and,
+   with the row's 8 bottom padding, reproduces Top Nav Default's 56 exactly. */
+.knw-recall__exit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-tap-target-min);
+  height: var(--semantic-size-tap-target-min);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--semantic-text-primary);
+  /* Figma sets the glyph at 22/22; headline/S is the nearest bound step. */
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-recall__exit:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* ===== mascot ===== */
+
+/* Knowie tucks BEHIND the question bubble, so only the head shows above it.
+   `reference/recall-processing.png` and `recall-partial.png` both show this,
+   and `Idle` and `answer sent` now measure it identically: a 109 mascot at
+   104-213 against a bubble starting at 172, so it overlaps by 41 — 37.5% of
+   the mascot's own height. Expressed against the illustration token rather
+   than as a fixed inset, because that is what it is: a fraction of the mascot,
+   which keeps it correct if the slot size ever changes. */
+.knw-recall__mascot {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  /* The column's own gap sits between the mascot and the bubble, so it has to
+     be cancelled here or it eats most of the overlap. */
+  margin-block-end: calc(
+    var(--semantic-size-illustration-2-xl) * -0.375 - var(--semantic-space-layout-xl)
+  );
+}
+
+/* NO shadow ellipse, and NO bottom scrim. Both are Example Screens patterns
+   that do not transfer to the recall loop — the ellipse is fully covered by
+   the question bubble in `Idle` and `answer sent` and appears in no
+   screenshot; the scrim appears on none of the eleven recall screens and would
+   fade the orb. See "Two Example Screens patterns that do NOT apply here" in
+   design-system.md. */
+
+/* The bubble sits over the mascot's lower half, not beside it. */
+.knw-recall__prompt {
+  position: relative;
+}
+
+/* `mic permission`: a 48/16-padded block that owns the space above the
+   headline, with Knowie centred in it. */
+.knw-recall__hero {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-2-xl);
+}
+
+.knw-recall__knowie {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ===== question bubble ===== */
+
+/* `answer sent` and `Idle` both draw this card: Radius/200, padding 28 block /
+   24 inline. TOKEN NOTES: the fill is a raw #1C1C2A with no variable behind it
+   — `background/surface` is the nearest bound token, and `background/card` is
+   already an open request covering this family of unbound card colours. The 28
+   block padding has no token either; `layout/L` (16) plus the paragraph's own
+   inset is what the file's two-paragraph structure actually produces, so
+   `layout/XL` (24) is used on both axes. */
+.knw-recall__bubble {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--semantic-space-layout-xl);
+  /* Radius 24, measured off the app. Figma draws this bubble at Radius/200 (8)
+     and the verdict card at Radius/400 (16); the app draws BOTH — and the
+     student's answer bubble — with a 23px corner inset on every screenshot,
+     which is radius/input at 24. Three different radii in Figma against one
+     consistent radius in the app reads as drift, not intent. */
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-background-surface);
+  text-align: left;
+}
+
+/* Both paragraphs are 18/24 regular — body/M-regular. */
+.knw-recall__intro,
+.knw-recall__question {
+  margin: 0;
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+  color: var(--semantic-text-primary);
+}
+
+/* Figma insets the question 20px below the intro. */
+.knw-recall__question {
+  padding-block-start: var(--semantic-space-layout-xl);
+}
+
+/* The app bolds the key term in place rather than pulling it out — see
+   reference/recall-processing.png. body/M-bold is the same step, semibold. */
+.knw-recall__question strong,
+.knw-recall__intro strong {
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+}
+
+/* ===== headline ===== */
+
+/* `mic permission`: 33/36 bold, centred — headline/L. Bound here rather than
+   through textBlock, which has no variant at this step. */
+.knw-recall__headline {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-l-font-family);
+  font-weight: var(--semantic-type-scale-headline-l-font-weight);
+  font-size: var(--semantic-type-scale-headline-l-font-size);
+  line-height: var(--semantic-type-scale-headline-l-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-l-letter-spacing);
+  color: var(--semantic-text-primary);
+  text-align: center;
+}
+
+/* The primer has no header: Knowie takes the space above, the headline sits
+   under it, and the actions are pinned to the bottom slot. */
+.knw-recall--primer {
+  gap: var(--semantic-space-layout-l);
+  min-height: 100%;
+}
+
+/* ===== permission denied ===== */
+
+/* `mic permission denied`: the hero block and the two cards, Space/800 apart. */
+.knw-recall--denied {
+  gap: var(--semantic-space-layout-2-xl);
+  justify-content: center;
+}
+
+.knw-recall__denied-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-2-xl);
+  width: 100%;
+}
+
+/* The orb and the line that names the state, Space/400 apart. */
+.knw-recall__denied-orb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-l);
+}
+
+/* 21/24 bold on interactive/primary — headline/S. */
+.knw-recall__denied-title {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+  color: var(--semantic-interactive-primary);
+  text-align: center;
+}
+
+.knw-recall__denied-body {
+  margin: 0;
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+  color: var(--semantic-text-secondary);
+  text-align: center;
+}
+
+.knw-recall__denied-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-2-xl);
+  width: 100%;
+}
+
+/* Both cards: background/surface, Radius/400, Space/400 padding, Space/300 gap. */
+.knw-recall__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+  text-align: left;
+}
+
+/* 18/20 semibold — headline/XS-bold. */
+.knw-recall__card-title {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+  color: var(--semantic-text-primary);
+}
+
+/* 15/20 regular — body/S-regular. */
+.knw-recall__card-body {
+  margin: 0;
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+  color: var(--semantic-text-secondary);
+}
+
+/* The Settings trail. An ordered list, because the order is the instruction. */
+.knw-recall__path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--semantic-space-layout-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Skip sits directly under the question, pushed to the right edge — the
+   placement the Idle screen uses. It is a secondary action attached to the
+   question, not one of the bottom escapes. */
+.knw-recall__skip {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* A bare text control, the way Figma draws it: caption/M-bold on
+   text/secondary, no surface, no border. */
+.knw-recall__skip-control {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+  color: var(--semantic-text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-recall__skip-control:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* ===== the text turn, as a conversation ===== */
+
+/* The conversation is bottom-aligned, the way a chat is: turns stack upward
+   from just above the composer, so empty space sits above the first message
+   rather than below the last. That is what closes the gap an earlier build had
+   between the answer and the composer. */
+.knw-recall--chat {
+  gap: var(--semantic-space-layout-l);
+  align-items: stretch;
+  justify-content: flex-end;
+  min-height: 100%;
+  text-align: left;
+}
+
+/* Knowie's turn: plain text with the mascot beneath it, NO surface. Figma's
+   container is 358 x 140 at radius 4 with no fill — only the student's turn is
+   given a bubble, and that asymmetry is what makes it read as a conversation.
+   TOKEN NOTE: Figma sizes the mascot 44, below every step of the illustration
+   scale; XL (64) is the nearest. */
+.knw-recall__ask {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--semantic-space-layout-m);
+}
+
+.knw-recall__ask-text {
+  margin: 0;
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+  color: var(--semantic-text-primary);
+}
+
+/* The student's own turn, mirrored to the right. */
+.knw-recall__answer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--semantic-space-layout-s);
+}
+
+/* Figma: radius 24 — radius/input, the message-bubble role — with 12 padding. */
+.knw-recall__answer-text {
+  margin: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: var(--semantic-space-layout-m);
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-background-surface);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+  color: var(--semantic-text-primary);
+}
+
+/* The student's initial.
+   Figma drew this as a coral pair at control/L. Neither survives the
+   screenshots. The app has exactly one avatar — the profile circle in the
+   bottom nav of `detailed-lesson-by-chat.png` — and it is a quiet
+   `background/surface` disc with a near-white initial, 25×25. No coral circle
+   exists anywhere in the fifteen screenshots; the only coral in the set is the
+   streak chip and the study-plan step icons.
+
+   So: the screenshot's colour treatment exactly, and its nearest sizing step.
+   25 has no token and one must not be invented, so this takes `control/S` (32)
+   — the smallest control step, and the only one that reads as "small quiet
+   disc" rather than a badge. The departure is recorded in design-system.md. */
+.knw-recall__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-control-s);
+  height: var(--semantic-size-control-s);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-surface);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  color: var(--semantic-text-primary);
+}
+
+/* ===== composer ===== */
+
+.knw-recall__composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+}
+
+/* Reserves what the OS keyboard occupies on a 390pt device, so the turn is laid
+   out against the height the student actually has. 342 is the Figma asset's
+   height (node 3086:16935) — device chrome rather than a design value, which is
+   why it is a literal here and not a token, the same call
+   .storybook/withKeyboardInset.tsx makes for the same number. It is a reserve,
+   not a drawing: the real keyboard is the operating system's, so this paints
+   nothing. Filling it read as a grey void, which is worse than the dead space
+   it replaced — the point is that the composer sits where the student will
+   actually find it, not that the reserve is visible. */
+.knw-recall__keyboard {
+  flex: none;
+  height: 342px;
+}
+
+/* ===== full-bleed children ===== */
+
+/* `recallResponseCard` is drawn 390 wide in Figma and carries its own 16
+   inline padding. Placed inside the middle slot, which already pads 16, its
+   surface would come out 32 narrower than the file draws it — so it clears the
+   slot's gutter and re-applies its own.
+
+   The block pull does the same job vertically. The card pads 12 above its own
+   surface, so a tuck measured to the card's BOX lands 12 short of the mascot
+   sitting 37.5% over the visible panel — 27.5% instead. The standard measures
+   to what you can see, not to the wrapper. */
+.knw-recall__bleed {
+  margin-inline: calc(var(--semantic-space-gutter) * -1);
+  margin-block-start: calc(var(--semantic-space-layout-m) * -1);
+  width: calc(100% + var(--semantic-space-gutter) * 2);
+}
+
+/* ===== re record ===== */
+
+/* `mascot block`: the mascot and the line under it, centred horizontally and
+   sitting directly under the header — Figma starts it at y104, immediately
+   after the nav, not floated in the middle. Figma's gap is 37, which is off
+   the scale (the steps either side are 32 and 48), so layout/2XL stands in.
+
+   THE BUTTONS DIVERGE. Figma puts them at y351-479, leaving 365px of dead
+   space beneath — almost certainly an unfinished frame rather than an intent.
+   They are pinned to the bottom slot here, because that is where the app
+   screenshots put every CTA and what design-system.md asks for: "CTAs low so
+   thumbs reach them without shifting grip". */
+.knw-recall--rerecord {
+  align-items: center;
+  gap: var(--semantic-space-layout-2-xl);
+}
+
+/* Measured off the render rather than the node: ink 16px at a 20px line
+   pitch, which is headline/XS-bold. One node inside this screen is a broken
+   instance reference that crashes traversal — see the component. */
+.knw-recall__rerecord-prompt {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+  color: var(--semantic-text-primary);
+  text-align: center;
+}
+
+/* The re-record choice sits under the mascot block rather than in the bottom
+   slot. Figma places it at y351 and leaves the space beneath empty; an earlier
+   build pinned it low on thumb-zone grounds, which overrode the file. */
+.knw-recall__rerecord-actions {
+  width: 100%;
+  padding-block: var(--semantic-space-layout-l);
+}
+
+/* The permission sheet's body: Knowie above the ask, centred. Figma's
+   middleSection is a 24-gap column padded 0/16/8/16. */
+.knw-recall__sheet-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xl);
+  padding-block-end: var(--semantic-space-layout-s);
+  text-align: center;
+}
+
+/* ===== processing ===== */
+
+/* `thinking progress` puts the mascot at y12-144 and the transcript block at
+   y144: they meet exactly, with nothing between them. The column's default
+   Space/600 gap pushed them 24 apart and left the transcript floating. */
+.knw-recall--processing {
+  justify-content: flex-start;
+  gap: 0;
+}
+
+/* Figma places `thinking` at 122×132, which is off the illustration scale —
+   XL is 64 and 2XL is 120, and 120 crops the ears. `size/fab/thinking` (172)
+   is the nearest bound value large enough to hold it, and the image is
+   contained inside rather than filling, so the pose keeps its proportions.
+   Logged in design-system.md. */
+.knw-recall__thinking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-fab-thinking);
+  height: var(--semantic-size-fab-thinking);
+}
+
+.knw-recall__judging {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-l);
+  width: 100%;
+}
+
+/* ===== result and reveal ===== */
+
+.knw-recall--result {
+  justify-content: flex-start;
+  gap: var(--semantic-space-layout-l);
+}
+
+/* The question restated. A plain 64-high bar at body/S — NOT the question
+   bubble, which belongs to idle. No mascot tucks behind this one: none of the
+   four `hint ladder` frames has one, because by this point Knowie is reporting
+   rather than asking. */
+.knw-recall__askbar {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: var(--semantic-space-layout-m);
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-background-surface);
+  text-align: left;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-recall__askbar strong {
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+}
+
+/* The hint, promoted out of the card at rung 3 — "escalating warmth" in
+   Figma's own layer name. Bigger step, warmer label, its own surface, so the
+   last hint before the answer cannot be mistaken for the previous two.
+
+   TOKEN NOTE: Figma fills this with a variable called "Pro Background"
+   (#E88C30 at 12%). That value has no counterpart in tokens.json and belongs
+   to the PRO tier, which is a paid-plan signal rather than a feedback one —
+   design-system.md's "Never do this" forbids exactly that swap.
+   `feedback/warning/surface/subtle` is the file's own warm wash and is the
+   family the gold label already belongs to. */
+.knw-recall__hint-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-feedback-warning-surface-subtle);
+  text-align: left;
+}
+
+/* text/warning — gold/300. This one matches Figma exactly. */
+.knw-recall__hint-panel-label {
+  margin: 0;
+  color: var(--semantic-text-warning);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+.knw-recall__hint-panel-body {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
+
+.knw-recall__hint-panel-body strong {
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+}
+
+/* ===== nothing heard ===== */
+
+.knw-recall--noaudio {
+  justify-content: center;
+}
+
+/* The same card, one layer up.
+   `knw-recall__card` is `background/surface` on the screen's `background/page`
+   ground, which is what makes it read as a raised block. Inside a sheet the
+   ground IS `background/surface`, so the card vanished into it — the chips
+   looked like they were floating on the sheet. `background/elevated` is the
+   system's token for a panel sitting on a surface, and is what the transcript
+   box inside `recallResponseCard` already uses for the same reason. */
+.knw-recall__card--on-sheet {
+  background: var(--semantic-background-elevated);
+}
+
+/* The sheet's Settings path is the SCREEN'S, unchanged.
+   An earlier version stacked the chips vertically here on the theory that a
+   sheet turns a breadcrumb into steps. Figma disagrees and so does the screen
+   behind it: `mic permission denied` lays them out HORIZONTAL with wrap at
+   gap Space/200, inside a `background/surface` card at Radius/400. Two
+   treatments of one path, one of them invented, is worse than either. */
+
+/* Skip, and the way back to voice, on one row. The text turn is the only
+   screen that needs both: everywhere else "answer out loud" IS the screen. */
+.knw-recall__turn-escapes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+}
+
+.knw-recall__turn-escapes .knw-recall__skip {
+  width: auto;
+}
+
+/* ===== the transcript, where it is not a question bubble ===== */
+
+/* THE TRANSCRIPT IS NOT TUCKED.
+   `knw-recall__prompt` carries the question bubble's 37.5% overlap, and reusing
+   it on the take screen dragged the transcript up under Knowie's feet.
+   `cancel option` measures the mascot's bottom at 109 and the transcript's
+   visible box at 100 — they meet, they do not overlap. Knowie is reporting what
+   he heard here, not leaning over a question to ask it. */
+.knw-recall__said {
+  width: 100%;
+}
+
+/* Cancels the tuck for the mascot above a transcript. The negative margin lives
+   on the mascot itself, so any next sibling inherits it — this is how a screen
+   opts out.
+
+   It cancels the column's gap too, not just the overlap: `cancel option` sets
+   the mascot's bottom at 109 and the transcript block's top at 80, so they
+   meet rather than sit apart. Leaving the Space/600 gap in place left the
+   transcript floating 44px clear of Knowie. */
+.knw-recall__mascot--flush {
+  margin-block-end: calc(var(--semantic-space-layout-xl) * -1);
+}
+
+/* ===== summary ===== */
+
+/* Figma's topNavigation slot (15857:10065): a 16/16/24/16 block holding the
+   headline and the topic line, gap Space/300.
+
+   LEFT-ALIGNED, not centred. An earlier pass centred this on the strength of
+   `recall-summary.png`, reasoning that the screenshot is the authority on
+   specs. Alignment is composition, not a spec, and the file is unambiguous —
+   both lines are LEFT, and the headline sits flush with the cards below it.
+   Centring broke that column. */
+.knw-summary__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-l) var(--semantic-space-layout-xl);
+  padding-inline: var(--semantic-space-layout-l);
+  text-align: left;
+}
+
+/* Figma sets 28/32 Bold — headline/M. It was bound to headline/XL, which is 44:
+   the file's own step at 28 is M, and XL sits two sizes up the scale. */
+.knw-summary__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+.knw-summary__topic {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* Figma's middleContent holds one column: the score card, then the two lists.
+   It measures 31 between them, which is not a step — Space/800 is the nearest,
+   and layout/2xl is the token on it. */
+.knw-recall--summary {
+  gap: var(--semantic-space-layout-2-xl);
+  text-align: left;
+  /* NOT A RECALL TURN, so not the 20 gutter. `space/gutter` exists because
+     every recall screenshot draws a 350 column at 20; the summary is not one of
+     those screens, and Figma builds all three of its cards at 358 inside
+     Space/400. Restoring the scaffold's own 16 is what makes them 358. */
+  padding-inline: var(--semantic-space-layout-l);
+  /* The slot already pads Space/200 at the top, which is Figma's whole gap
+     between the topic line and the score card. The turn screens' extra 24 was
+     pushing the card a block down the screen. Kept at the bottom, where it is
+     the scroll gutter under the pinned actions. */
+  padding-block: 0 var(--semantic-space-layout-xl);
+}
+
+/* The score card: the ring and the split, on one surface. Radius/400 like every
+   other card on this screen — it was bound to radius/input (24), which is the
+   recall surfaces' radius, not the summary's. */
+.knw-summary__overview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-l);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-xl);
+  padding-inline: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+}
+
+/* Figma nests the review block inside StrongAreas at gap Space/200, which puts
+   the two lists closer to each other than either is to the score card. */
+.knw-summary__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+/* The three tiles are `summaryStatTile` now — the rules that were here moved
+   into the component when it stopped being a one-off. See component-gaps.md. */
+
+
+/* The two lists. Strong always first — see the screen's docblock. */
+.knw-summary__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+.knw-summary__group-label {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  text-transform: uppercase;
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+/* NO RULE FOR THE CARD ITSELF ANY MORE. `.knw-summary__card` used to restate
+   `listItemGroup`'s own padding, radius and fill and got two of the three
+   wrong — radius/input where the file draws Radius/400, and zero padding where
+   strongCard pads 12/16. The group is the card; the screen has nothing to add
+   to it, so the class is gone rather than left overriding a component from
+   outside. */
+
+/* ===== the front door: Entrypoint 1 ===== */
+
+/* Knowie and the greeting, held in the upper third with the rail and the
+   composer pinned below — the file leaves the middle deliberately empty, which
+   is what makes the screen read as waiting for you rather than as a dashboard. */
+.knw-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--semantic-space-layout-2-xl);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-2-xl);
+  text-align: center;
+}
+
+/* 33 Bold, centred — headline/L, bound exactly. */
+.knw-home__greeting {
+  margin: 0;
+  max-width: 80%;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-l-font-family);
+  font-weight: var(--semantic-type-scale-headline-l-font-weight);
+  font-size: var(--semantic-type-scale-headline-l-font-size);
+  line-height: var(--semantic-type-scale-headline-l-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-l-letter-spacing);
+}
+
+.knw-home__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--semantic-space-layout-m);
+  align-self: stretch;
+  width: 100%;
+}
+
+/* THE RAIL SCROLLS RATHER THAN WRAPPING. Four chips do not fit 390 and the
+   file draws them running off the right edge, which reads as "there are more"
+   where a wrapped second row would read as a grid. It clears the slot's gutter
+   so the overflow starts at the screen edge, the way the app's rails do. */
+.knw-home__rail {
+  display: flex;
+  gap: var(--semantic-space-layout-s);
+  width: calc(100% + var(--semantic-space-layout-l) * 2);
+  margin-inline: calc(var(--semantic-space-layout-l) * -1);
+  padding-inline: var(--semantic-space-layout-l);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.knw-home__rail > * {
+  flex: none;
+}
+
+/* ===== choose folder screen ===== */
+
+.knw-folders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xl);
+  width: 100%;
+  padding-block: var(--semantic-space-layout-l);
+  text-align: left;
+}
+
+.knw-folders__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+/* 28 Bold — headline/M, the same step the summary and the lesson take. */
+.knw-folders__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+.knw-folders__ask {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+.knw-folders__hint {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-folders__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-l);
+  width: 100%;
+}
+
+/* ===== the composer with a feature attached ===== */
+
+/* Figma's chip sits above the field with an ✕ beside it — the feature stays
+   attached until the student takes it off, which is what makes the next
+   message a practice set rather than a question. */
+.knw-entry__attached {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+.knw-entry__attached-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-tap-target-min);
+  height: var(--semantic-size-tap-target-min);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--semantic-text-secondary);
+  cursor: pointer;
+}
+
+.knw-entry__attached-clear:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* ===== the entry: the chat turn that starts a session =====
+
+   THE PREFIX IS `knw-entry`, NOT `knw-chat`. `chatInput`'s own root class is
+   `.knw-chat`, so the first pass at this screen silently restyled the composer
+   on every screen that uses one — a flex column with a 12 gap where a row
+   belongs. Component class names are owned by the component; a screen that
+   wants a chat column picks its own. */
+
+/* `explain out ready` (15619:8880) — a chat thread, not a recall turn, so it
+   does not use `.knw-recall`'s centred column or its 20 gutter. Figma's `chat
+   container` is VERTICAL, gap Space/300, padding Space/200 block and Space/400
+   inline; the slot already pads 16, so only the gap is set here. */
+.knw-entry {
+  display: flex;
+  flex-direction: column;
+  /* Chat turns hug their content and sit where the speaker puts them — the
+     student's on the right, everything of Knowie's on the left. Stretching
+     them is what made the PRO badge a full-width banner. */
+  align-items: flex-start;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+  text-align: left;
+}
+
+/* The two blocks that do span the column: the student's turn needs the full
+   width to right-align inside, and the card is the screen's main control. */
+.knw-entry__student,
+.knw-entry__start,
+.knw-entry__feedback {
+  align-self: stretch;
+}
+
+/* Figma's app bar: the menu on the left, three stat clusters, history on the
+   right. No progress and no ✕ — nothing has started yet. */
+.knw-entry__header {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: 0 var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-m);
+}
+
+.knw-entry__stats {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--semantic-space-layout-s);
+  min-width: 0;
+}
+
+/* The bolt and its figure mean one thing together, so they are one named unit —
+   the same shape `.knw-recall__xp` uses on a recall turn. The colour is the
+   only thing that changes between them. */
+.knw-entry__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--semantic-space-gap-xs);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+.knw-entry__stat-icon {
+  display: inline-flex;
+  width: var(--semantic-size-icon-m);
+  height: var(--semantic-size-icon-m);
+}
+
+.knw-entry__stat--xp {
+  color: var(--semantic-accent-blue-bold);
+}
+
+.knw-entry__stat--streak {
+  color: var(--semantic-accent-coral-bold);
+}
+
+/* The student's turn: a pill on the right, and the feature they picked named
+   underneath it. */
+.knw-entry__student {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+.knw-entry__bubble {
+  box-sizing: border-box;
+  max-width: 80%;
+  margin: 0;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-surface);
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
+
+.knw-entry__picked {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* Knowie's reply, as running text rather than a bubble — the file gives the
+   assistant the full width and reserves the pill for the student. */
+.knw-entry__reply {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
+
+/* THE CARD THAT STARTS THE SESSION, and the reason this screen exists.
+
+   Figma's `explain feature`: 314×104, HORIZONTAL, gap Space/800, padding
+   Space/400, Radius/600.
+
+   TOKEN NOTE: its fill is a variable named "EOL Card background" (#0B1E4A),
+   which has no counterpart in tokens.json. `accent/blue/subtle` (blue/900,
+   #0A1635) is the nearest step that is also the right ROLE — it is documented
+   as "tinted blue background", which is exactly what this is. blue/950 is a
+   closer number but is only exposed as `accent/blue/label/bold`, a text
+   colour, and a label token on a surface is the swap "Never do this" exists to
+   stop. Logged in design-system.md. */
+.knw-entry__start {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-layout-2-xl);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--semantic-space-layout-l);
+  border: none;
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-accent-blue-subtle);
+  text-align: left;
+  cursor: pointer;
+}
+
+.knw-entry__start:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+.knw-entry__start-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  min-width: 0;
+}
+
+.knw-entry__start-head {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+}
+
+.knw-entry__start-mic {
+  display: inline-flex;
+  flex: none;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+  color: var(--semantic-accent-blue-bold);
+}
+
+.knw-entry__start-labels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+  min-width: 0;
+}
+
+.knw-entry__start-action {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+.knw-entry__start-time {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* 18 SemiBold — the set's name, and the biggest thing on the card. */
+.knw-entry__start-set {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-m-bold-font-size);
+  line-height: var(--semantic-type-scale-body-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-bold-letter-spacing);
+}
+
+/* Figma's feedback row: a centred question, then two pills. */
+.knw-entry__feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+  padding-block: var(--semantic-space-layout-l);
+}
+
+.knw-entry__feedback-ask {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-entry__feedback-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--semantic-space-layout-xl);
+}
+
+/* ===== the correct loop: the pass, and what Knowie would have said ===== */
+
+/* `correct-answer` (15664:13017) and `correct-feedback` (15664:13061) share a
+   column: the mascot, then the card, then the orb. Neither has a `hintLadder`
+   and neither restates the question — those belong to the ladder, which a pass
+   has already stepped off.
+
+   NO RULE OF ITS OWN BEYOND THE MODIFIER. It inherits `.knw-recall`'s gap and
+   its 20 gutter, and the mascot below reuses `.knw-recall__mascot` — which is
+   the point. `recall-correct.png` and `recall-partial.png` draw the identical
+   column, and the one thing that would make a pass feel like a different
+   product is if Knowie sat at a different height on it. */
+.knw-recall--correct {
+  gap: var(--semantic-space-layout-xl);
+}
+
+/* THE CARD USES `.knw-recall__bleed`, like the ladder screens. Its surface then
+   lands at 350 inside the 20 gutter, which is where `recall-correct.png` and
+   `recall-partial.png` both draw it, and the mascot's tuck measures to that
+   surface rather than to the card's padded box. */
+
+/* ===== session rating: asked before the score, never after ===== */
+
+/* Figma's `main`: VERTICAL, gap Space/1200, padding Space/400 inline, with the
+   body padding Space/600 block.
+
+   TOKEN NOTE: Space/1200 is 48 and the layout scale stops at 2XL (32). 48
+   exists as a primitive, but only under a size role — `size/tapTarget/min` —
+   which is not a spacing value. 2XL is the nearest bound step and is what this
+   takes; `space/layout/3XL` is requested in design-system.md. */
+.knw-rating {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-2-xl);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-xl);
+  text-align: left;
+}
+
+.knw-rating__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xl);
+  width: 100%;
+}
+
+/* Figma's `Frame 2147207755`: gap Space/400 between the question and the
+   topics. */
+.knw-rating__ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-l);
+  width: 100%;
+}
+
+/* 28 Bold — headline/M, bound exactly in the file. */
+.knw-rating__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+/* Figma's `topic box`: gap Space/200 between the label and its list. */
+.knw-rating__topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+/* 21 Bold on text/secondary — headline/S. */
+.knw-rating__topics-label {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+/* A real list, so three topics are announced as three. Figma draws them as
+   three loose text layers, which reads as one paragraph to a screen reader. */
+.knw-rating__topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
+
+/* Figma's second `body`: 358×192, Radius/400 on background/surface, padding
+   Space/300 block and Space/400 inline, gap Space/300. */
+.knw-rating__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+  list-style: none;
+}
+
+/* One row: the label, then the box, 48 apart at the ends. Figma's rows are
+   HORIZONTAL at gap Space/300 with the checkbox trailing. */
+.knw-rating__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+  cursor: pointer;
+}
+
+/* 18 Regular on text/primary — body/M. The label is the checkbox's own
+   accessible name, so it is not a second focusable thing beside it. */
+.knw-rating__option-label {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
+
+/* ===== the plea sheet: Knowie asks, and the buttons answer ===== */
+
+/* The body of `exit screen` (15807:21978) — an illustration, then a headline
+   and one line under it, all centred.
+
+   THERE IS NO WRAPPER RULE. Figma's middleSection is VERTICAL, gap Space/600,
+   padding 24/16/8/16, CENTER — which `.knw-sheet__middle` already is, to the
+   value, because both come from the same component. Adding a second flex
+   column here would only re-declare it. */
+
+/* Figma draws the illustration at 173×188, off every illustration step
+   (XL 64, 2XL 120, 3XL 200, 4XL 320). `size/fab/thinking` is 172 — within a
+   pixel of the width, and already the precedent for exactly this problem: the
+   `thinking` mascot is boxed the same way and contained inside. The image keeps
+   its own proportions rather than being stretched to a square. Logged in
+   design-system.md. */
+.knw-plea__art {
+  flex: none;
+  width: var(--semantic-size-fab-thinking);
+  height: auto;
+}
+
+/* Figma's text frame: 320 wide, VERTICAL, gap Space/100, CENTER. */
+.knw-plea__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
+  width: 100%;
+  text-align: center;
+}
+
+/* 44, centred. Figma types it in Condensed Heavy, which is not a weight the
+   system carries — the four are Regular, SemiBold, Bold and Heavy, and Heavy
+   only appears on display/L at 76. headline/XL is the file's own step at 44 and
+   is what this takes. */
+.knw-plea__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-xl-font-family);
+  font-weight: var(--semantic-type-scale-headline-xl-font-weight);
+  font-size: var(--semantic-type-scale-headline-xl-font-size);
+  line-height: var(--semantic-type-scale-headline-xl-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xl-letter-spacing);
+}
+
+/* 21 Bold on text/secondary — headline/S, bound exactly in the file. */
+.knw-plea__body {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+/* ===== the exit sheet, raised over whatever turn is showing ===== */
+
+/* FIXED, not absolute. `Screen`'s own scrim and sheet slot are positioned
+   inside one screen; this has to sit over any of them, rendered from the
+   recall layout so the turn underneath stays mounted. Same tokens and the same
+   geometry as the slot it mirrors. */
+.knw-exit {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.knw-exit__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--semantic-background-scrim);
+}
+
+.knw-exit__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xs);
+}
+
+/* ===== lesson ===== */
+
+.knw-lesson__bar {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: 0 var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-l);
+}
+
+.knw-lesson {
+  align-items: stretch;
+  gap: var(--semantic-space-layout-xl);
+  text-align: left;
+}
+
+/* Figma's `folder`: 24 block / 16 inline, gap Space/200, on the card surface. */
+.knw-lesson__folder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-xl);
+  padding-inline: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-background-surface);
+}
+
+.knw-lesson__eyebrow {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* Figma's "Voting Rights Act" is 28 Bold — headline/M. It was bound to
+   headline/XL, which is 44: the same one-step-too-far slip the summary title
+   carried, and from the same reading of "XL" as the top of the headline range
+   rather than a named size. */
+.knw-lesson__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+/* Three equal columns, gap Space/300. A <dl>, because that is what a set of
+   label/value pairs is — and it pairs them for a screen reader too. */
+.knw-lesson__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+  margin: 0;
+}
+
+.knw-lesson__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xxs);
+  padding-block: var(--semantic-space-layout-m);
+}
+
+.knw-lesson__stat-value {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+}
+
+.knw-lesson__stat-label {
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+}
+
+/* TOKEN NOTE: Figma sets the lesson body at 19/24. No step is 19 — the scale
+   runs 18 then 21 — so body/M (18) is the nearest bound one. */
+.knw-lesson__body {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+}
+
+/* The way back into the loop. The WHOLE card is the target, which is what
+   Figma draws and what a thumb expects at 358×104.
+
+   TOKEN NOTE: Figma fills it with a variable called "EOL Card background"
+   (#0B1E4A) that has no counterpart in tokens.json. `accent/blue/subtle`
+   (#0A1635) is the nearest bound colour and the right role — a subtle surface
+   in the same blue family the feature already uses for XP. */
+.knw-lesson__eol {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-layout-2-xl);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--semantic-space-layout-l);
+  border: none;
+  border-radius: var(--semantic-radius-input);
+  background: var(--semantic-accent-blue-subtle);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-lesson__eol:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+.knw-lesson__eol-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  min-width: 0;
+}
+
+.knw-lesson__eol-head {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+}
+
+.knw-lesson__eol-icon {
+  display: block;
+  flex: none;
+  width: var(--semantic-size-icon-xl);
+  height: var(--semantic-size-icon-xl);
+  color: var(--semantic-accent-blue-bold);
+}
+
+.knw-lesson__eol-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xxs);
+}
+
+.knw-lesson__eol-title {
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+}
+
+.knw-lesson__eol-time {
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+}
+
+.knw-lesson__eol-topic {
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+}
+
+/* ===== comparison: your answer beside the right one ===== */
+
+/* `Active Recall Summary Screen` (15888:15245), which the Prototype page wires
+   as `wrong --> here --> summary`. It is the screen SPEC.md once listed as row
+   14 "Comparison" and nothing ever built.
+
+   IT IS NOT THE REVEAL. The reveal shows the model answer so the student can
+   say it; this shows it BESIDE what they actually said, after the saying went
+   wrong. Reading the two together is the point, so neither card scrolls
+   independently and neither is collapsed. */
+.knw-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-xl);
+  width: 100%;
+  padding-block: var(--semantic-space-layout-l);
+  text-align: left;
+}
+
+.knw-compare__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+}
+
+/* The eyebrow, in the violet the file uses for it. */
+.knw-compare__eyebrow {
+  margin: 0;
+  color: var(--semantic-feedback-partial-label-subtle);
+  text-transform: uppercase;
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* 28 Bold — headline/M, the step the summary and the lesson also take. */
+.knw-compare__question {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+/* The model answer's card. `listItemGroup` already draws the surface, radius
+   and rows — this only adds the labelled header Figma puts above them, and the
+   hairline under it. */
+.knw-compare__card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+  overflow: hidden;
+}
+
+.knw-compare__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  border-bottom: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  text-transform: uppercase;
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+/* Green for what was right, violet for what the student said — the file's own
+   pairing, and the same two families the Partial breakdown uses. */
+.knw-compare__card-head[data-part='correct'] {
+  color: var(--semantic-feedback-success-label-subtle);
+}
+
+.knw-compare__card-head[data-part='yours'] {
+  color: var(--semantic-feedback-partial-label-subtle);
+}
+
+/* What the student said, in the same body step as the points opposite, so the
+   two cards read against each other rather than as a claim and a footnote. */
+.knw-compare__said {
+  margin: 0;
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-compare__card-icon {
+  display: inline-flex;
+  flex: none;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+/* The rows sit inside the card, so the group drops its own surface and radius
+   rather than drawing a second card inside the first. */
+.knw-compare__card .knw-listitem-group {
+  border-radius: 0;
+  background: none;
+}

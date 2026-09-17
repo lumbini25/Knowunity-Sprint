@@ -1,0 +1,40 @@
+/* statTile — built from the Figma component "statTile" (node 15676:16170).
+   Every value is a semantic token. */
+
+.knw-stattile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Figma: gap Space/050, padding Space/300 block. */
+  gap: var(--semantic-space-layout-xxs);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-inner);
+  background: var(--semantic-background-surface);
+}
+
+.knw-stattile__number {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+  font-variant-numeric: tabular-nums;
+}
+
+.knw-stattile__label {
+  margin: 0;
+  /* Figma binds text/tertiary, which is 4.62:1 on the page but only 4.34:1 on
+     background/surface — this tile's own fill. text/secondary is 7.23:1. */
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+  white-space: nowrap;
+}

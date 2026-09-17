@@ -1,0 +1,71 @@
+/* Tabs — built from the Figma component sets "Tabs" (node 4146:17273) and
+   "Tab" (node 3729:12963).
+
+   Every value is a semantic token. `transparent` on the inactive underline is a
+   CSS keyword rather than a colour value: it keeps both states the same height
+   without a second token, which is how Figma draws them (its inactive tab
+   carries a stroke weight with no paint). */
+
+.knw-tabs {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  /* Figma: gap 0. The tabs meet edge to edge. */
+  gap: 0;
+}
+
+.knw-tab {
+  /* Every tab takes an equal share, which is how Figma's four variants differ:
+     the same bar divided 2, 3, 4 or 5 ways. */
+  flex: 1 1 0;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding-block: var(--semantic-space-layout-xs);
+  padding-inline: var(--semantic-space-layout-m);
+
+  border: none;
+  /* Carried by both states so the bar does not shift by 2px on selection. */
+  border-bottom: var(--semantic-stroke-strong) solid transparent;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+}
+
+.knw-tab__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== State ===== */
+
+/* highlight/border now exists as a token, so this is Figma's actual binding
+   rather than the border/selected stand-in. */
+.knw-tab--Active {
+  border-bottom-color: var(--semantic-highlight-border);
+  color: var(--semantic-text-primary);
+}
+
+/* Figma binds text/disabled here, but an inactive tab is not disabled — it is
+   the way to reach the other sections, and 3.79:1 is under AA. text/tertiary is
+   the nearest token that clears it at 4.62:1. */
+.knw-tab--Inactive {
+  border-bottom-color: transparent;
+  color: var(--semantic-text-tertiary);
+}
+
+.knw-tab:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: calc(-1 * var(--semantic-stroke-strong));
+}

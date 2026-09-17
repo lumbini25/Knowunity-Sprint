@@ -1,0 +1,120 @@
+/* chips — built from the Figma component set "chips" (node 9003:8679).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives. */
+
+.knw-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--semantic-radius-pill);
+  /* Resting fill for both colours; only active=True tells them apart. */
+  background: var(--semantic-background-surface);
+  color: var(--semantic-text-primary);
+  white-space: nowrap;
+}
+
+/* A chip is a label by default. It only becomes interactive when something is
+   listening -- design-system.md keeps chips out of CTA duty. */
+.knw-chip--pressable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  /* The glyph inherits the chip's colour. */
+  color: inherit;
+}
+
+/* ===== size ===== */
+
+.knw-chip--XXS {
+  height: var(--semantic-size-control-xxs);
+  padding-inline: var(--semantic-space-inset-xxs);
+  gap: var(--semantic-space-gap-xxs);
+}
+
+.knw-chip--XS {
+  height: var(--semantic-size-control-xs);
+  padding-inline: var(--semantic-space-inset-xs);
+  gap: var(--semantic-space-gap-xs);
+}
+
+.knw-chip--S {
+  height: var(--semantic-size-control-s);
+  padding-inline: var(--semantic-space-inset-s);
+  gap: var(--semantic-space-gap-xs);
+}
+
+.knw-chip--M {
+  height: var(--semantic-size-control-m);
+  padding-inline: var(--semantic-space-inset-m);
+  gap: var(--semantic-space-gap-s);
+}
+
+/* XXS and XS share the smallest caption; S steps up; M uses body. */
+.knw-chip--XXS,
+.knw-chip--XS {
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+.knw-chip--S {
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+.knw-chip--M {
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+.knw-chip--XXS .knw-chip__icon,
+.knw-chip--XS .knw-chip__icon {
+  width: var(--semantic-size-icon-xs);
+  height: var(--semantic-size-icon-xs);
+}
+
+.knw-chip--S .knw-chip__icon {
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+.knw-chip--M .knw-chip__icon {
+  width: var(--semantic-size-icon-m);
+  height: var(--semantic-size-icon-m);
+}
+
+/* ===== colour, when active ===== */
+
+/* Inactive is identical for both colours, so only the active pairs differ. */
+.knw-chip--Primary[data-active='true'] {
+  background: var(--semantic-interactive-primary);
+  color: var(--semantic-interactive-label-primary);
+}
+
+/* The icon reads a shade darker than the label on an active Primary chip. */
+.knw-chip--Primary[data-active='true'] .knw-chip__icon {
+  color: var(--semantic-text-inverse);
+}
+
+/* The pro pair doubles as the PRO badge. */
+.knw-chip--pro[data-active='true'] {
+  background: var(--semantic-pro-bold);
+  color: var(--semantic-pro-label-bold);
+}

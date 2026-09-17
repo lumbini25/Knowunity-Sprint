@@ -2,18 +2,39 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect } from 'storybook/test';
 import { useMemo } from 'react';
 import { Group, Layer, Meta as TokenMeta, Page } from './Foundation';
-import { byValue, resolveAll, tokensUnder } from './tokens';
+import { byValue, groupBySegment, resolveAll, tokensUnder, type Token } from './tokens';
 
 /**
- * The three size scales that are not spacing or radius. design-system.md names
- * these by their Figma names -- "weight: Stroke/Heavy Border", "iconSlot
- * Size=400" -- so this page is what maps those names to a custom property and
- * a pixel value.
+ * The size scales that are not spacing or radius. design-system.md names these
+ * by their Figma names -- "weight: Stroke/Heavy Border", "iconSlot Size=400" --
+ * so this page is what maps those names to a custom property and a pixel value.
  */
 const iconTokens = byValue(tokensUnder('primitive.icon'));
 const illustrationTokens = byValue(tokensUnder('primitive.illustration'));
 const strokeTokens = byValue(tokensUnder('primitive.stroke'));
-const allSizes = [...iconTokens, ...illustrationTokens, ...strokeTokens];
+const controlTokens = byValue(tokensUnder('primitive.size'));
+const primitiveSizes = [...controlTokens, ...iconTokens, ...illustrationTokens, ...strokeTokens];
+
+/** Roles components consume: control heights, icon sizes, minimum tap target. */
+const semanticSizes = tokensUnder('semantic.size');
+const semanticGroups = groupBySegment(semanticSizes, 2);
+
+/** Border widths components consume. */
+const semanticStroke = tokensUnder('semantic.stroke');
+
+const allSizes = [...primitiveSizes, ...semanticSizes, ...semanticStroke];
+
+function SquareRow({ token, value }: { token: Token; value: string }) {
+  return (
+    <div className="fnd-row">
+      <div
+        className="fnd-size-box"
+        style={{ width: `var(${token.name})`, height: `var(${token.name})` }}
+      />
+      <TokenMeta token={token} value={value} />
+    </div>
+  );
+}
 
 function Sizing() {
   const resolved = useMemo(
@@ -24,25 +45,47 @@ function Sizing() {
   return (
     <Page
       title="Sizing"
-      intro="Icon sizes, illustration sizes and stroke weights, each drawn at its real size. These are the scales component specs refer to by name."
+      intro="Control heights, icon sizes, illustration sizes and stroke weights, each drawn at its real size. These are the scales component specs refer to by name."
     >
       <Layer
-        name="Primitive"
-        note="There is no semantic sizing layer. The semantic layer covers colour and type only, so these primitives are what components consume."
+        name="Semantic"
+        note="Named for the job the size does. This is the layer components consume: a control height, the icon inside it, and the minimum tap target a short control keeps as a transparent hit area."
       >
-        <Group name="icon">
-          {iconTokens.map((token) => (
+        {semanticGroups.map(([group, tokens]) => (
+          <Group key={group} name={`semantic.size.${group}`}>
+            {tokens.map((token) => (
+              <SquareRow key={token.path} token={token} value={resolved[token.name] ?? ''} />
+            ))}
+          </Group>
+        ))}
+
+        <Group name="semantic.stroke">
+          {semanticStroke.map((token) => (
             <div className="fnd-row" key={token.path}>
-              <div
-                className="fnd-size-box"
-                style={{ width: `var(${token.name})`, height: `var(${token.name})` }}
-              />
+              <div className="fnd-stroke-line" style={{ borderTopWidth: `var(${token.name})` }} />
               <TokenMeta token={token} value={resolved[token.name] ?? ''} />
             </div>
           ))}
         </Group>
+      </Layer>
 
-        <Group name="illustration">
+      <Layer
+        name="Primitive"
+        note="The raw scales the semantic roles alias into. Components never consume these directly."
+      >
+        <Group name="primitive.size.control">
+          {controlTokens.map((token) => (
+            <SquareRow key={token.path} token={token} value={resolved[token.name] ?? ''} />
+          ))}
+        </Group>
+
+        <Group name="primitive.icon">
+          {iconTokens.map((token) => (
+            <SquareRow key={token.path} token={token} value={resolved[token.name] ?? ''} />
+          ))}
+        </Group>
+
+        <Group name="primitive.illustration">
           {illustrationTokens.map((token) => (
             // Stacked: the largest is 320px and would not fit the row's
             // visual column.
@@ -56,13 +99,10 @@ function Sizing() {
           ))}
         </Group>
 
-        <Group name="stroke">
+        <Group name="primitive.stroke">
           {strokeTokens.map((token) => (
             <div className="fnd-row" key={token.path}>
-              <div
-                className="fnd-stroke-line"
-                style={{ borderTopWidth: `var(${token.name})` }}
-              />
+              <div className="fnd-stroke-line" style={{ borderTopWidth: `var(${token.name})` }} />
               <TokenMeta token={token} value={resolved[token.name] ?? ''} />
             </div>
           ))}
@@ -87,24 +127,37 @@ type Story = StoryObj<typeof meta>;
 
 export const Scale: Story = {
   play: async ({ canvas }) => {
-    for (const group of ['icon', 'illustration', 'stroke']) {
+    await expect(canvas.getByRole('heading', { name: 'Semantic' })).toBeVisible();
+    await expect(canvas.getByRole('heading', { name: 'Primitive' })).toBeVisible();
+
+    for (const group of [
+      'semantic.size.control',
+      'semantic.size.icon',
+      'semantic.size.tapTarget',
+      'semantic.stroke',
+      'primitive.size.control',
+      'primitive.icon',
+      'primitive.illustration',
+      'primitive.stroke',
+    ]) {
       await expect(canvas.getByRole('heading', { name: group })).toBeVisible();
     }
 
-    // Both ends of each scale, resolved from the generated stylesheet.
-    await expect(canvas.getByText('--primitive-icon-100')).toBeVisible();
-    await expect(canvas.getByText('--primitive-icon-400')).toBeVisible();
-    await expect(canvas.getByText('--primitive-illustration-4000')).toBeVisible();
+    // The roles the button consumes.
+    await expect(canvas.getByText('--semantic-size-control-m')).toBeVisible();
+    await expect(canvas.getByText('--semantic-size-tap-target-min')).toBeVisible();
 
     // These two are the tokens design-system.md calls Stroke/Border and
     // Stroke/Heavy Border. Their values are why this page exists.
     await expect(canvas.getByText('--primitive-stroke-border')).toBeVisible();
     await expect(canvas.getByText('--primitive-stroke-heavy-border')).toBeVisible();
-    await expect(canvas.getByText(/^2px/)).toBeVisible();
-    await expect(canvas.getByText(/^320px/)).toBeVisible();
+    // Name rather than value: 320px now appears twice, once for the primitive
+    // and once for the semantic role that aliases it.
+    await expect(canvas.getByText('--primitive-illustration-4000')).toBeVisible();
+    await expect(canvas.getByText('--semantic-size-illustration-4-xl')).toBeVisible();
 
-    // None of these carry a $description.
+    // Semantic sizes carry a description; no primitive does.
     const missing = canvas.getAllByText(/No description in tokens\.json/);
-    await expect(missing).toHaveLength(allSizes.length);
+    await expect(missing).toHaveLength(primitiveSizes.length);
   },
 };

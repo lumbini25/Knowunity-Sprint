@@ -1,0 +1,89 @@
+/* Checkbox — built from the Figma component set "Checkbox" (node 4139:312).
+
+   Every value is a CSS custom property from build/css/tokens.css, and every one
+   is a semantic token. No literals, no var() fallbacks, no primitives.
+
+   Figma binds this component's colours to variables that no longer exist in the
+   file (highlight/border, highlight/indicator, feedback/error,
+   feedback/errorSurface). Each is mapped to the nearest living token; the
+   mapping is set out in the story docs. */
+
+/* The 48px tap target. Transparent -- the box inside is what shows. */
+.knw-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-tap-target-min);
+  height: var(--semantic-size-tap-target-min);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-checkbox:disabled {
+  cursor: not-allowed;
+}
+
+/* The box itself: 24px, fully rounded, with a heavy ring. */
+.knw-checkbox__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+  border-style: solid;
+  border-width: var(--semantic-stroke-strong);
+  border-radius: var(--semantic-radius-pill);
+  /* Unselected boxes are an outline only. */
+  background: none;
+}
+
+/* The checkmark, shown only when selected. */
+.knw-checkbox__mark {
+  display: inline-flex;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+  color: var(--semantic-text-primary);
+}
+
+/* ===== state: the ring colour ===== */
+
+.knw-checkbox--Default .knw-checkbox__box {
+  border-color: var(--semantic-border-selected);
+}
+
+.knw-checkbox--Error .knw-checkbox__box {
+  border-color: var(--semantic-feedback-error-bold);
+}
+
+.knw-checkbox--Disabled .knw-checkbox__box {
+  border-color: var(--semantic-interactive-disabled);
+}
+
+/* ===== selection: the fill ===== */
+
+/* Selection=Selected, State=Default binds fill AND stroke to
+   `highlight/indicator` in Figma — violet/highlight (#9d85ff), a step brighter
+   than `border/selected` (violet/500, #9178e6), which is what this took and
+   what the resting outline above still takes. The two are close enough to pass
+   unnoticed on their own and not close enough to match beside each other, which
+   is how it surfaced: `listItem` draws the same disc from the same node.
+
+   TOKEN NOTE. The semantic layer carries that value under one name only,
+   `highlight/border`, documented as the edge of the active tab. A
+   `highlight/indicator` alias is requested in design-system.md's Gaps. */
+.knw-checkbox--Selected.knw-checkbox--Default .knw-checkbox__box {
+  border-color: var(--semantic-highlight-border);
+  background: var(--semantic-highlight-border);
+}
+
+.knw-checkbox--Selected.knw-checkbox--Error .knw-checkbox__box {
+  background: var(--semantic-feedback-error-subtle);
+}
+
+.knw-checkbox--Selected.knw-checkbox--Disabled .knw-checkbox__box {
+  background: var(--semantic-interactive-disabled);
+}

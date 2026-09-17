@@ -1,0 +1,55 @@
+/* feedback Button — built from the Figma component set "feedback Button"
+   (node 15700:17854), formerly named errorButton.
+
+   Every value is a semantic token. The one compromise is the Misheard fill,
+   which Figma now binds to a variable expression with no token behind it — see
+   the story docs. */
+
+.knw-fbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+
+  /* The set draws each variant at a fixed 112, but its own USE note says
+     "Equal FILL width halves of the card interior", so the button fills the
+     space it is given and the parent decides the width. */
+  width: 100%;
+
+  padding-block: var(--semantic-space-layout-s);
+  padding-inline: var(--semantic-space-layout-m);
+  border: var(--semantic-stroke-default) solid;
+  border-radius: var(--semantic-radius-pill);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  font-family: var(--semantic-type-scale-caption-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-s-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-s-bold-letter-spacing);
+}
+
+/* ===== verdict ===== */
+
+.knw-fbtn--Misheard {
+  border-color: var(--semantic-feedback-error-bold);
+  /* feedback/error/surface/subtle now exists as a token, so this is Figma's
+     actual binding rather than the feedback/error/subtle stand-in. */
+  background: var(--semantic-feedback-error-surface-subtle);
+  /* feedback/error/bold is a fill; used as text on error/subtle it reads
+     4.41:1. error/label/subtle is the pair's own text token: 6.45:1. */
+  color: var(--semantic-feedback-error-label-subtle);
+}
+
+.knw-fbtn--Confirmed {
+  border-color: var(--semantic-border-default);
+  background: var(--semantic-background-surface);
+  color: var(--semantic-text-secondary);
+}
+
+.knw-fbtn:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}

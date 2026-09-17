@@ -1,69 +1,62 @@
-import Image from "next/image";
+import Link from 'next/link';
+import './index.css';
+
+/**
+ * The prototype's index.
+ *
+ * Replaces the create-next-app template, as CLAUDE.md asks. It is scaffolding
+ * rather than a designed screen — a way into the recall states while the flow
+ * between them is still being built — so it deliberately carries no mascot, no
+ * scaffold and no chrome that would imply it is part of the product.
+ */
+
+const SCREENS = [
+  { href: '/entry', name: 'Home — start here', state: 'Entry 1' },
+  { href: '/entry/compose', name: 'Compose a set', state: 'Entry 2' },
+  { href: '/entry/ready', name: 'Explain out loud — ready', state: 'Entry 3' },
+  { href: '/entry/folders', name: 'Choose a folder', state: 'Entry 4' },
+  { href: '/recall/idle', name: 'Idle', state: 'State 9' },
+  { href: '/recall/recording', name: 'Listening', state: 'State 10' },
+  { href: '/recall/answer-sent', name: 'The take', state: 'State 10b' },
+  { href: '/recall/processing', name: 'Knowie thinking', state: 'State 12' },
+  { href: '/recall/result', name: 'Partial — the hint ladder', state: 'State 13' },
+  { href: '/recall/correct', name: 'Correct — the pass', state: 'State 13a' },
+  { href: '/recall/correct-feedback', name: "Correct — Knowie's answer", state: 'State 13b' },
+  { href: '/recall/reveal', name: 'Reveal — the ladder runs out', state: 'State 14' },
+  { href: '/recall/wrong', name: 'Wrong — after the reveal', state: 'State 14a' },
+  { href: '/recall/comparison', name: 'Comparison — both answers', state: 'State 14b' },
+  { href: '/recall/rating', name: 'Session rating', state: 'State 15' },
+  { href: '/recall/summary', name: 'Summary', state: 'State 16' },
+  { href: '/recall/lesson', name: 'Lesson — revise', state: 'After 16' },
+  { href: '/recall/exit', name: 'Exit sheet', state: 'State 8' },
+  { href: '/recall/no-audio', name: 'Nothing heard', state: 'State 11' },
+  { href: '/recall/misheard', name: 'Misheard transcript', state: 'State 11b' },
+  { href: '/recall/re-record', name: 'Re-record offer', state: 'State 11c' },
+  { href: '/recall/text-fallback', name: 'Text fallback turn', state: 'State 6' },
+  { href: '/recall/permission-primer', name: 'Mic permission primer', state: 'State 7' },
+  { href: '/recall/permission-sheet', name: 'Mic permission sheet', state: 'State 7b' },
+  { href: '/recall/permission-denied', name: 'Permission denied', state: 'State 8' },
+] as const;
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="knw-index">
+      <h1 className="knw-index__title">Explain Out Loud</h1>
+      <p className="knw-index__lede">
+        Recall states from <code>reference/Voice_UX.md</code>. Each one is the same component the
+        Storybook story renders. Start at <strong>Idle</strong> and click through — the loop runs
+        end to end from there.
+      </p>
+      <ul className="knw-index__list">
+        {SCREENS.map((s) => (
+          <li key={s.href}>
+            <Link className="knw-index__link" href={s.href}>
+              <span className="knw-index__state">{s.state}</span>
+              <span className="knw-index__name">{s.name}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }

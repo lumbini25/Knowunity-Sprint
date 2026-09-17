@@ -1,0 +1,69 @@
+/* summarySmallCards — built from the Figma component "summarySmallCards"
+   (node 15676:15996).
+
+   Every value is a semantic token. The one compromise is the review tile's
+   fill, which Figma binds to a variable expression with no token behind it —
+   see the story docs. */
+
+.knw-summarycards {
+  display: flex;
+  align-items: stretch;
+  /* Figma: gap Space/300. */
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+}
+
+.knw-summarycards__tile {
+  /* Both tiles FILL, so they always split the row evenly. */
+  flex: 1 1 0;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  /* Figma: gap Space/100, padding Space/300 block / Space/400 inline. */
+  gap: var(--semantic-space-layout-xs);
+  box-sizing: border-box;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  border-radius: var(--semantic-radius-inner);
+}
+
+/* Figma sets the score and the label in the same style — both headline/XS-bold,
+   not the caption the description claims for the label. */
+.knw-summarycards__score,
+.knw-summarycards__label {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+}
+
+/* ===== the two tiles =====
+
+   They are not a variant axis: the component has no properties at all. The
+   left tile is always the recalled count, the right always the review count. */
+
+.knw-summarycards__tile--recalled {
+  /* Still the dark compromise the TOKEN NOTE describes — this tile never got
+     the tinted wash its sibling now has. */
+  background: var(--semantic-background-surface);
+}
+
+.knw-summarycards__tile--recalled .knw-summarycards__score,
+.knw-summarycards__tile--recalled .knw-summarycards__label {
+  color: var(--semantic-feedback-success-label-subtle);
+}
+
+.knw-summarycards__tile--review {
+  /* Figma's own binding, now that the 20% wash exists as a token. */
+  background: var(--semantic-feedback-error-surface-subtle);
+}
+
+.knw-summarycards__tile--review .knw-summarycards__score,
+.knw-summarycards__tile--review .knw-summarycards__label {
+  /* error/bold on error/subtle is 4.41:1, under AA. error/label/subtle is the
+     text half of the same pair: 6.45:1. */
+  color: var(--semantic-feedback-error-label-subtle);
+}

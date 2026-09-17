@@ -104,6 +104,14 @@
   align-items: center;
 }
 
+/* Oversized samples overflow their column, so the meta column sits above them
+   on its own ground and the label is always read against the page. */
+.fnd-row > .fnd-meta {
+  position: relative;
+  z-index: 1;
+  background: var(--semantic-background-page);
+}
+
 .fnd-row-stacked {
   display: flex;
   flex-direction: column;
@@ -153,7 +161,9 @@
 
 /* A token with no $description states that, rather than showing an empty cell. */
 .fnd-desc-missing {
-  color: var(--semantic-text-disabled);
+  /* text/disabled reads 3.79:1 on the page, under AA. text/tertiary is the
+     next step up in the same family and clears it at 4.62:1. */
+  color: var(--semantic-text-tertiary);
   font-style: italic;
 }
 
@@ -191,7 +201,12 @@
 
 /* ----- sizing ----- */
 
-/* A square at the token's exact size: icon and illustration scales. */
+/* A square at the token's exact size: icon and illustration scales.
+
+   Samples larger than the 160px sample column (illustration/4XL at 320,
+   sheet/L at 768) deliberately overflow it so the size stays honest. The meta
+   column paints over them rather than letting the label sit on violet — that
+   was reading as low as 1.82:1. */
 .fnd-size-box {
   background: var(--semantic-border-selected);
   border-radius: var(--primitive-radius-100);

@@ -1,0 +1,43 @@
+/* buttonGroup — built from the Figma component set "buttonGroup"
+   (node 9003:8455).
+
+   Layout only. Every colour, radius and type value belongs to the buttons
+   placed inside, which is the whole point of the component: it composes two
+   controls without restating anything either of them already owns. */
+
+.knw-buttongroup {
+  display: flex;
+  width: 100%;
+}
+
+/* Figma stacks the two with NO gap — the 48-high rows sit flush, so the pair
+   reads as one block rather than two separate actions. */
+.knw-buttongroup--Vertical {
+  flex-direction: column;
+}
+
+/* Figma's buttons fill the group's width, which is what makes the pair read as
+   equal weight. `button` hugs its label by default, so the group stretches it
+   — the group owns the width, the button owns everything else. */
+.knw-buttongroup--Vertical > *,
+.knw-buttongroup--Vertical > * > .knw-button__surface {
+  width: 100%;
+}
+
+/* Horizontal: the compact control first, the labelled one filling the rest.
+   Figma's gap on this variant is Space/200. */
+.knw-buttongroup--Horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+}
+
+.knw-buttongroup--Horizontal > :first-child {
+  flex: none;
+}
+
+.knw-buttongroup--Horizontal > :last-child,
+.knw-buttongroup--Horizontal > :last-child > .knw-button__surface {
+  flex: 1;
+  width: 100%;
+}
