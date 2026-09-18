@@ -119,11 +119,18 @@ thing.
 **9**
 
 *Surface* — `npm run consistency` adds no new row to the type table, and the
-gutter and gap columns are identical across every route that should match. One
-icon per concept across all 26 routes, checked deliberately by putting each
-screen next to the one before it. The orb sits the same distance from the
-content on every turn — measured to the **visible** orb, not the box around it.
-A stranger clicking through cannot tell the build order.
+gutter and gap columns are identical across every route that should match. The
+orb sits the same distance from the content on every turn — measured to the
+**visible** orb, not the box around it. A stranger clicking through cannot tell
+the build order.
+
+One icon per concept across all 26 routes. **To check it:** list the ideas the
+app expresses — microphone, exit, hint, streak, correct, keyboard, discard —
+then count the distinct drawings of each across every screen. More than one
+drawing of one idea is not a 9, however reasonable each was locally: the
+student reads two glyphs as two things. Note that `npm run consistency` reports
+icon boxes that drift in **size** but cannot tell you two glyphs **mean** the
+same thing, so this count is done by eye.
 
 *Transition* — Every screen is reached by tapping from the one before, and the
 student could have predicted each arrival before tapping. A control names the
@@ -147,20 +154,34 @@ movement or detail that separates a screen that works from one that feels made.
 This dimension is graded by looking, never by reading. Whether a decision was
 written down belongs to System fidelity; whether it can be seen belongs here.
 
+**It is scored across every screen, and the score is the floor rather than the
+ceiling.** Craft that appears on the idle screen and not on "nothing heard" is
+not a level of craft, it is a demo. The screens nobody walks a stakeholder
+through — permission denied, silent recording, misheard, the exit sheet — are
+where this dimension is actually decided, because they are where finish gets
+dropped when a sprint runs short. Grade the weakest screen, not the best one.
+
+Where Coherence asks whether the screens agree with each other, Craft asks
+whether the *same level of finish* reaches all of them.
+
 **4** — Controls have a default state and little else: no pressed, no disabled,
 no empty. The waveform sits static while the screen says "Listening", so the
 only evidence that sound is arriving is a word. Headings wrap mid-phrase.
 Elements are mathematically centred in ways that read as off. The wait is a
 dead spinner, which Voice_UX principle 6 names specifically as the thing not
-to do.
+to do. Finish varies visibly screen to screen: the main loop is worked and the
+edge cases are placeholders wearing the right tokens.
 
 **6** — Every state that the flow can reach exists and is distinct. Rhythm is
-even, spacing lands on the scale, nothing jars in a screenshot. But nothing has
-a second beat: sheets appear rather than rise, the orb is a still shape while
-recording, the XP figure arrives at its number rather than counting to it,
-and a verdict lands with no beat of acknowledgment before the next prompt —
-which the brief asks for by name. **This is the honest score for most competent
-work, and it is not a criticism.**
+even, spacing lands on the scale, nothing jars in a screenshot, and it holds up
+across the main loop rather than on one screen. But nothing has a second beat:
+sheets appear rather than rise, the orb is a still shape while recording, the
+XP figure arrives at its number rather than counting to it, and a verdict lands
+with no beat of acknowledgment before the next prompt — which the brief asks
+for by name. Or the loop is finished and the failure screens are thinner:
+correct and reveal have their states, "nothing heard" and "permission denied"
+have one each. **This is the honest score for most competent work, and it is
+not a criticism.**
 
 **9** — The orb breathes on `semantic/motion/*` while recording, so the claim
 that sound is arriving is visual and not merely textual (principle 1: show
@@ -171,6 +192,11 @@ differ from default by more than opacity. Headings break where a person would
 break them. Where mathematical centring reads as off — an ear, a glyph with
 uneven bearings — it is optically corrected, and the correction is visible when
 you toggle it. A senior critique finds nothing to move.
+
+And all of that is true on every screen, including the ones the walkthrough
+skips. Pick the three screens least likely to be demoed — "nothing heard",
+"permission denied", the exit sheet — and grade those. If they hold, the score
+holds; if the answer is "well, those are edge cases", the score is a 6.
 
 ### 4. UX judgment — **High**
 
