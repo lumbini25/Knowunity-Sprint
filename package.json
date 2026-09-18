@@ -13,7 +13,8 @@
     "build-storybook": "storybook build",
     "chromatic": "set -a && . ./.env.local && set +a && chromatic --exit-zero-on-changes",
     "a11y": "node scripts/a11y.mjs",
-    "consistency": "node scripts/consistency.mjs"
+    "consistency": "node scripts/consistency.mjs",
+    "check:tokens": "node scripts/check-tokens.mjs"
   },
   "dependencies": {
     "next": "16.3.4",
