@@ -34,7 +34,9 @@
 .knw-recall__header {
   display: flex;
   align-items: center;
-  gap: var(--semantic-space-layout-m);
+  /* Space/100, matching Figma's Top Nav Default. It was Space/300 (12), and
+     the two extra gaps came straight off the progress bar's width. */
+  gap: var(--semantic-space-layout-xs);
   /* border-box, or the inline padding is added to the 100% and the row runs
      32px past the screen — which clips the XP figure off the right edge. */
   box-sizing: border-box;
@@ -43,7 +45,10 @@
      with a 44 tap target inside. A 48 target (the system's own
      size/tapTarget/min) plus that 8 comes to the same 56. */
   padding-block: 0 var(--semantic-space-layout-s);
-  padding-inline: var(--semantic-space-layout-l);
+  /* Space/300, not Space/400. Figma pads this row 12 inline, and
+     390 − 24 − 44 − 8 − 41 is the 273 the progressIndicator is drawn at. On 16
+     the bar came out 254 — nineteen pixels narrow on every screen in the loop. */
+  padding-inline: var(--semantic-space-layout-m);
 }
 
 /* progressIndicator takes the space between the exit control and the XP.
@@ -98,6 +103,23 @@
    Figma draws a 44×44 `App Bar Button Icon` around the glyph. The system has
    its own answer at `size/tapTarget/min` (48), which clears Figma's 44 and,
    with the row's 8 bottom padding, reproduces Top Nav Default's 56 exactly. */
+/* Holds the exit's place on the one turn that has none, so the progress bar
+   keeps the width and position it has on every other screen rather than
+   growing into the gap. */
+/* The same class serves the wired control and the unwired chrome, so the
+   pointer has to come off when it is not a button — a cursor that says
+   "pressable" over something inert is the lie the markup avoids. */
+span.knw-recall__exit {
+  cursor: default;
+}
+
+.knw-recall__exit-slot {
+  display: inline-block;
+  flex: none;
+  width: var(--semantic-size-tap-target-min);
+  height: var(--semantic-size-tap-target-min);
+}
+
 .knw-recall__exit {
   display: inline-flex;
   align-items: center;
@@ -109,10 +131,18 @@
   border: none;
   background: none;
   color: var(--semantic-text-primary);
-  /* Figma sets the glyph at 22/22; headline/S is the nearest bound step. */
+  /* Figma sets the glyph at 22/22; headline/S is the nearest bound step.
+
+     ALL FIVE PROPERTIES, NOT THREE. This bound family, size and line-height and
+     left `font-weight` and `letter-spacing` to the browser — so the ✕ rendered
+     at the user-agent's 400 on 14 routes, a weight nobody chose. Same defect as
+     the unstyled <strong> on the text-fallback screen, and the same rule
+     catches both: type is bound as a complete set or not at all. */
   font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
   font-size: var(--semantic-type-scale-headline-s-font-size);
   line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -236,9 +266,54 @@
 
 /* The primer has no header: Knowie takes the space above, the headline sits
    under it, and the actions are pinned to the bottom slot. */
+/* THE HEADLINE SITS ABOUT TWO THIRDS DOWN, NOT AGAINST THE BUTTON.
+
+   Figma stacks three blocks in the 844 frame: the mascot block at 518, the
+   headline at 32, and a 294 block holding the button at its foot. So there is
+   a deliberate gap of roughly 230 BELOW the headline — "You're ready" lands at
+   61% of the screen, and the button is a long way further down.
+
+   The hero alone was `flex: 1`, which handed it every spare pixel and pushed
+   the headline to 84%, hard against the button. The spacer below takes a share
+   too, in Figma's own proportion: 518 above to 230 below is close enough to
+   2 : 1 that the ratio is written rather than the pixels, so the screen keeps
+   its rhythm on any viewport height instead of only on 844. */
 .knw-recall--primer {
   gap: var(--semantic-space-layout-l);
   min-height: 100%;
+}
+
+.knw-recall--primer .knw-recall__hero {
+  flex: 2;
+}
+
+.knw-recall__primer-foot {
+  flex: 1;
+}
+
+/* KNOWIE IS OUT OF FOCUS HERE, AND THAT IS THE SCREEN.
+
+   `mic permission primer` (15794:19616) puts a 20px LAYER_BLUR on the block
+   holding the mascot, and it is the whole visual idea: Knowie as a soft glow
+   behind "You're ready" rather than a character in front of it. Without it the
+   screen is a crisp mascot and a headline, which is a different screen.
+
+   THE UNITS DO NOT CONVERT 1:1, which is the trap. Figma's LAYER_BLUR radius
+   drives a Gaussian of sigma ≈ radius/2, while CSS `blur(N)` sets sigma = N —
+   so Figma's 20 is about `blur(10px)`, not `blur(20px)`. Binding `effect/blur`
+   (16) on the strength of the raw number turned Knowie into an unreadable
+   smear where the frame still shows the ears and the eyes.
+
+   Converted first, the nearest step flips: |10 − 5| beats |10 − 16|, so
+   `effect/blur-soft` is the closer token. An earlier note here claimed
+   blur-soft was the ONLY blur token and shipped the mascot crisp; both have
+   existed all along.
+
+   On the block, not the mascot, because that is where Figma puts it: the
+   padding blurs with it, so the glow falls off inside the frame instead of
+   ending at the illustration's edge. */
+.knw-recall--primer .knw-recall__hero {
+  filter: blur(var(--semantic-effect-blur-soft));
 }
 
 /* ===== permission denied ===== */
@@ -406,6 +481,17 @@
   color: var(--semantic-text-primary);
 }
 
+/* The bolded term inside the question. WITHOUT THIS RULE THE BROWSER SUPPLIES
+   THE WEIGHT: an unstyled <strong> inherits size and family from its parent but
+   takes `font-weight: bold` — 700 — from the user-agent stylesheet, where every
+   other emphasised term in this app is the token's SemiBold (600). One word on
+   one screen was heavier than the same word on three others, which is precisely
+   what "bind type as a complete set, never partially" exists to prevent.
+   Matches `.knw-recall__question strong`. */
+.knw-recall__ask-text strong {
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+}
+
 /* The student's own turn, mirrored to the right. */
 .knw-recall__answer {
   display: flex;
@@ -537,6 +623,23 @@
   padding-block: var(--semantic-space-layout-l);
 }
 
+/* A CTA IS 358 ON EVERY SCREEN, INCLUDING A RECALL TURN.
+
+   `.knw-recall` bleeds out of the slot's 16 gutter and re-pads with
+   `space/gutter` (20) — the wider measure the design reserves for a recall
+   turn's own content. That is right for the question, the card and the orb, and
+   wrong for the buttons: it made the CTA 350 on the turn screens and 358
+   everywhere else, so the primary action changed width as the student moved
+   between them.
+
+   The difference is cancelled rather than hard-coded: the two tokens are
+   subtracted, so if either gutter ever changes this still resolves to "the
+   screen's own edge". */
+.knw-recall .knw-buttongroup {
+  width: calc(100% + (var(--semantic-space-gutter) - var(--semantic-space-layout-l)) * 2);
+  margin-inline: calc((var(--semantic-space-gutter) - var(--semantic-space-layout-l)) * -1);
+}
+
 /* The permission sheet's body: Knowie above the ask, centred. Figma's
    middleSection is a 24-gap column padded 0/16/8/16. */
 .knw-recall__sheet-body {
@@ -626,13 +729,27 @@
   box-sizing: border-box;
   width: 100%;
   padding: var(--semantic-space-layout-l);
-  border-radius: var(--semantic-radius-input);
+  /* 12 — `radius/inner`, which is Figma's value exactly. It was `radius/input`
+     (24), the recall surfaces' radius, which rounded the panel like a field. */
+  border-radius: var(--semantic-radius-inner);
+  /* THE PANEL IS OUTLINED, and the outline is most of why it reads as promoted.
+     Figma strokes it 1 in the same gold as its label, so the hint stops being a
+     warmer patch of the card and becomes its own object on the screen. The
+     build had the wash and no edge, which is the quieter half of the idea. */
+  border: var(--semantic-stroke-default) solid var(--semantic-text-warning);
   background: var(--semantic-feedback-warning-surface-subtle);
   text-align: left;
 }
 
-/* text/warning — gold/300. This one matches Figma exactly. */
+/* text/warning — gold/300. This one matches Figma exactly.
+
+   The row shape mirrors `.knw-rrc__hint-label` exactly, because it is the same
+   label one rung later: mark, gap, text. Only the colour changes, and it
+   changes because the whole panel warms at rung 3. */
 .knw-recall__hint-panel-label {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
   margin: 0;
   color: var(--semantic-text-warning);
   font-family: var(--semantic-type-scale-caption-m-bold-font-family);
@@ -660,6 +777,39 @@
 
 .knw-recall--noaudio {
   justify-content: center;
+}
+
+/* THE FAB SLOT HAD NO RULE AT ALL — it was an inert div inheriting centring
+   from `.knw-recall`, which made it a flex ITEM that shrank to its widest
+   child. Fine while that child was the orb; wrong the moment it was a button,
+   which is how the no-audio screen's "Try again" came out 117 wide standing
+   next to 358s everywhere else. It is now the column it was always assumed to
+   be: full width, contents centred, so a stretched child can fill it. */
+/* Figma's `voiocefab` container: VERTICAL, gap Space/300, padding Space/200
+   block and Space/400 inline. The gap is declared here so the distance from the
+   fab block to the "Type your answer" link is one value on every screen rather
+   than whatever the elements' own margins happened to leave.
+
+   MEASURE IT FROM `.knw-fab`, NOT FROM THE ORB. voiceFab puts its caption above
+   the orb on Idle and below it on the other states, so orb-bottom to link reads
+   16 on the six Idle screens and 44 on the two that are not — that 28px step is
+   the caption moving, not the spacing changing. The block-to-link gap is what a
+   screen controls and what this makes consistent.
+
+   THE WRAPPER ALSO HAD NO RULE AT ALL, which is why the no-audio screen's CTA
+   came out 117 wide: an undeclared div inheriting centring from `.knw-recall`
+   is a flex ITEM, and it shrank to its widest child. Fine while that child was
+   the orb, wrong the moment it was a button. */
+.knw-recall__fab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  width: 100%;
+}
+
+.knw-recall__fab > .knw-buttongroup {
+  align-self: stretch;
 }
 
 /* The same card, one layer up.
@@ -851,10 +1001,21 @@
   text-align: center;
 }
 
-/* 33 Bold, centred — headline/L, bound exactly. */
+/* 33 Bold, centred — headline/L, bound exactly.
+
+   THE FULL 358, NOT 80% OF IT. Figma's text box is 358 wide — the screen's
+   content width, 390 less the slot's 16 gutter either side — and this carried
+   `max-width: 80%`, which is 286. The greeting measures 324 at headline/L, so
+   it fitted Figma's line and not ours, and "session," dropped to a second line
+   that Figma does not have.
+
+   The lesson is that the wrap was a LAYOUT bug wearing a typography costume:
+   the obvious reading was that the typeface was too wide, and the actual cause
+   was the box being too narrow. Measure the container before re-cutting the
+   type. */
 .knw-home__greeting {
   margin: 0;
-  max-width: 80%;
+  max-width: 100%;
   color: var(--semantic-text-primary);
   font-family: var(--semantic-type-scale-headline-l-font-family);
   font-weight: var(--semantic-type-scale-headline-l-font-weight);
@@ -888,6 +1049,103 @@
 
 .knw-home__rail > * {
   flex: none;
+}
+
+/* THE ACCENT GLYPHS, SHARED BY EVERY SCREEN THAT DRAWS ONE.
+
+   The app colour-codes a feature by its glyph, which is how four same-shaped
+   pills stay tellable apart. That is not specific to the home rail: the same
+   blue mic marks "Explain out loud" on the rail AND on the composer's attached
+   chip, so this class is `knw-accent-icon` rather than `knw-home__rail-icon` —
+   one name, one set, every screen.
+
+   ONE SIZE, `size/icon/S` (16). The rail's glyphs were 24 and the composer's
+   attached chip 16, which is what the frames measure — but one accent icon at
+   two sizes is the drift the audit flags, and the smaller step is the one that
+   sits correctly inside a chip without overflowing its icon box. */
+.knw-accent-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+}
+
+/* Each glyph is two-tone: the accent, and the detail knocked into it. The pair
+   is always the same family's `*-label-subtle`/`*-bold` step over its `*-subtle`
+   one, which is what makes the lens, the question mark and the ruled lines
+   readable against the silhouette carrying them. */
+.knw-accent-icon[data-accent='brand'] {
+  color: var(--semantic-accent-brand-label-subtle);
+  --knw-icon-detail: var(--semantic-accent-brand-subtle);
+}
+
+.knw-accent-icon[data-accent='blue'] {
+  color: var(--semantic-accent-blue-bold);
+  --knw-icon-detail: var(--semantic-accent-blue-subtle);
+}
+
+.knw-accent-icon[data-accent='magenta'] {
+  color: var(--semantic-accent-magenta-bold);
+  /* Figma's detail here is magenta/950, which is only exposed as
+     `accent/magenta/label/bold` — a *text* colour. A label token doing a
+     surface's job is the swap "Never do this" exists to stop, so this takes
+     `accent/magenta/subtle` (magenta/900): the nearest step in the right role,
+     the same call the EOL card's blue already documents. */
+  --knw-icon-detail: var(--semantic-accent-magenta-subtle);
+}
+
+.knw-accent-icon[data-accent='green'] {
+  color: var(--semantic-accent-green-label-subtle);
+  --knw-icon-detail: var(--semantic-accent-green-subtle);
+}
+
+.knw-accent-icon[data-accent='coral'] {
+  color: var(--semantic-accent-coral-label-subtle);
+  --knw-icon-detail: var(--semantic-accent-coral-subtle);
+}
+
+/* The bottom bar. Figma's row is 358 × 48, HORIZONTAL, gap 32 — but a fixed 32
+   overflows once five 24 glyphs and their padding are in, so the row spreads
+   instead and the gap becomes the minimum rather than the measure. */
+.knw-home__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+  padding-block: var(--semantic-space-layout-xs);
+}
+
+.knw-home__nav-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+  /* Every tab but the one you are on is secondary — Figma's 68% white, which
+     is `text/secondary` exactly. */
+  color: var(--semantic-text-secondary);
+}
+
+.knw-home__nav-item[data-current='true'] {
+  color: var(--semantic-text-primary);
+}
+
+/* The avatar is Knowie on a violet disc, which is what the file draws. */
+.knw-home__nav-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--semantic-size-control-m);
+  height: var(--semantic-size-control-m);
+  padding: var(--semantic-space-layout-xxs);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-accent-brand-subtle);
 }
 
 /* ===== choose folder screen ===== */
@@ -951,6 +1209,42 @@
 /* Figma's chip sits above the field with an ✕ beside it — the feature stays
    attached until the student takes it off, which is what makes the next
    message a practice set rather than a question. */
+/* The compose screen's column holds one thing — Knowie, waiting — so it centres
+   rather than hugging the left edge the way a thread of chat turns does. */
+.knw-entry--compose {
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+/* `chip container` — Camera / Gallery / Files, above the composer. Figma's
+   frame is HORIZONTAL, gap 8, 323 wide inside a 390 screen.
+
+   IT SCROLLS RATHER THAN WRAPPING, for the same reason the home rail does: the
+   three pills at our inset add up past the column, and a source row that wraps
+   to a second line pushes the composer down the screen every time. Running off
+   the right edge is the app's own pattern for a row of sources. */
+.knw-entry__sources {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.knw-entry__sources::-webkit-scrollbar {
+  display: none;
+}
+
+/* The row is a tab stop, so it has to show when it has focus — the repo's
+   fixed focus idiom, inset so the ring is not clipped by the overflow. */
+.knw-entry__sources:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: calc(var(--semantic-space-layout-xxs) * -1);
+  border-radius: var(--semantic-radius-pill);
+}
+
 .knw-entry__attached {
   display: flex;
   align-items: center;
@@ -1056,6 +1350,38 @@
 
 .knw-entry__stat--streak {
   color: var(--semantic-accent-coral-bold);
+}
+
+/* The app bar's two controls. The tap target stays `.knw-recall__exit`'s 48;
+   this only sizes the glyph inside it, at the 24 box Figma draws them in. */
+.knw-entry__appbar-icon {
+  display: inline-flex;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+}
+
+/* "Upgrade" sits at the same step as the XP and streak figures beside it —
+   headline/S, which is Figma's 21.77 to the nearest bound step. */
+.knw-entry__upgrade {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--semantic-space-gap-xs);
+  color: var(--semantic-pro-bold);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+/* The lockup is 38 × 20 and keeps that ratio — it is a wordmark, so squaring it
+   into an icon box would distort the letters. Height is pinned to the icon
+   scale and the width follows, the same rule the XP bolt's 18 × 22 follows. */
+.knw-entry__pro {
+  display: inline-flex;
+  flex: none;
+  width: calc(var(--semantic-size-icon-m) * 1.9);
+  height: var(--semantic-size-icon-m);
 }
 
 /* The student's turn: a pill on the right, and the feature they picked named
@@ -1186,15 +1512,17 @@
   letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
 }
 
-/* 18 SemiBold — the set's name, and the biggest thing on the card. */
+/* 18 SemiBold at line-height 20 — headline/XS-bold, which is what Figma binds
+   here (`font/size/md` + `font/lineHeight/sm`). Not body/M-bold: that is also
+   18/600 but leads at 24, and the two steps side by side read as a mistake. */
 .knw-entry__start-set {
   margin: 0;
   color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-body-m-bold-font-family);
-  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
-  font-size: var(--semantic-type-scale-body-m-bold-font-size);
-  line-height: var(--semantic-type-scale-body-m-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-body-m-bold-letter-spacing);
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
 }
 
 /* Figma's feedback row: a centred question, then two pills. */
@@ -1627,12 +1955,22 @@
   line-height: var(--semantic-type-scale-caption-m-regular-line-height);
 }
 
+/* SAME CARD AS THE ENTRY SCREEN'S, SO THE SAME STEP — and the step is
+   headline/XS-bold, 18/600 at line-height 20. Figma binds this line
+   `font/size/md` + `font/lineHeight/sm`, which is that step exactly.
+   
+   IT TOOK TWO GOES. It was body/M-regular (18/400), so the same card read at
+   two different weights on two screens; moving it to body/M-bold matched the
+   weight but not the leading, because body/M is 18/24. See SPEC.md's type
+   table: the scale has two 18/SemiBold steps and they differ only in leading,
+   which is exactly the kind of near-miss that looks like sloppy spacing. */
 .knw-lesson__eol-topic {
   color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-body-m-regular-font-family);
-  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
-  font-size: var(--semantic-type-scale-body-m-regular-font-size);
-  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
 }
 
 /* ===== comparison: your answer beside the right one ===== */
@@ -1713,14 +2051,80 @@
   letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
 }
 
-/* Green for what was right, violet for what the student said — the file's own
-   pairing, and the same two families the Partial breakdown uses. */
+/* THE FILE'S OWN BINDINGS, exactly. Both labels are 12/SemiBold at line-height
+   16 — `accent/green/bold` (#00C386) on the correct answer and
+   `accent/brand/bold` (#9178E6) on the student's. An earlier pass used the
+   `label/subtle` tier for both (#4AE5B0 and #A78BFA), a step lighter than the
+   frame, on the reasoning that carried the Partial breakdown's 9px labels. At
+   12px the contrast argument does not apply, so there is nothing to trade and
+   the frame wins. */
 .knw-compare__card-head[data-part='correct'] {
-  color: var(--semantic-feedback-success-label-subtle);
+  color: var(--semantic-accent-green-bold);
 }
 
+/* ONE STEP LIGHTER THAN THE FRAME, and only this one. Figma binds
+   `accent/brand/bold` (violet/500, #9178E6), which measures under 4.5:1 on
+   background/surface — axe fails it, and at 12px nothing here qualifies as
+   large text. `feedback/partial/label/subtle` (violet/300, #A78BFA) is the same
+   hue a step up and clears AA.
+
+   The green opposite it needs no such lift: #00C386 on this surface passes
+   comfortably, so it takes the frame's value exactly. This is the third time a
+   `bold` accent has failed as small text on a surface — see design-system.md,
+   where it is now a standing rule rather than three separate notes. */
 .knw-compare__card-head[data-part='yours'] {
   color: var(--semantic-feedback-partial-label-subtle);
+}
+
+/* The points, and their markers. Figma's are `Checkbox Selection=Selected,
+   State=Default` instances resized to 16 — a green disc, green ring, white
+   tick — not the 24px violet marker `listItem` draws on the summary.
+
+   TOKEN NOTE: the file binds the disc's fill to `feedback/success/surface/
+   subtle`, which resolves to #00C386 there. The token of that name here is the
+   20% wash; the one whose value IS #00C386 in a fill role is
+   `feedback/success/bold` — "correct answer fill", which is exactly what this
+   is. The ring is `border/success` and the tick `text/primary`, both exact. */
+.knw-compare__points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  list-style: none;
+}
+
+.knw-compare__point {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--semantic-space-layout-m);
+}
+
+.knw-compare__tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: none;
+  width: var(--semantic-size-icon-s);
+  height: var(--semantic-size-icon-s);
+  border: var(--semantic-stroke-default) solid var(--semantic-border-success);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-feedback-success-bold);
+  color: var(--semantic-text-primary);
+}
+
+/* 18 Regular on text/secondary, which is what both cards set. */
+.knw-compare__point-text {
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
 }
 
 /* What the student said, in the same body step as the points opposite, so the

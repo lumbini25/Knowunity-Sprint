@@ -54,6 +54,62 @@
   background: var(--semantic-background-input);
 }
 
+/* WITH AN ATTACHMENT THE FIELD IS A BOX, NOT A PILL.
+
+   Figma's `chat box` (15896:16019) is a VERTICAL frame holding the `EolChip`
+   and, beneath it, the row of text and send. Rather than restructure the DOM
+   for every status — which would risk the five that have no attachment — the
+   row simply wraps: the chip is given a full-width basis, so it takes the first
+   line and text and send share the second.
+
+   The radius follows, for the same reason `--long-input` squares off: a pill
+   radius on a two-line box bows the sides. */
+.knw-chat__field--with-attachment {
+  flex-wrap: wrap;
+  row-gap: var(--semantic-space-layout-m);
+  padding-block: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-input);
+}
+
+/* The field as a tap target. It keeps `.knw-chat__text`'s box exactly — only
+   the element type changes — and resets the button chrome a browser adds. */
+.knw-chat__text--pressable {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  color: inherit;
+  cursor: text;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-chat__text--pressable:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* The text claims no width of its own on the wrapped layout.
+
+   `flex-wrap` assigns items to lines by their HYPOTHETICAL size — flex-basis,
+   which is the content width here — and only shrinks them afterwards. So a
+   placeholder longer than the row pushed the send button onto a third line,
+   and `min-width: 0` could not prevent it, because the wrap had already
+   happened. `flex-basis: 0` makes the text ask for nothing, so it and send
+   always share one line and the text ellipses instead. */
+.knw-chat__field--with-attachment .knw-chat__text {
+  flex: 1 1 0;
+}
+
+.knw-chat__attachment {
+  display: flex;
+  align-items: center;
+  /* Tight, so the chip and the control that removes it read as one object. */
+  gap: var(--semantic-space-layout-xs);
+  /* The full-width basis is what puts it on its own line. */
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
 /* Once the text runs past one line the container squares off. */
 .knw-chat--long-input .knw-chat__field {
   align-items: flex-end;
@@ -66,11 +122,18 @@
   gap: var(--semantic-space-layout-xs);
   flex: 1 1 auto;
   min-width: 0;
-  font-family: var(--semantic-type-scale-body-s-bold-font-family);
-  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
-  font-size: var(--semantic-type-scale-body-s-bold-font-size);
-  line-height: var(--semantic-type-scale-body-s-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+  /* `body/M-regular` — 18/24 Regular, which is what Figma draws in the field on
+     every frame that has a composer: "Ask anything" on `entrypoint`, "World
+     History/" on `choosing chip`, "What's mitos|" on `explain out ready`. This
+     was bound to `body/S-bold` (15/20 SemiBold), so the composer read a step
+     small and a weight heavy on all 26 routes — the single largest type
+     mismatch in the build, and invisible precisely because it was wrong
+     everywhere at once rather than in one place. */
+  font-family: var(--semantic-type-scale-body-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-m-regular-font-size);
+  line-height: var(--semantic-type-scale-body-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
   /* Placeholder colour; the typed states override it. Figma binds this to
      text/disabled, which is 3.8:1 on the field and fails AA -- and a placeholder
      is a prompt, not a disabled control. text/tertiary passes at 4.86:1 and

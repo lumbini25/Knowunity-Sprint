@@ -22,7 +22,12 @@ export default function Page() {
       progressText={`${session.termIndex + 1} of ${session.termCount}`}
       holdMs={JUDGE_LATENCY_MS}
       onDone={() => go(session.submit())}
-      onExit={session.requestExit}
+      /* NO WAY OUT OF THIS ONE TURN, deliberately. The judge is mid-verdict:
+         there is nothing to go back to, and a ✕ here would abandon a take that
+         is about to be answered. `RecallHeader` draws the exit only when one is
+         wired, so passing none is how the screen says it has none — and the
+         wait is the only screen in the loop that is measured in hundreds of
+         milliseconds, not in the student's own time. */
     />
   );
 }

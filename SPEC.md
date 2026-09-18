@@ -52,7 +52,9 @@ Easiest first. Fourteen of the seventeen exist as routes today and the scripted 
 
 **The loop is wired and walkable.** `app/recall/layout.tsx` holds `RecallSessionProvider`; every route reads the session and turns its destinations into navigation, while the screens stay pure so each one still renders in Storybook without a provider.
 
-**The loop has a front door, and it closes.** `/entry` → a topic → a set → the ladder → the summary → back to `/entry/ready`. Until the entry screens existed every screen assumed a session was already running and `/recall/idle` opened on term 1 of a script nothing had chosen.
+**The loop has a front door, and it closes — two ways.** `/entry` → a topic → a set → the ladder → the summary, and from there either **"Revise now" → `/entry/folders`** (the shelf: pick different material) or **"Try again" → `/entry`** (the chat: pick a different feature, or the same one on a new topic). Until the entry screens existed every screen assumed a session was already running and `/recall/idle` opened on term 1 of a script nothing had chosen.
+
+"Try again" used to push `/entry/ready`, which restarts the same feature on the same material — a narrower thing than the words promise. From the front door the whole rail is in reach.
 
 **Every control on every built screen now goes where this document says it goes.** The summary's "Try again" was the last one outstanding — its destination, the Explain Out Loud entry screen, simply did not exist. The only handler still deliberately unwired is "Enable microphone", whose destination is iOS Settings and therefore outside the app; the home screen's other three feature chips are drawn but not pressable, because Scan, Quiz and Summarize are out of scope and sending them somewhere plausible would be the dishonest option in a demo.
 
@@ -64,7 +66,27 @@ Four screens, from `entrypoint AI Chat`. They are how a student picks what to pr
 
 ### E1 · Home — `/entry` — `Entrypoint 1` (`15618:8632`)
 
-Knowie, a greeting at `headline/L`, and a scrolling feature rail over the composer. **One feature is live.** Tapping **Explain out loud** goes to `/entry/compose`; the recent-folder chip goes to `/entry/folders`.
+The app bar, Knowie, a greeting at `headline/L`, a scrolling feature rail over the composer, and the bottom nav. **One feature is live.** Tapping **Explain out loud** goes to `/entry/compose`; the recent-folder chip goes to `/entry/folders`.
+
+**Composition, following `entrypoint` (`15896:16263`):**
+
+| Band | What |
+| --- | --- |
+| App bar | Menu · the PRO lockup + "Upgrade" · XP with its bolt · streak with its **flame** · history (`clock-rewind`). Same `ChatHeader` as E2–E4. |
+| Middle | `mascotSlot` 2XL with `standby`, and the greeting. |
+| Rail | Five chips, each with its **own two-tone glyph and its own accent** — Scan violet, Explain out loud blue, Quiz magenta, Summarize green, Chemistry prep coral. Scrolls; no chip is drawn active. |
+| Composer | `chatInput`, status `Inactive`. |
+| Bottom nav | Knowie · Search · Goals · Leaderboard · the avatar. Only the current tab is real. |
+
+**Type on this screen, and the one thing that is deliberately not Figma's:**
+
+| Element | Value | Note |
+| --- | --- | --- |
+| Greeting | `headline/L` — 33/36 Bold, in a **358-wide** box | Figma sets it 32/32.7 in **Greed Condensed Heavy**; the build stays on the Standard headline step by decision. The width is what matters — at 358 it breaks where Figma breaks, *"Evening study session," / "Harry?"*. It carried `max-width: 80%` (286) and broke a word early. |
+| App-bar figures | `headline/S` — 21/24 Bold | Figma sets 21.8/21.8 Condensed Heavy. Same decision. |
+| Rail chip labels | `body/S-bold` — 15/20 | Figma's detached rail frames draw 18/24; the `chips` component set itself tops out at M = 15. The component wins. |
+
+**Drawn is not the same as wired.** Three rail features, four nav tabs and both app-bar controls have no destination in this prototype. They are **drawn**, because they are the app's chrome and the screen does not read as the front door without them, and they are **not focusable**, because a control in the tab order that does nothing is worse for a keyboard or screen-reader user than for anyone else. The glyph renders either way; it is a `<button>` only when a handler exists.
 
 ### E2 · Compose a set — `/entry/compose` — `selecting explain feature` + `choosing chip`
 
@@ -81,6 +103,30 @@ The screen that starts a session, and **the summary's "Try again" destination**.
 The other way in: something already studied rather than a topic typed into the chat. Opening a folder goes to `/recall/lesson`, whose "Explain out loud" starts the session. Both paths end at a set of concepts and the orb.
 
 ---
+
+## Typography — one step per role
+
+Every screen draws from this table and nothing else. **13 combinations are in use across the 26 routes; these are all of them.** If a screen needs a value that is not here, it is a gap to raise, not a value to write.
+
+| Step | Size / weight / leading | Used for |
+|---|---|---|
+| `headline/XL` | 44 / Bold / 44 | The exit sheet's plea, and nothing else |
+| `headline/L` | 33 / Bold / 36 | The home greeting, the permission primer's headline |
+| `headline/M` | 28 / Bold / 32 | Screen titles — summary, rating, lesson, comparison |
+| `headline/S` | 21 / Bold / 24 | Section headings, and every `Button` at size L |
+| `headline/XS-bold` | **18 / SemiBold / 20** | Card titles and short labels |
+| `body/M-regular` | 18 / Regular / 24 | Running text — questions, answers, model answers |
+| `body/S-bold` | 15 / SemiBold / 20 | Group labels, list labels, `Button` at size M |
+| `body/S-regular` | 15 / Regular / 20 | Body copy inside cards, list rows |
+| `caption/M-bold` | 12 / SemiBold / 16 | Eyebrows, card headers, the skip control |
+| `caption/M-regular` | 12 / Regular / 16 | Transcripts, topic lines, captions |
+| `caption/S-bold` | 9 / SemiBold / 12 | "WHAT YOU SAID", "WHAT WAS MISSING" and the other in-card labels |
+
+**The scale has two 18/SemiBold steps.** `headline/XS-bold` leads at 20 and `body/M-bold` leads at 24 — same size, same weight, different leading. That is the one trap in this table, and it has caught this build twice: the same "Explain out loud" card rendered 18/400 on the lesson and 18/600/24 on the entry screen, and neither matched the frame. **Figma binds `font/size/md` + `font/lineHeight/sm`, which is `headline/XS-bold`.** Use that for anything 18 and bold; `body/M-bold` is not used anywhere in this build.
+
+**Two things a screen must never do.** Bind a type step partially — all five properties (`font-family`, `font-weight`, `font-size`, `line-height`, `letter-spacing`) or none. And override a component's type from a screen: `listItem`, `transcriptSection`, `chatInput` and `button` own their own steps, and reaching in from outside is how the summary's card ended up fighting `listItemGroup` over its own padding.
+
+**One outlier, on purpose.** `caption/S-regular` (9 / Regular / 12) appears once, on the no-audio screen, from `TextBlock`'s own S variant. It is the component's choice, not the screen's.
 
 ## Screen by screen
 
@@ -235,7 +281,22 @@ A student trying to leave should not be handed a form. Knowie asks them to stay,
 
 The resting state of every term, and the loop's spine.
 
-**States** — one. **Idle is attempt 1 of a term only.** Rounds 2 to 4 start from the result screen, which carries its own orb — a student who has just read a hint uses it where they read it, rather than being bounced back to a blank prompt.
+**States** — two. **A student who has not been asked for the microphone gets the primer first**, on this route rather than a redirect; everyone else gets the turn. **Idle is attempt 1 of a term only.** Rounds 2 to 4 start from the result screen, which carries its own orb — a student who has just read a hint uses it where they read it, rather than being bounced back to a blank prompt.
+
+**The mic permission primer opens the session** — `mic permission primer` (`15794:19616`) and its `bottomSheet` (`15794:19867`). `reference/Voice_UX.md` lists it as a Must, it was built, and **nothing reached it**: the three permission screens existed but only the dev index linked them, so the ask never happened in the flow. It happens here because this is the first screen that wants the microphone; asking earlier would ask before the reason is on screen.
+
+| On the primer | Which leads to |
+|---|---|
+| "Let's go" | Raises the sheet, in place |
+| Sheet "Allow" | Records the ask, and the turn appears — **no navigation**, because this is already the right route |
+| Sheet "Type instead" | `/recall/text-fallback` — the opt-out is never a dead end; the whole ladder is playable by typing |
+| Sheet dismiss | Back to the primer |
+
+**Same route, not a redirect.** Pushing to the primer and back would put two history entries between the lesson and the first question, so "back" would walk the student through a dialog they have already answered. Rendering it in place keeps `/recall/idle` meaning "the first turn", whichever half is on screen — the reasoning `exitOpen` already uses for the exit sheet.
+
+**A new tab is a new student.** `micGranted` rides in the same `sessionStorage` record as the rung and the outcomes, so a reload keeps the answer and a fresh tab asks again. `localStorage` would be right for a shipping app and useless for demonstrating how the feature opens. It records only that the ask happened — this prototype captures no audio, and claiming to hold a real grant would be the dishonest part.
+
+**`npm run a11y` seeds the flag.** Otherwise it would audit the primer twice — here and at `/recall/permission-primer`, which is its own row — and never audit the first turn.
 
 **Components** — `Screen`, `RecallHeader`, `QuestionBubble`, `RecallSkip`, `VoiceFab` (state=Idle), `TypeAnswer`, `MascotSlot`.
 
@@ -248,9 +309,25 @@ The resting state of every term, and the loop's spine.
 
 ### 10 · Listening — `/recall/recording`
 
-Must be unmistakable. Push-to-talk with explicit send only — auto-endpointing fails in background noise, and that failure is the most common voice-input problem there is. Follows `student talking` (`15620:9125`) and `student not talking` (`15707:18513`).
+Must be unmistakable. Follows `student talking` (`15620:9125`) and `student not talking` (`15707:18513`).
 
-**States** — `waveformCard state="Talking"` while sound is arriving, `state="Idle"` while paused. That is the only difference between Figma's two frames, and it is the whole screen's job.
+**States** — `waveformCard state="Talking"` while sound is arriving, `state="Idle"` while paused. That is the only difference between Figma's two frames, and it is the whole screen's job. The orb is `state="Recording"` in **both**, so the waveform carries the change and `voiceFab` is untouched.
+
+**The screen ends itself.** Talking for `SPEAKING_MS`, then Idle for `SILENCE_MS`, then the take is handed over. Tapping the orb still sends immediately, so it means "send now" rather than "send at all".
+
+**Where it lands depends on whether the words came back.** `session.handOver()` asks the *transcription* question the instant capture ends — not the judging one, which is `/recall/processing`'s job and needs the judge to have run:
+
+| The take | Goes to | Because |
+|---|---|---|
+| `confidence ≥ 0.6` | `/recall/answer-sent` | The words are good; read them back and offer Continue / Retry. |
+| `0 < confidence < 0.6` | `/recall/misheard` | The words are not trustworthy. Reading them back as captured would ask the student to confirm something they never really said. |
+| `confidence === 0` | `/recall/no-audio` | Nothing arrived. Its own cause, its own screen. |
+
+**Neither failure branch consumes the rung.** A transcription failure is never the student's fault — the same rule `submit()` already enforced, now applied at the moment it becomes knowable. The scripted session exercises all three: term 1 opens at `0.38` (*"Neo… lithic settlement… grew **crowds**"*), term 2 at `0.55`, term 3 silent, and term 0 clean at `0.94`.
+
+> **This reverses an earlier decision, deliberately.** This section used to read *"push-to-talk with explicit send only — auto-endpointing fails in background noise, and that failure is the most common voice-input problem there is."* That reasoning is sound for a shipping product and does not apply here: nothing listens, the take is scripted, and there is no endpointing to fail. What the old behaviour cost was legibility — **the orb's movement is a claim that sound is arriving**, and holding that claim until the student hunts for a control contradicts it. When the app builds real capture, the objection comes back with it and this should return to explicit send.
+>
+> Both constants live in `lib/recall/script.tsx` beside `JUDGE_LATENCY_MS`: mocked latency, not design motion, and not a token — there is nothing in `tokens/tokens.json` they could come from.
 
 **Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL, tucked 37.5% behind the waveform exactly as it tucks behind the question bubble), `WaveformCard`, `VoiceFab` (state=Recording, captioned **"Listening"**), `TypeAnswer`, `RecallSkip`.
 
@@ -258,16 +335,17 @@ Must be unmistakable. Push-to-talk with explicit send only — auto-endpointing 
 
 | The student can | Which leads to |
 |---|---|
-| Tap the orb to send | `/recall/answer-sent` |
+| Stop speaking | `answer-sent`, `misheard` or `no-audio` — whichever the transcript earns |
+| Tap the orb to send now | The same branch, sooner |
 | Tap "Type your answer" | `/recall/text-fallback` |
 | Tap "Skip question" | Next term, or the summary |
-| Tap ✕ | `/recall/exit` — **not built, left unwired** |
+| Tap ✕ | `/recall/exit` |
 
 **No cancel on this screen.** Nothing is recorded yet to throw away; the discard lives one beat later, on the take, where a take exists. `VoiceFab` enforces it — `showDiscard` renders only on `state=Sent`.
 
 **The 60s cap is undrawn.** `sprint-context.md` decides it — warned before it lands, auto-sending at it — but no Figma frame shows the warning, and no `Snackbar` is composed here yet. The decision stands; the screen does not yet honour it.
 
-**The waveform is static.** No motion tokens exist (see Open), so what carries the state instead is the orb's size and colour against Idle, the bars switching to `mascot/primary`, and the card's accessible name changing to "Recording your answer".
+**The orb moves; the waveform does not.** `semantic/motion/{duration,easing}` now exist, and the orb breathes on them while Recording — which is the screen's primary claim that sound is arriving, and the reason it now hands the take over when the speaking stops. The waveform's bars are still static: what separates Talking from Idle is their height and their switch to `mascot/primary`, plus the card's accessible name changing to "Recording your answer". Animating the bars themselves is still open.
 
 ### 11 · Nothing heard — `/recall/no-audio`
 

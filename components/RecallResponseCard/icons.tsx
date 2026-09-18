@@ -33,23 +33,31 @@ export function RewindIcon() {
   );
 }
 
-/** The lightbulb on a hint's rung label. Lifted from `15831:8633 › Overlay › SVG`,
-    which draws it on a 14 grid rather than the badges' 16: a filled bulb at
-    (2.92, 1.17) and a 2.33-wide stroke beneath it for the base. */
+/**
+ * The mark on a hint's rung label — `WarningCircle`, the design system's own.
+ *
+ * TAKEN FROM THE COMPONENT, NOT FROM A FRAME. `WarningCircle` (15984:22874)
+ * lives on the **Knowunity Components** page with two variants, 24 and 16, and
+ * they are the same drawing at the same 0.8125 ratio — so this one 24 viewBox
+ * serves both sizes. A filled disc with the exclamation knocked out of it.
+ *
+ * Two earlier passes drew this from screen frames instead: first a filled
+ * lightbulb, then a stroked circle-and-bang lifted off `Hint1`. Both looked
+ * defensible beside the frame they came from and neither was the component the
+ * system already owns. **A frame shows one instance; the component page shows
+ * the thing itself** — so when a concept has a component, that is the source,
+ * and a frame is only evidence about where it is used.
+ *
+ * `evenodd` is what knocks the exclamation out rather than filling it solid.
+ */
 export function HintIcon() {
   return (
-    <svg viewBox="0 0 14 14" width="100%" height="100%" fill="none" aria-hidden="true" focusable="false">
-      <g transform="translate(2.92 1.17)">
-        <path
-          fill="currentColor"
-          d="M 4.0833330154418945 0 C 5.166300252209826 2.5905203025594333e-16 6.2049117820834 0.4302070391675272 6.970685257241971 1.1959805478602163 C 7.736458732400543 1.9617540565529055 8.166666030883789 3.0003659100634934 8.166666030883789 4.083333194255829 C 8.166666030883789 5.833333134651184 7.1166660013653065 7.29166627923648 5.6583327815646305 7.991666283210122 L 5.249999591282435 9.333333015441895 L 2.916666439601353 9.333333015441895 L 2.5083332493191586 7.991666283210122 C 1.0500000295184821 7.29166627923648 0 5.833333134651184 0 4.083333194255829 C -5.181040378235041e-16 3.0003659100634934 0.43020702032825797 1.9617540565529055 1.1959804954868298 1.1959805478602163 C 1.9617539706454017 0.4302070391675272 3.0003657786739626 9.066821058958016e-16 4.0833330154418945 0 Z"
-        />
-      </g>
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" aria-hidden="true" focusable="false">
       <path
-        d="M 5.83 12.83 L 8.16 12.83"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
+        transform="translate(2.25 2.25)"
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M9.75 0 C7.82164 0 5.93657 0.571828 4.33319 1.64317 C2.72982 2.71451 1.48013 4.23726 0.742179 6.01884 C0.00422452 7.80042 -0.188858 9.76082 0.187348 11.6521 C0.563554 13.5434 1.49215 15.2807 2.85571 16.6443 C4.21928 18.0079 5.95656 18.9365 7.84787 19.3127 C9.73919 19.6889 11.6996 19.4958 13.4812 18.7578 C15.2627 18.0199 16.7855 16.7702 17.8568 15.1668 C18.9282 13.5634 19.5 11.6784 19.5 9.75 C19.4973 7.16498 18.4692 4.68661 16.6413 2.85872 C14.8134 1.03084 12.335 0.00272983 9.75 0 Z M9 5.25 C9 5.05109 9.07902 4.86032 9.21967 4.71967 C9.36033 4.57902 9.55109 4.5 9.75 4.5 C9.94892 4.5 10.1397 4.57902 10.2803 4.71967 C10.421 4.86032 10.5 5.05109 10.5 5.25 L10.5 10.5 C10.5 10.6989 10.421 10.8897 10.2803 11.0303 C10.1397 11.171 9.94892 11.25 9.75 11.25 C9.55109 11.25 9.36033 11.171 9.21967 11.0303 C9.07902 10.8897 9 10.6989 9 10.5 L9 5.25 Z M9.75 15 C9.5275 15 9.30999 14.934 9.12499 14.8104 C8.93998 14.6868 8.79579 14.5111 8.71064 14.3055 C8.62549 14.1 8.60321 13.8738 8.64662 13.6555 C8.69003 13.4373 8.79718 13.2368 8.95451 13.0795 C9.11184 12.9222 9.3123 12.815 9.53053 12.7716 C9.74876 12.7282 9.97496 12.7505 10.1805 12.8356 C10.3861 12.9208 10.5618 13.065 10.6854 13.25 C10.809 13.435 10.875 13.6525 10.875 13.875 C10.875 14.1734 10.7565 14.4595 10.5455 14.6705 C10.3345 14.8815 10.0484 15 9.75 15 Z"
       />
     </svg>
   );

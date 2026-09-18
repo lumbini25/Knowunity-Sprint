@@ -144,6 +144,12 @@
   color: var(--semantic-text-primary);
 }
 
+/* 10 square, which is what `folderCard` draws — the size is right and nothing
+   should move. What is borrowed is the TOKEN: `size/tab` is a tab measurement
+   that happens to equal 10, and the icon scale has 8 and 12 with nothing
+   between. Kept rather than rounded, because 12 would be visibly larger than
+   the component; logged in design-system.md as a request for an icon step at
+   10, which is the only thing that would let this bind in the right role. */
 .knw-folder__badge-icon {
   display: inline-flex;
   flex: none;

@@ -75,7 +75,28 @@ export const Home: Story = {
   name: 'Entry 1 · Home',
   render: () => <HomeScreen onExplainOutLoud={fn()} onOpenFolder={fn()} />,
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('heading', { name: 'Evening study session Harry?' })).toBeVisible();
+    await expect(canvas.getByRole('heading', { name: 'Evening study session, Harry?' })).toBeVisible();
+
+    // THE FRONT DOOR HAS AN APP BAR. This screen ran without one until now —
+    // the only entry screen with no header, while the file gives it the same
+    // bar as the rest.
+    await expect(canvas.getByLabelText('Menu')).toBeVisible();
+    await expect(canvas.getByLabelText('History')).toBeVisible();
+    await expect(canvas.getByText('Upgrade')).toBeVisible();
+    await expect(canvas.getByLabelText('2 XP')).toBeVisible();
+    await expect(canvas.getByLabelText('3 day streak')).toBeVisible();
+
+    // The streak is a FLAME, not a second bolt. Both used to render BoltIcon,
+    // so the bar showed one glyph twice in two colours.
+    const xpPath = canvas.getByLabelText('2 XP').querySelector('svg path')?.getAttribute('d');
+    const streakPath = canvas.getByLabelText('3 day streak').querySelector('svg path')?.getAttribute('d');
+    await expect(xpPath).toBeTruthy();
+    await expect(streakPath).not.toBe(xpPath);
+
+    // Five tabs across the bottom, one of them current.
+    const nav = canvas.getByRole('navigation', { name: 'Main' });
+    await expect(nav.querySelectorAll('[data-current]')).toHaveLength(4);
+    await expect(nav.querySelectorAll('[data-current="true"]')).toHaveLength(1);
 
     // ONE FEATURE IS LIVE AND THE OTHERS SAY SO. Figma draws four; only
     // Explain out loud is in scope, so only it is pressable. Making the rest
@@ -84,27 +105,155 @@ export const Home: Story = {
     await expect(canvas.queryByRole('button', { name: 'Quiz' })).toBeNull();
     await expect(canvas.getByText('Quiz')).toBeVisible();
 
+    // EVERY CHIP HAS AN ICON, AND EACH ITS OWN ACCENT. The rail is colour-coded
+    // by feature — that is how four same-shaped pills stay tellable apart — so
+    // five glyphs in five colours, not one and not none.
+    const railIcons = canvasElement.querySelectorAll('.knw-home__rail .knw-accent-icon');
+    await expect(railIcons).toHaveLength(5);
+    const accents = new Set(
+      [...railIcons].map((el) => getComputedStyle(el as HTMLElement).color),
+    );
+    await expect(accents.size).toBe(5);
+
+    // And no chip is drawn active: the file gives all of them the same surface
+    // and distinguishes them by the glyph, not by a filled pill.
+    await expect(canvasElement.querySelectorAll('.knw-home__rail [data-active="true"]')).toHaveLength(0);
+
+    // 33 Bold — headline/L, bound exactly.
+    const h = canvas.getByRole('heading', { name: 'Evening study session, Harry?' });
+    await expect(getComputedStyle(h).fontSize).toBe('33px');
+
+    // AND THE FULL 358 TO SET IT IN. Figma's text box is the screen's whole
+    // content width; this carried `max-width: 80%` (286), which is narrower
+    // than the 324 the first line measures — so "session," dropped to a line
+    // Figma does not have. The wrap was a layout bug, not a type one, which is
+    // why the width is asserted here and not just the size.
+    await expect(Math.round(h.getBoundingClientRect().width)).toBe(358);
+    const lines = document.createRange();
+    lines.selectNodeContents(h);
+    await expect(lines.getClientRects().length).toBe(2);
+
     // The rail scrolls rather than wrapping — four chips do not fit 390, and
     // the file runs them off the right edge.
     const rail = canvasElement.querySelector('.knw-home__rail') as HTMLElement;
     await expect(getComputedStyle(rail).overflowX).toBe('auto');
     await expect(rail.scrollWidth).toBeGreaterThan(rail.clientWidth);
+  },
+};
 
-    // 33 Bold — headline/L, bound exactly.
-    const h = canvas.getByRole('heading', { name: 'Evening study session Harry?' });
-    await expect(getComputedStyle(h).fontSize).toBe('33px');
+/**
+ * Figma's `selecting explain feature`: the chip attached, the field still
+ * empty. Its prototype taps the composer to reach `choosing chip` — the same
+ * screen with the topic in it — so the two frames are this story and the next,
+ * and the tap between them is how the prototype mocks typing.
+ */
+export const ComposeEmpty: Story = {
+  name: 'Entry 2a · Compose — empty',
+  render: () => <ComposeScreen value="" onFill={fn()} onClearFeature={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    // The chip is attached before a word is typed — that is what makes the next
+    // message a practice set rather than a question. Scoped to the composer:
+    // "Explain out loud" is now on this screen TWICE, once on the rail and once
+    // attached, which is the point — picking a feature does not remove it from
+    // the rail, so the label alone no longer identifies the attached one.
+    const attached = canvasElement.querySelector('.knw-chat__attachment') as HTMLElement;
+    await expect(attached).toBeTruthy();
+    await expect(attached.textContent).toContain('Explain out loud');
+    await expect(canvas.getByText('Tell me what you want to practice...')).toBeVisible();
+
+    // THE CHAT BAR, NOT THE FRONT DOOR'S. Figma changes two things between
+    // `entrypoint` and this screen, one tap later: the trailing control becomes
+    // compose rather than history, and the streak goes. Both follow from where
+    // the student is — inside a chat the useful control is a NEW chat, and a
+    // streak is a home-screen statistic. The build carried the home bar
+    // straight through, so the app bar did not change when the screen did.
+    await expect(canvas.getByLabelText('New chat')).toBeVisible();
+    await expect(canvas.queryByLabelText('History')).toBeNull();
+    await expect(canvas.queryByLabelText('3 day streak')).toBeNull();
+    await expect(canvas.getByLabelText('2 XP')).toBeVisible();
+
+    // The field takes a tap, which is this prototype's typing.
+    await expect(canvasElement.querySelector('.knw-chat__text--pressable')).toBeTruthy();
+
+    // ONE MICROPHONE ON THIS SCREEN, and it is the chip's. `status="Inactive"`
+    // puts chatInput's own mic in the trailing slot, so the empty composer drew
+    // two mics a few pixels apart — the chip's blue one meaning "this will be
+    // spoken", and a thin white one meaning "record". Figma draws Send here
+    // instead, which is also what makes this frame and the next agree.
+    await expect(canvasElement.querySelector('.knw-chat__trailing-icon')).toBeNull();
+    await expect(canvasElement.querySelector('.knw-chat__send')).toBeTruthy();
+
+    // And the label says what pressing it does. There is nothing to send yet —
+    // it supplies the topic — so calling it "Send" would be a lie the screen
+    // reader would read out.
+    await expect(canvas.getByRole('button', { name: 'Add your topic' })).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: 'Send' })).toBeNull();
   },
 };
 
 export const Compose: Story = {
-  name: 'Entry 2 · Compose a set',
+  name: 'Entry 2b · Compose a set',
   render: () => <ComposeScreen onSend={fn()} onClearFeature={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // THE CHIP IS THE POINT. Picking the feature on the home screen attaches it
     // to the composer, and it stays attached until the student takes it off —
     // that is what makes the next message a practice set rather than a question.
-    await expect(canvas.getByText('Explain out loud')).toBeVisible();
+    //
+    // Scoped to the composer, because the label is on this screen twice now:
+    // attaching a feature does not remove it from the rail above.
+    const attached = canvasElement.querySelector('.knw-chat__attachment') as HTMLElement;
+    await expect(attached.textContent).toContain('Explain out loud');
     await expect(canvas.getByRole('button', { name: 'Remove Explain out loud' })).toBeVisible();
+
+    // AND THE CHIP CARRIES THE MIC. Figma's `EolChip` is mic + label + ✕, and
+    // the mic is what says the next message will be spoken. The first pass ran
+    // `showLeftIcon={false}`, which dropped it.
+    const chip = attached.querySelector('.knw-chip') as HTMLElement;
+    await expect(chip.querySelector('.knw-chip__icon svg')).toBeTruthy();
+
+    // It carries the feature's own accent — the chip and the rail are built
+    // from one entry, so the attached mic is literally the rail's icon.
+    await expect(chip.querySelector('[data-accent="blue"]')).toBeTruthy();
+
+    // AND IT IS THE ONLY MIC, in this state as in the empty one. The trailing
+    // control is the send affordance in both, so the two frames of this screen
+    // draw the same icons — see `Entry 2a`, which asserts the same thing before
+    // the topic arrives.
+    await expect(canvasElement.querySelector('.knw-chat__trailing-icon')).toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Send' })).toBeVisible();
+
+    // `chip container` — THE FEATURE RAIL, the same chips the front door draws
+    // and in the same accents, MINUS the one now attached below. Offering
+    // Explain out loud again would offer something already chosen, and would
+    // put the same chip on screen twice meaning two different things: once a
+    // choice, once a state.
+    //
+    // This asserted Camera / Gallery / Files, which is what the frame held at
+    // the time and no longer does — so the composer's row was a different set
+    // of icons from the rail one screen earlier. Rail and chip now come from
+    // one array, which is what stops them drifting again.
+    const rail = canvasElement.querySelector('.knw-entry__sources') as HTMLElement;
+    const railLabels = [...rail.querySelectorAll('.knw-chip__label')].map((e) => e.textContent);
+    await expect(railLabels).toEqual(['Scan', 'Quiz', 'Summarize', 'Chemistry prep']);
+    await expect(railLabels).not.toContain('Explain out loud');
+
+    // Four chips, four accents — the colour coding survives the screen change.
+    const accents = new Set(
+      [...rail.querySelectorAll('.knw-accent-icon')].map(
+        (el) => getComputedStyle(el as HTMLElement).color,
+      ),
+    );
+    await expect(accents.size).toBe(4);
+
+    // Drawn, not wired: this prototype only carries Explain out loud, and that
+    // one is already attached rather than offered.
+    await expect(rail.querySelectorAll('button')).toHaveLength(0);
+
+    // It overflows on purpose and scrolls — and because nothing inside it is a
+    // tab stop, the region itself has to be reachable by keyboard or the chips
+    // past the edge are pointer-only.
+    await expect(rail.scrollWidth).toBeGreaterThan(rail.clientWidth);
+    await expect(rail.getAttribute('tabindex')).toBe('0');
 
     // The keyboard's room is reserved without drawing the keys — device chrome,
     // the same constant the text fallback uses.
@@ -247,7 +396,7 @@ export const AnswerSentConfirmed: Story = {
   // `sent` pins the beat. The route lets the screen move between the two
   // itself; a story has to hold one still, and no onAdvance is passed, so the
   // 300ms timer never arms and the beat stays inspectable.
-  render: () => <AnswerSentScreen sent onDiscard={fn()} onTypeAnswer={fn()} onSkip={fn()} />,
+  render: () => <AnswerSentScreen sent onDiscard={fn()} onTypeAnswer={fn()} onSkip={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // Submitted. The caption is voiceFab's own default for Sent, and Knowie
     // has taken the answer away — the same pose the processing screen this
@@ -421,17 +570,27 @@ export const PermissionDeniedSettings: Story = {
     // The text path is offered INSIDE the sheet too, not only on the scrimmed
     // screen behind it — the same pairing the permission primer's sheet uses.
     // A student who cannot go to Settings right now should not have to dismiss
-    // the sheet first to find the way forward. So there are two: the screen's
-    // Primary M, and the sheet's Secondary L.
+    // the sheet first to find the way forward. So there are two, and they are
+    // told apart by VARIANT, not size: the screen's is Primary, the sheet's is
+    // Secondary beneath its own Primary.
+    //
+    // This asserted the sheet's was size L, which was true only because the
+    // build ran two button sizes at once — M on the recall and permission
+    // screens, L on the sheets and end-of-session screens. Every button is M
+    // now, so size can no longer tell two buttons apart, and asserting it would
+    // pin the inconsistency rather than the intent.
     const typeInstead = canvas.getAllByRole('button', { name: 'Type instead' });
     await expect(typeInstead).toHaveLength(2);
-    await expect(typeInstead.some((b) => b.classList.contains('knw-button--L'))).toBe(true);
+    await expect(typeInstead.some((b) => b.classList.contains('knw-button--Primary'))).toBe(true);
+    await expect(typeInstead.some((b) => b.classList.contains('knw-button--Secondary'))).toBe(true);
+    // One size, every button, every screen.
+    await expect(typeInstead.every((b) => b.classList.contains('knw-button--M'))).toBe(true);
   },
 };
 
 export const Misheard: Story = {
   name: '11 · Misheard transcript',
-  render: () => <MisheardScreen onMisheard={fn()} onConfirmed={fn()} onRetry={fn()} />,
+  render: () => <MisheardScreen onMisheard={fn()} onConfirmed={fn()} onRetry={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // Principle 4: show what was heard, so a misheard answer reads as the app
     // failing, not the student. The card instances transcriptSection to do it.
@@ -479,7 +638,7 @@ export const Misheard: Story = {
 
 export const ReRecord: Story = {
   name: '11b · Re-record offer',
-  render: () => <ReRecordScreen onContinue={fn()} onNextQuestion={fn()} />,
+  render: () => <ReRecordScreen onContinue={fn()} onNextQuestion={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The second beat: the dispute is settled, only the choice is left. No
     // transcript, no card, no verdict.
@@ -516,7 +675,7 @@ export const ReRecord: Story = {
 /** The escapes are the point: every turn has a way out that isn't voice. */
 export const EscapesAlwaysPresent: Story = {
   name: 'Every turn has a way out',
-  render: () => <AnswerSentScreen onTypeAnswer={fn()} onSkip={fn()} />,
+  render: () => <AnswerSentScreen onTypeAnswer={fn()} onSkip={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     const type = canvas.getByRole('button', { name: 'Type your answer' });
     const skip = canvas.getByRole('button', { name: 'Skip question' });
@@ -543,7 +702,7 @@ export const EscapesAlwaysPresent: Story = {
 
 export const Idle: Story = {
   name: '9 · Idle',
-  render: () => <IdleScreen onRecord={fn()} onSkip={fn()} onTypeAnswer={fn()} />,
+  render: () => <IdleScreen onRecord={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The resting state: the question is up and the orb is waiting.
     await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
@@ -586,7 +745,7 @@ export const Idle: Story = {
 
 export const ListeningTalking: Story = {
   name: '10 · Listening — sound arriving',
-  render: () => <ListeningScreen talking onSend={fn()} onSkip={fn()} onTypeAnswer={fn()} />,
+  render: () => <ListeningScreen talking onSend={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The caption is "Listening", not voiceFab's own "Tap to send" default —
     // on this screen the caption's job is to say what the app is doing.
@@ -607,7 +766,7 @@ export const ListeningTalking: Story = {
 
 export const ListeningSilent: Story = {
   name: '10b · Listening — paused',
-  render: () => <ListeningScreen talking={false} onSend={fn()} />,
+  render: () => <ListeningScreen talking={false} onSend={fn()} onExit={fn()} />,
   play: async ({ canvas }) => {
     // The only thing that changes between Figma's two frames.
     await expect(canvas.getByLabelText('Microphone on, waiting for you to speak')).toBeVisible();
@@ -620,6 +779,15 @@ export const Processing: Story = {
   // No onDone, so the hold never arms and the state stays inspectable.
   render: () => <ProcessingScreen />,
   play: async ({ canvas, canvasElement }) => {
+    // AND NO WAY OUT, which is the one turn in the loop like that. The judge is
+    // mid-verdict: there is nothing to go back to, and a ✕ here would abandon a
+    // take that is about to be answered. `RecallHeader` draws the exit only
+    // when one is wired, so the screen says it has none by wiring none.
+    await expect(canvas.queryByRole('button', { name: 'Leave session' })).toBeNull();
+    await expect(canvasElement.querySelector('.knw-recall__exit-slot')).toBeTruthy();
+    // The slot stays, so the progress bar keeps the width and position it has
+    // on every other screen rather than growing into the gap.
+
     // NOTHING IS INTERACTIVE. Voice_UX 1C: "Can do: nothing interactive." The
     // orb is a role=img, not a button, so a student cannot double-submit by
     // tapping it again — which is the failure this state exists to prevent.
@@ -644,6 +812,19 @@ export const ResultHint1: Story = {
     const card = canvasElement.querySelector('.knw-rrc__card') as HTMLElement;
     await expect(card.querySelector('.knw-rrc__hint')).toBeTruthy();
     await expect(canvasElement.querySelector('.knw-recall__hint-panel')).toBeNull();
+
+    // THE HINT'S MARK TAKES THE LABEL'S COLOUR, and for a long time it did not.
+    // `.knw-rrc--Wrong .knw-iconslot` reads "every icon slot in a wrong card"
+    // and means "the badge's icon slot", so it also painted the hint's icon the
+    // badge's dark green — legible on the red chip, invisible on the card.
+    //
+    // It hid because the mark used to be a FILLED lightbulb: a solid blob of
+    // any dark colour still reads as an icon, just an indistinct one. Redrawn
+    // as Figma's stroked alert-circle, a ring in the wrong colour is obvious.
+    const hintLabel = card.querySelector('.knw-rrc__hint-label') as HTMLElement;
+    const mark = hintLabel.querySelector('svg path') as SVGPathElement;
+    await expect(mark).toBeTruthy();
+    await expect(getComputedStyle(mark).fill).toBe(getComputedStyle(hintLabel).color);
 
     // A hint tightens the card's gap to Space/200. Without the modifier it
     // would silently inherit the 32 the hintless states use.
@@ -681,6 +862,31 @@ export const ResultHint3: Story = {
     />
   ),
   play: async ({ canvasElement }) => {
+    // A LIGHTBULB HERE, NOT THE CARD'S ALERT-CIRCLE. Figma escalates the mark
+    // with the rung — "notice this" on 1 and 2, "here is the idea" once the
+    // hint has its own panel — so this asserts the panel does NOT carry the
+    // card's circle, which is what a careless "make the icons consistent" pass
+    // would leave behind.
+    const panelLabel = canvasElement.querySelector(
+      '.knw-recall__hint-panel-label',
+    ) as HTMLElement;
+    await expect(panelLabel.querySelector('circle')).toBeNull();
+    const panelMark = panelLabel.querySelector('svg path') as SVGPathElement;
+    await expect(panelMark).toBeTruthy();
+    await expect(getComputedStyle(panelMark).stroke).toBe(getComputedStyle(panelLabel).color);
+    // Stroked, not filled — a filled bulb reads as a blob at 14px.
+    await expect(getComputedStyle(panelMark).fill).toBe('none');
+
+    // The panel is OUTLINED, which is most of why it reads as promoted rather
+    // than as a warmer patch of the card. Figma strokes it 1 in its label's
+    // gold, at radius 12 — `radius/inner`, not the recall surfaces' 24.
+    const panelStyle = getComputedStyle(
+      canvasElement.querySelector('.knw-recall__hint-panel') as HTMLElement,
+    );
+    await expect(panelStyle.borderTopWidth).toBe('1px');
+    await expect(panelStyle.borderTopColor).toBe(getComputedStyle(panelLabel).color);
+    await expect(panelStyle.borderTopLeftRadius).toBe('12px');
+
     // AT RUNG 3 THE HINT LEAVES THE CARD. Figma names the layer "escalating
     // warmth": the last hint before the answer gets its own surface, a larger
     // step and a warm label, so it cannot be mistaken for the previous two.
@@ -702,7 +908,7 @@ export const ResultHint3: Story = {
 
 export const NoAudio: Story = {
   name: '11 · Nothing heard',
-  render: () => <NoAudioScreen onRetry={fn()} onTypeAnswer={fn()} />,
+  render: () => <NoAudioScreen onRetry={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas }) => {
     // The copy says the system failed to hear, not that the student failed to
     // speak, and it says the attempt is free.
@@ -940,7 +1146,25 @@ export const Comparison: Story = {
 
     // The model answer is broken into points, not left as prose: "what did I
     // miss" is answerable against a list and not against a paragraph.
-    await expect(canvasElement.querySelectorAll('.knw-listitem').length).toBeGreaterThan(1);
+    await expect(canvasElement.querySelectorAll('.knw-compare__point').length).toBeGreaterThan(1);
+
+    // ITS OWN MARKER, NOT `listItem`'s. Figma's is a 16px green disc — a
+    // Checkbox resized, filled feedback/success/bold and ringed border/success
+    // with a text/primary tick — where listItem's Strong is 24px violet. They
+    // say different things: the summary's list is "you recalled this", this one
+    // is "this is the correct answer". Sharing the component put the second in
+    // the first one's colour.
+    const tick = canvasElement.querySelector('.knw-compare__tick') as HTMLElement;
+    const t = getComputedStyle(tick);
+    await expect(t.width).toBe('16px');
+    await expect(t.backgroundColor).toBe('rgb(0, 195, 134)');
+    await expect(t.borderTopColor).toBe('rgb(0, 195, 134)');
+    await expect(t.color).toBe('rgb(244, 242, 255)');
+
+    // The two card headers take the frame's own bindings: accent/green/bold on
+    // the answer, and the violet one lifted a step for contrast — see the CSS.
+    await expect(getComputedStyle(canvas.getByText('Correct answer')).color)
+      .toBe('rgb(0, 195, 134)');
 
     // No orb and no progress — the term is over. Two ways on: read it again,
     // or try it again.
@@ -953,7 +1177,7 @@ export const Comparison: Story = {
 
 export const Reveal: Story = {
   name: '14 · Reveal',
-  render: () => <RevealScreen onSayItBack={fn()} onTypeAnswer={fn()} />,
+  render: () => <RevealScreen onSayItBack={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // Reveal drops the transcript and the contest buttons — there is nothing
     // left to contest — and shows the model answer instead.

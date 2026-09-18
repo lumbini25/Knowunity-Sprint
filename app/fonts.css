@@ -1,0 +1,32 @@
+/* Authored, NOT generated — unlike app/globals.css and build/css/tokens.css,
+   which are built from tokens/tokens.json and must never be hand-edited.
+
+   This file holds the one type fact a design token cannot express: which point
+   on the typeface's width axis the design sits at. Everything else about type —
+   family, size, weight, line-height, letter-spacing — comes from the token
+   pipeline. */
+
+html {
+  /* GREED VF DEFAULTS TO THE WRONG WIDTH. Its `wdth` axis runs 75-130 and its
+     default is 75, which the font itself names "Condensed". The design is
+     Greed *Standard*, which is `wdth` 100 — so without this line every screen
+     in the prototype renders a width narrower than Figma, and narrower than
+     every screenshot the build has been checked against. Nothing would error;
+     the type would just quietly be wrong.
+
+     `font-stretch` is used here rather than `font-variation-settings`, and the
+     difference is worth keeping: `font-variation-settings` is a low-level
+     override, and any axis it names is taken away from the ordinary CSS
+     properties. Setting `wdth` through it would work, but the same habit one
+     line over — naming `wght` — would freeze every bold in the app at a single
+     weight, because `font-weight` would stop reaching the font. `font-stretch`
+     stays composable with `font-weight`, so the type scale keeps control of
+     its four weights.
+
+     The percentage maps to the axis directly: 100% is `wdth` 100. The face
+     advertises its range via next/font's `declarations` in app/layout.tsx
+     (and, for the component catalog, the @font-face in .storybook/fonts.css) —
+     without that range declared, a browser assumes one fixed width and
+     ignores this line entirely. */
+  font-stretch: 100%;
+}

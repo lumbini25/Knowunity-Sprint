@@ -13,7 +13,7 @@ const FIGMA_DESCRIPTION = `The text input bar for the Knowie chat interface. 6 s
 
 **Two things differ from the Figma file, both deliberate:**
 
-- **Type.** Every text node in the Figma component is Inter Variable 14px with no text style applied, which is neither the system font nor a step on the type scale. The text binds to \`body.S-bold\` instead — 15px semibold in Greed Standard-TRIAL — so it is token-bound and matches \`button\`.
+- **Type.** Every text node in the Figma component is Inter Variable 14px with no text style applied, which is neither the system font nor a step on the type scale. The text binds to \`body.M-regular\` instead — 18/24 Regular — which is what every Figma frame with a composer draws in the field.
 - **The send mark.** Figma binds it to \`interactive/secondary\`, which is 10% white on a near-white button and therefore invisible. It uses \`interactive/label/primary\` here, the pairing the system documents for a light fill.
 - **The placeholder.** Figma binds it to \`text/disabled\`, which is 3.8:1 on the field and fails WCAG AA. It uses \`text/tertiary\` here — 4.86:1 — which also reads better, since a placeholder is a prompt rather than a disabled control.
 
@@ -66,9 +66,15 @@ export const Inactive: Story = {
     const leading = canvasElement.querySelector('.knw-chat__leading') as HTMLElement;
     await expect(getComputedStyle(leading).width).toBe('56px');
 
-    // The placeholder is on the type scale, not Figma's off-system 14px Inter.
+    // The placeholder is on the type scale, not the component's off-system 14px
+    // Inter — and at `body/M-regular`, 18/24, which is what the SCREENS draw:
+    // "Ask anything" on entrypoint, "World History/" on choosing chip, "What's
+    // mitos|" on explain out ready are all 18/24 Regular. This asserted 15px
+    // (`body/S-bold`) and so pinned a composer that was a step small and a
+    // weight heavy on every route that has one.
     const text = canvasElement.querySelector('.knw-chat__text') as HTMLElement;
-    await expect(getComputedStyle(text).fontSize).toBe('15px');
+    await expect(getComputedStyle(text).fontSize).toBe('18px');
+    await expect(getComputedStyle(text).fontWeight).toBe('400');
   },
 };
 

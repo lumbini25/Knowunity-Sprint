@@ -32,6 +32,23 @@
   color: inherit;
 }
 
+/* The trailing icon as its own control — a remove affordance inside the pill,
+   which is how Figma's `EolChip` draws its ✕. It keeps the icon box's size so
+   the chip's geometry does not change; only the element type does. */
+.knw-chip__icon--pressable {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.knw-chip__icon--pressable:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+  border-radius: var(--semantic-radius-pill);
+}
+
 /* ===== size ===== */
 
 .knw-chip--XXS {

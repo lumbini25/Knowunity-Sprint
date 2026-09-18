@@ -47,7 +47,7 @@ const meta = {
     middleSection: <p style={{ margin: 0 }}>Your progress on this topic is saved. You can pick it up again whenever you like.</p>,
     bottomSection: (
       <>
-        <Button variant="Primary" size="L" CTA="Keep learning" />
+        <Button variant="Primary" size="M" CTA="Keep learning" />
         <Button variant="Tertiary" size="M" CTA="Leave anyway" />
       </>
     ),

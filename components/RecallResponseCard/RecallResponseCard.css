@@ -212,11 +212,22 @@
 
 /* Figma binds both the incorrect and the correct badge label to
    feedback/success/surface/label/bold. On the red chip that is almost certainly
-   a slip, but the value is what the file draws — see the story docs. */
+   a slip, but the value is what the file draws — see the story docs.
+
+   SCOPED TO THE BADGE, NOT TO THE CARD. This was `.knw-rrc--Wrong
+   .knw-iconslot`, which reads "every icon slot inside a wrong card" and means
+   "the badge's icon slot" — so it also caught the HINT label's icon, several
+   rows down, and painted it the badge's dark green. On the red chip that
+   colour is legible; on the card surface it is all but invisible.
+
+   It went unnoticed because the hint icon used to be a FILLED lightbulb: a
+   solid blob of any dark colour still reads as "an icon", just an indistinct
+   one. Redrawing it as Figma's stroked alert-circle made the ring obviously
+   the wrong colour, which is how the bug finally showed. */
 .knw-rrc--Wrong .knw-rrc__badge-label,
-.knw-rrc--Wrong .knw-iconslot,
+.knw-rrc--Wrong .knw-rrc__badge .knw-iconslot,
 .knw-rrc--Correct .knw-rrc__badge-label,
-.knw-rrc--Correct .knw-iconslot {
+.knw-rrc--Correct .knw-rrc__badge .knw-iconslot {
   color: var(--semantic-feedback-success-label-bold);
 }
 

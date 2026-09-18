@@ -4,7 +4,13 @@ import { withKeyboardInset } from './withKeyboardInset'
 
 // The design system itself. tokens.css declares every custom property;
 // preview.css applies them to the canvas. Order matters -- tokens first.
+//
+// fonts.css declares Greed VF for the catalog, because Storybook does not run
+// the Next root layout that loads it; app/fonts.css pins the width axis, and is
+// shared with the app rather than duplicated so the two cannot drift.
 import '../build/css/tokens.css'
+import './fonts.css'
+import '../app/fonts.css'
 import './preview.css'
 
 /* The prototype is iOS-only at a fixed 390px. Device width is deliberately

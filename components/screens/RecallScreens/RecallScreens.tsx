@@ -15,6 +15,7 @@ import { Checkbox } from '../../Checkbox/Checkbox';
 import { MascotSlot } from '../../MascotSlot/MascotSlot';
 import { ProgressIndicator } from '../../ProgressIndicator/ProgressIndicator';
 import { RecallResponseCard } from '../../RecallResponseCard/RecallResponseCard';
+import { IconSlot } from '../../IconSlot/IconSlot';
 import { Percentage } from '../../Percentage/Percentage';
 import { ListItem, ListItemGroup } from '../../ListItem/ListItem';
 import { SummaryStatTile } from '../../SummaryStatTile/SummaryStatTile';
@@ -22,8 +23,26 @@ import { TranscriptSection } from '../../TranscriptSection/TranscriptSection';
 import { WaveformCard } from '../../WaveformCard/WaveformCard';
 import { HintLadder } from '../../HintLadder/HintLadder';
 import type { Rung } from '../../../lib/recall/script';
-import { BoltIcon, MicIcon } from './icons';
-import { MicrophoneIcon } from '../../ChatInput/icons';
+import {
+  BoltIcon,
+  FlameIcon,
+  MenuIcon,
+  HistoryIcon,
+  ProBadge,
+  ComposeIcon,
+  CloseIcon,
+  HintBulbIcon,
+  ScanIcon,
+  RailMicIcon,
+  QuizIcon,
+  SummarizeIcon,
+  NotebookIcon,
+  NavChatIcon,
+  NavSearchIcon,
+  NavTargetIcon,
+  NavTrophyIcon,
+} from './icons';
+import { XCloseIcon } from '../../BottomSheet/icons';
 import { CheckMarkIcon } from '../../ListItem/icons';
 import './RecallScreens.css';
 
@@ -133,9 +152,24 @@ export function RecallHeader({
 }) {
   return (
     <div className="knw-recall__header">
-      <button type="button" className="knw-recall__exit" aria-label="Leave session" onClick={onExit}>
-        ✕
-      </button>
+      {/* A CONTROL WITH NOTHING WIRED IS NOT DRAWN — the rule the sheet's ✕ and
+          the card's next-action already follow, applied to the way out.
+          Processing is the one turn that passes no `onExit`: the judge is
+          mid-verdict, there is nothing to go back to yet, and a ✕ there would
+          abandon a take that is about to be answered. Every other screen wires
+          it, so every other screen draws it. */}
+      {onExit ? (
+        <button type="button" className="knw-recall__exit" aria-label="Leave session" onClick={onExit}>
+          <span className="knw-entry__appbar-icon">
+            <CloseIcon />
+          </span>
+        </button>
+      ) : (
+        /* The slot stays so the bar keeps its width and the progress keeps its
+           position — the row is measured against Figma's, not against whether
+           this turn has an exit. */
+        <span className="knw-recall__exit-slot" aria-hidden="true" />
+      )}
       {/* thickness=16, which is what every recall frame in the file binds —
           `Idle`, `cancel option`, `student talking`, `thinking progress`,
           `hint 1` and `reveal` all six. The component defaults to 24; this
@@ -210,26 +244,70 @@ export function ChatHeader({
   streak = 3,
   onMenu,
   onHistory,
+  inChat = false,
 }: {
   xp?: number;
   streak?: number;
   onMenu?: () => void;
   onHistory?: () => void;
+  /**
+   * The bar the chat screens draw, rather than the front door's.
+   *
+   * THE APP BAR IS NOT ONE BAR, AND THE DIFFERENCE IS DELIBERATE. `entrypoint`
+   * and `selecting explain feature` — one tap apart — change two things
+   * between them:
+   *
+   *   trailing icon   `clock-rewind` (your history)  ->  compose (a new chat)
+   *   stat chips      Upgrade · XP · streak          ->  Upgrade · XP
+   *
+   * Both follow from where you are. On the front door the useful control is
+   * what you did before; once you are inside a chat it is starting a fresh
+   * one. And the streak is a home-screen statistic — a chat is about the
+   * message being written, not about how many days you have shown up.
+   */
+  inChat?: boolean;
 }) {
+  const trailingIcon = inChat ? <ComposeIcon /> : <HistoryIcon />;
+  const trailingLabel = inChat ? 'New chat' : 'History';
+
   return (
     <div className="knw-entry__header">
       {/* A control with nothing wired to it is not drawn — the same rule the
           sheet's ✕ and the card's next-action already follow. Both of these
           are real app chrome with no destination in a recall prototype, so
           they appear only if a caller gives them one. */}
+      {/* DRAWN EITHER WAY; A BUTTON ONLY WHEN WIRED. The rule this build uses
+          is `VoiceFab`'s — a state exposes a tap target only when something is
+          listening — and the earlier reading of it dropped the glyph entirely,
+          which left the front door with no app bar at all. The bar is chrome:
+          it belongs on the screen whether or not this prototype has somewhere
+          for it to go. What must not exist is a focusable control that does
+          nothing, so unwired it renders as an image. */}
       {onMenu ? (
         <button type="button" className="knw-recall__exit" aria-label="Menu" onClick={onMenu}>
-          ☰
+          <span className="knw-entry__appbar-icon">
+            <MenuIcon />
+          </span>
         </button>
-      ) : null}
+      ) : (
+        <span className="knw-recall__exit" role="img" aria-label="Menu">
+          <span className="knw-entry__appbar-icon">
+            <MenuIcon />
+          </span>
+        </span>
+      )}
 
       <div className="knw-entry__stats">
-        <Chips size="XS" color="pro" active="True" Text="Upgrade" showLeftIcon={false} showRightIcon={false} />
+        {/* The PRO lockup and the word beside it, which is how the file draws
+            this: a gold ring reading PRO, then "Upgrade". Not a `Chips` — the
+            first pass used `color="pro" active="True"`, which paints a solid
+            gold pill with dark text, and the app's is an outline. */}
+        <span className="knw-entry__upgrade">
+          <span className="knw-entry__pro" aria-hidden="true">
+            <ProBadge />
+          </span>
+          Upgrade
+        </span>
 
         <span className="knw-entry__stat knw-entry__stat--xp" role="img" aria-label={`${xp} XP`}>
           <span className="knw-entry__stat-icon">
@@ -238,36 +316,81 @@ export function ChatHeader({
           {xp}
         </span>
 
-        {/* The streak. Coral is `accent/coral/bold`, which the file binds here
-            and which design-system.md reserves for decorative accents — a
-            streak count is exactly that, and explicitly not an error. */}
-        <span className="knw-entry__stat knw-entry__stat--streak" role="img" aria-label={`${streak} day streak`}>
-          <span className="knw-entry__stat-icon">
-            <BoltIcon />
+        {/* The streak — a front-door statistic, so the chat bar drops it, as
+            Figma does one screen later. Coral is `accent/coral/bold`, which
+            design-system.md reserves for decorative accents: a streak count is
+            exactly that, and explicitly not an error. */}
+        {inChat ? null : (
+          <span className="knw-entry__stat knw-entry__stat--streak" role="img" aria-label={`${streak} day streak`}>
+            <span className="knw-entry__stat-icon">
+              {/* A FLAME, NOT A SECOND BOLT. The file has always drawn one here;
+                  the build reused `BoltIcon` because nobody had extracted it, so
+                  the bar showed the same glyph twice in two colours. */}
+              <FlameIcon />
+            </span>
+            {streak}
           </span>
-          {streak}
-        </span>
+        )}
       </div>
 
+      {/* History on the front door, compose inside a chat — Figma's own swap
+          between `entrypoint` and `selecting explain feature`. */}
       {onHistory ? (
-        <button type="button" className="knw-recall__exit" aria-label="History" onClick={onHistory}>
-          ⟳
+        <button type="button" className="knw-recall__exit" aria-label={trailingLabel} onClick={onHistory}>
+          <span className="knw-entry__appbar-icon">{trailingIcon}</span>
         </button>
-      ) : null}
+      ) : (
+        <span className="knw-recall__exit" role="img" aria-label={trailingLabel}>
+          <span className="knw-entry__appbar-icon">{trailingIcon}</span>
+        </span>
+      )}
     </div>
   );
 }
 
-/** Figma's feature rail, in Figma's order. `Explain out loud` is the live one. */
-export const HOME_FEATURES = ['Scan', 'Explain out loud', 'Quiz', 'Summarize'] as const;
+/**
+ * Figma's feature rail, in Figma's order, each with the glyph the file gives
+ * it. `Explain out loud` is the live one.
+ *
+ * EVERY CHIP HAS AN ICON, and each carries its own accent — the rail is
+ * colour-coded by feature, which is how the app tells them apart at a glance.
+ * An earlier pass ran the rail icon-less on a misreading: these glyphs are
+ * separate instances beside the chip's `iconSlot`, and it is the *slot* that is
+ * switched off in the file, not the icon.
+ */
+export const HOME_FEATURES = [
+  { label: 'Scan', Icon: ScanIcon, accent: 'brand' },
+  { label: 'Explain out loud', Icon: RailMicIcon, accent: 'blue' },
+  { label: 'Quiz', Icon: QuizIcon, accent: 'magenta' },
+  { label: 'Summarize', Icon: SummarizeIcon, accent: 'green' },
+] as const;
+
+/**
+ * The last thing the student worked on, riding the same rail — Figma puts
+ * "Chemistry prep" at its end. Hoisted out of the home screen so the composer
+ * can draw the identical rail rather than a copy of it.
+ */
+export const HOME_RECENT = { label: 'Chemistry prep', Icon: NotebookIcon, accent: 'coral' } as const;
+
+/** The bottom bar. Only the tab the student is on is live. */
+const HOME_NAV = [
+  { label: 'Knowie', Icon: NavChatIcon, current: true },
+  { label: 'Search', Icon: NavSearchIcon, current: false },
+  { label: 'Goals', Icon: NavTargetIcon, current: false },
+  { label: 'Leaderboard', Icon: NavTrophyIcon, current: false },
+] as const;
 
 export interface HomeScreenProps {
-  /** Figma: "Evening study session Harry?" */
+  /** Figma: "Evening study session, Harry?" */
   greeting?: string;
   /** The feature the prototype actually opens. */
   onExplainOutLoud?: () => void;
   /** A recent folder, straight into its concepts. */
   onOpenFolder?: () => void;
+  /** The app bar's leading control. */
+  onMenu?: () => void;
+  /** The app bar's trailing control. */
+  onHistory?: () => void;
 }
 
 /**
@@ -290,13 +413,20 @@ export interface HomeScreenProps {
  * a row of CTAs, and a rail of Buttons would read as four competing primaries.
  */
 export function HomeScreen({
-  greeting = 'Evening study session Harry?',
+  greeting = 'Evening study session, Harry?',
   onExplainOutLoud,
   onOpenFolder,
+  onMenu,
+  onHistory,
 }: HomeScreenProps) {
   return (
     <Screen
-      showTopNavSlot={false}
+      /* THE FRONT DOOR HAS AN APP BAR. The first pass ran this screen with
+         `showTopNavSlot={false}`, so Entry 1 was the one entry screen with no
+         header — while the file gives it the same bar as every other: menu,
+         Upgrade, XP, streak, history. Its absence is most of why the screen
+         did not read as the app. */
+      topNavigation={<ChatHeader onMenu={onMenu} onHistory={onHistory} />}
       middleContent={
         <div className="knw-home">
           <MascotSlot size="2XL" label="Knowie, waiting">
@@ -308,22 +438,26 @@ export function HomeScreen({
       bottomContent={
         <div className="knw-home__foot">
           <div className="knw-home__rail">
-            {HOME_FEATURES.map((feature) => {
-              const live = feature === 'Explain out loud';
+            {HOME_FEATURES.map(({ label, Icon, accent }) => {
+              const live = label === 'Explain out loud';
               return (
                 <Chips
-                  key={feature}
+                  key={label}
                   size="M"
                   color="Primary"
-                  active={live ? 'True' : 'False'}
-                  Text={feature}
-                  /* NO ICONS. Figma gives each feature its own glyph — a
-                     camera, layers, a target — and none of them exist in this
-                     repo. An empty iconSlot draws its placeholder square, which
-                     is worse than no icon at all: four identical boxes that
-                     look like a rendering failure. Logged in
-                     component-gaps.md. */
-                  showLeftIcon={false}
+                  /* THE RAIL DRAWS NO CHIP ACTIVE. Figma gives all four the
+                     same `background/surface` fill and tells them apart by
+                     their accent glyph, not by a filled pill. Marking the live
+                     one `active="True"` painted it solid violet, which reads as
+                     a selected filter rather than the one feature that opens. */
+                  active="False"
+                  Text={label}
+                  showLeftIcon
+                  leftIcon={
+                    <span className="knw-accent-icon" data-accent={accent}>
+                      <Icon />
+                    </span>
+                  }
                   showRightIcon={false}
                   onPress={live ? onExplainOutLoud : undefined}
                 />
@@ -335,19 +469,78 @@ export function HomeScreen({
               size="M"
               color="Primary"
               active="False"
-              Text="Chemistry prep"
-              showLeftIcon={false}
+              Text={HOME_RECENT.label}
+              showLeftIcon
+              leftIcon={
+                <span className="knw-accent-icon" data-accent={HOME_RECENT.accent}>
+                  <HOME_RECENT.Icon />
+                </span>
+              }
               showRightIcon={false}
               onPress={onOpenFolder}
             />
           </div>
 
           <ChatInput status="Inactive" placeholder="Ask anything" />
+
+          {/* The bottom bar. Four tabs and the student's avatar, of which only
+              the one they are on is real in this prototype — so the rest are
+              drawn and not pressable, the same rule the rail's three dead
+              features follow. Its absence was the other half of why Entry 1
+              did not read as the app's front door. */}
+          <nav className="knw-home__nav" aria-label="Main">
+            {HOME_NAV.map(({ label, Icon, current }) => (
+              <span
+                key={label}
+                className="knw-home__nav-item"
+                data-current={current}
+                role="img"
+                aria-label={current ? `${label}, current page` : label}
+              >
+                <Icon />
+              </span>
+            ))}
+            <span className="knw-home__nav-avatar" role="img" aria-label="Your profile">
+              <Knowie pose="standby" />
+            </span>
+          </nav>
         </div>
       }
     />
   );
 }
+
+/** Figma's `chip container`, in Figma's order, with Figma's glyphs. */
+/**
+ * The composer's rail is THE FEATURE RAIL, the same one the front door draws.
+ *
+ * An earlier pass put Camera / Gallery / Files here — thin monochrome
+ * attachment sources — because that is what `chip container` held at the time.
+ * The file now draws the feature rail on `selecting explain feature` and
+ * `choosing chip` both: Quiz, Summarize, Explain out loud, Chemistry prep,
+ * Scan, scrolled, in their own accents. So the row does not change when the
+ * student picks a feature; it keeps offering the others, which is what makes
+ * swapping one for another an obvious move rather than a hidden one.
+ *
+ * Same array as the home rail plus the recent folder, so the two screens
+ * cannot drift: one list, two screens.
+ */
+const ATTACHED_FEATURE =
+  HOME_FEATURES.find((f) => f.label === 'Explain out loud') ?? HOME_FEATURES[0];
+
+/**
+ * THE RAIL DROPS WHAT IS ALREADY ATTACHED. Explain out loud has moved into the
+ * composer, so offering it again on the rail above would be offering the
+ * student something they have already chosen — and would put the same chip on
+ * the screen twice with two different meanings, one a choice and one a state.
+ *
+ * Derived from the same list rather than retyped, so the rail and the chip can
+ * never disagree about what Explain out loud looks like: the composer's mic is
+ * literally `ATTACHED_FEATURE.Icon`.
+ */
+const COMPOSE_RAIL = [...HOME_FEATURES, HOME_RECENT].filter(
+  (f) => f.label !== ATTACHED_FEATURE.label,
+);
 
 export interface ComposeScreenProps {
   /**
@@ -357,6 +550,15 @@ export interface ComposeScreenProps {
    * `onChange` to wire. Pass '' to see the placeholder state.
    */
   value?: string;
+  /**
+   * Tapping the empty field, which is how this prototype mocks typing.
+   *
+   * Figma's prototype models it exactly this way: `selecting explain feature`
+   * (chip attached, field empty) taps through to `choosing chip` (the same
+   * screen with the topic in the field). Two frames, one screen, one tap —
+   * which is why they are `value` here rather than two routes.
+   */
+  onFill?: () => void;
   /** Send the topic and let Knowie build a set. */
   onSend?: () => void;
   /** Drop the Explain out loud chip and go back to a plain chat. */
@@ -386,42 +588,142 @@ export interface ComposeScreenProps {
  */
 export function ComposeScreen({
   value = 'World history',
+  onFill,
   onSend,
   onClearFeature,
   onBack,
 }: ComposeScreenProps) {
   return (
     <Screen
-      topNavigation={<ChatHeader onMenu={onBack} />}
-      middleContent={<div className="knw-entry" />}
+      /* The chat bar, not the front door's: compose instead of history, and no
+         streak. Figma swaps both between `entrypoint` and `selecting explain
+         feature`, the screen this one is. */
+      topNavigation={<ChatHeader onMenu={onBack} inChat />}
+      middleContent={
+        /* Figma puts a `mascotSlot` at 120 here holding `standby` — the same
+           pose and the same size the home screen uses. The first pass left this
+           slot empty, which is why the screen read as a bare composer: Knowie
+           is meant to be waiting above the field while the student types. */
+        <div className="knw-entry knw-entry--compose">
+          <MascotSlot size="2XL" label="Knowie, waiting">
+            <Knowie pose="standby" />
+          </MascotSlot>
+        </div>
+      }
       bottomContent={
         <div className="knw-recall__composer">
-          <div className="knw-entry__attached">
-            <Chips
-              size="S"
-              color="Primary"
-              active="True"
-              Text="Explain out loud"
-              showLeftIcon={false}
-              showRightIcon={false}
-            />
-            {onClearFeature ? (
-              <button
-                type="button"
-                className="knw-entry__attached-clear"
-                aria-label="Remove Explain out loud"
-                onClick={onClearFeature}
-              >
-                ✕
-              </button>
-            ) : null}
+          {/* `chip container` — THE FEATURE RAIL, unchanged from the front
+              door. Picking a feature attaches it to the composer; it does not
+              take the others away, so the rail keeps offering them and
+              swapping one for another stays an obvious move.
+
+              Drawn, not wired, like the home rail's three dead features: the
+              prototype only carries Explain out loud, and the one chip that
+              would mean something here is the one already attached below. */}
+          {/* FOCUSABLE BECAUSE IT SCROLLS AND NOTHING INSIDE IT DOES. None of
+              these chips is wired, so the row holds no tab stop — and a region
+              that scrolls with no way to reach it by keyboard is unreachable
+              for anyone not using a pointer. axe flags exactly this
+              (`scrollable-region-focusable`), and it only started flagging when
+              the row went from three chips to five and began to overflow: the
+              same markup was compliant at three purely because it fitted. */}
+          <div
+            className="knw-entry__sources"
+            tabIndex={0}
+            role="group"
+            aria-label="Practice features"
+          >
+            {COMPOSE_RAIL.map(({ label, Icon, accent }) => (
+              <Chips
+                key={label}
+                size="M"
+                color="Primary"
+                active="False"
+                Text={label}
+                showLeftIcon
+                leftIcon={
+                  <span className="knw-accent-icon" data-accent={accent}>
+                    <Icon />
+                  </span>
+                }
+                showRightIcon={false}
+              />
+            ))}
           </div>
 
           <ChatInput
             status={value ? 'Ready to send' : 'Inactive'}
             value={value}
             placeholder="Tell me what you want to practice..."
-            onTrailingPress={value ? onSend : undefined}
+            /* Empty, the field takes a tap and fills; full, it sends. One
+               screen, the prototype's two frames. */
+            onFieldPress={value ? undefined : onFill}
+            onTrailingPress={value ? onSend : onFill}
+            /* ONE MICROPHONE ON THIS SCREEN, and it is the chip's.
+               `status="Inactive"` would put `chatInput`'s own mic in the
+               trailing slot, so the empty composer drew two mics a few pixels
+               apart — the chip's blue one meaning "this will be spoken", and a
+               thin white one meaning "record". Different drawings, different
+               colours, the same word about two different things.
+
+               Figma settles it by drawing Send on `selecting explain feature`
+               even with the field empty, which is also what makes the two
+               frames of this screen agree: the trailing control is the same
+               glyph before and after the topic arrives. */
+            showSend
+            sendLabel={value ? 'Send' : 'Add your topic'}
+            /* THE CHIP LIVES INSIDE THE BOX. Figma's `chat box` is a vertical
+               frame holding the `EolChip` and then the row of text and send —
+               the attached feature is part of the message being composed, not a
+               control hovering above it. The first pass rendered it as a
+               sibling above `chatInput`, which read as a separate toolbar and
+               broke the one idea the screen exists to convey: what you type
+               next will be spoken. */
+            attachment={
+              <Chips
+                size="S"
+                color="Primary"
+                  /* RESTING, NOT ACTIVE — the same call the home rail makes.
+                     Figma fills this chip with white at 10%, which on the dark
+                     ground is the resting `background/surface`; `active="True"`
+                     paints the solid violet-on-white pill instead, so the
+                     composer's chip looked like a different component from the
+                     rail's. Attachment is signalled by the chip being there at
+                     all, and by the mic — not by inverting it. */
+                  active="False"
+                  Text={ATTACHED_FEATURE.label}
+                  /* THE SAME MIC AS THE HOME RAIL, not a second one. A first
+                     pass reached for `chatInput`'s `MicrophoneIcon` — a thin
+                     white outline — so the identical chip, labelled "Explain
+                     out loud", carried one glyph on the front door and another
+                     in the composer. Figma draws the same blue mic in both: the
+                     EolChip's vector is `RailMicIcon`'s drawing at 10 x 14.5
+                     rather than 15 x 21.75, in the same `accent/blue/bold`.
+                     `size="S"` matches the frame on the three values that
+                     matter — 12 padding, caption/M-bold at 12/16, and the 16
+                     icon box the mic is drawn at. */
+                showLeftIcon
+                leftIcon={
+                  <span
+                    className="knw-accent-icon"
+                    data-accent={ATTACHED_FEATURE.accent}
+                  >
+                    <ATTACHED_FEATURE.Icon />
+                  </span>
+                }
+                /* THE ✕ IS INSIDE THE PILL, as Figma draws it: mic, label, ✕,
+                   one object. It was a separate 44px button beside the chip,
+                   which read as two controls for one thing. `Chips` had no way
+                   to make its trailing icon pressable, so it gained one —
+                   `onRightIconPress`, deliberately distinct from `onPress`,
+                   because a pressable chip reports `aria-pressed` and removing
+                   something is not a toggle. */
+                showRightIcon={Boolean(onClearFeature)}
+                rightIcon={<XCloseIcon />}
+                onRightIconPress={onClearFeature}
+                rightIconLabel="Remove Explain out loud"
+              />
+            }
           />
 
           <div className="knw-recall__keyboard" aria-hidden="true" />
@@ -569,8 +871,12 @@ export function ExplainEntryScreen({
           >
             <span className="knw-entry__start-body">
               <span className="knw-entry__start-head">
+                {/* The rail's mic, because this is the rail's feature. Figma
+                    draws it at 30 in the same `#5fa0fc` the chip uses; the
+                    build had `chatInput`'s thin outline, so Explain out loud
+                    carried a third drawing on its third screen. */}
                 <span className="knw-entry__start-mic">
-                  <MicrophoneIcon />
+                  <RailMicIcon />
                 </span>
                 <span className="knw-entry__start-labels">
                   <span className="knw-entry__start-action">Explain out loud</span>
@@ -975,9 +1281,14 @@ export interface PermissionPrimerScreenProps {
  * An earlier build put the pair on the screen itself, having read only the
  * screen frame and concluded the design had no opt-out at all.
  *
- * TWO THINGS NOT REPRODUCED, both for want of a token:
- *   - The screen frame carries a 20px LAYER_BLUR over the mascot block. The
- *     only blur token is `effect/blur-soft` (4), so Knowie renders crisp.
+ * KNOWIE IS DELIBERATELY OUT OF FOCUS. Figma puts a 20px LAYER_BLUR on the
+ * block holding the mascot, and it is the point of the composition rather than
+ * decoration: Knowie is a soft glow behind "You're ready", not a character in
+ * front of it. Bound to `effect/blur` (16), the nearest step. An earlier note
+ * here said the only blur token was `effect/blur-soft` (4) and shipped the
+ * mascot crisp — both tokens existed; nobody had looked.
+ *
+ * ONE THING NOT REPRODUCED, for want of a token:
  *   - The headline is 33/36 — `headline/L`. No `textBlock` variant maps to it
  *     (XL is `display/M` at 76, L is `headline/XL` at 44), so it is bound
  *     directly here. A `textBlock` variant at `headline/L` is logged as a gap.
@@ -1000,13 +1311,27 @@ export function PermissionPrimerScreen({
             </MascotSlot>
           </div>
           <h1 className="knw-recall__headline">You&rsquo;re ready</h1>
+          {/* Figma leaves ~230 between the headline and the button block, so
+              "You're ready" lands about two thirds down rather than against
+              the CTA. This is that space, and it takes its share of the column
+              in Figma's own 2 : 1 proportion. */}
+          <div className="knw-recall__primer-foot" aria-hidden="true" />
         </div>
       }
       bottomContent={
         <div className="knw-recall__escapes">
-          <div className="knw-recall__actions">
+          {/* A GROUP OF ONE, so the CTA fills the 358 Figma draws. A bare Button
+              hugs its label — this came out 82 wide against the frame's 358,
+              which is the "button seems small" on this screen.
+
+              SIZE M, LIKE EVERY OTHER BUTTON IN THE BUILD. Widening it to 358
+              was only half the fix — the build also ran two button sizes at
+              once: M (48 tall, label 15/20) on the recall and permission
+              screens, L (56 tall, label 21/24) on comparison, rating, summary
+              and exit. Every one is now M. One button, every screen. */}
+          <ButtonGroup variant="Vertical" size="M">
             <Button variant="Primary" size="M" CTA="Let’s go" onClick={onStart} />
-          </div>
+          </ButtonGroup>
         </div>
       }
       showBottomSheetBackground={showSheet}
@@ -1031,9 +1356,9 @@ export function PermissionPrimerScreen({
               </div>
             }
             bottomSection={
-              <ButtonGroup variant="Vertical" size="L">
-                <Button variant="Primary" size="L" CTA="Allow" onClick={onAllow} />
-                <Button variant="Secondary" size="L" CTA="Type instead" onClick={onUseText} />
+              <ButtonGroup variant="Vertical" size="M">
+                <Button variant="Primary" size="M" CTA="Allow" onClick={onAllow} />
+                <Button variant="Secondary" size="M" CTA="Type instead" onClick={onUseText} />
               </ButtonGroup>
             }
           />
@@ -1141,6 +1466,7 @@ export function PermissionDeniedScreen({
       }
       bottomContent={
         <div className="knw-recall__escapes">
+          {/* Size M — the one button size the build uses, on every screen. */}
           <ButtonGroup variant="Vertical" size="M">
             <Button variant="Primary" size="M" CTA="Type instead" onClick={onUseText} />
             <Button
@@ -1186,14 +1512,14 @@ export function PermissionDeniedScreen({
               </div>
             }
             bottomSection={
-              <ButtonGroup variant="Vertical" size="L">
+              <ButtonGroup variant="Vertical" size="M">
                 <Button
                   variant="Primary"
-                  size="L"
+                  size="M"
                   CTA="I've turned it on"
                   onClick={onMicEnabled}
                 />
-                <Button variant="Secondary" size="L" CTA="Type instead" onClick={onUseText} />
+                <Button variant="Secondary" size="M" CTA="Type instead" onClick={onUseText} />
               </ButtonGroup>
             }
           />
@@ -1341,6 +1667,7 @@ export function ReRecordScreen({
               bottom of the screen. Figma places it at y351 with the space
               below left empty, and that is followed here. */}
           <div className="knw-recall__rerecord-actions">
+            {/* Size M — the one button size the build uses, on every screen. */}
             <ButtonGroup variant="Vertical" size="M">
               <Button variant="Primary" size="M" CTA="Continue" onClick={onContinue} />
               <Button variant="Secondary" size="M" CTA="Next question" onClick={onNextQuestion} />
@@ -1743,7 +2070,18 @@ export function ResultScreen({
 
           {promoted && pending && (
             <div className="knw-recall__hint-panel">
-              <p className="knw-recall__hint-panel-label">{hintLabel}</p>
+              {/* A LIGHTBULB, NOT THE CARD'S ALERT-CIRCLE — and there was no
+                  mark here at all before. Figma escalates the glyph with the
+                  rung: "notice this" inside the card on 1 and 2, "here is the
+                  idea" once the hint has its own warm panel. Promoting the
+                  hint had carried the label across and left the icon behind,
+                  so the rung that shouts loudest was the only one silent. */}
+              <p className="knw-recall__hint-panel-label">
+                <IconSlot size="200">
+                  <HintBulbIcon />
+                </IconSlot>
+                {hintLabel}
+              </p>
               <p className="knw-recall__hint-panel-body">{pending}</p>
             </div>
           )}
@@ -1813,7 +2151,13 @@ export function NoAudioScreen({
             headingLevel={2}
           />
           <div className="knw-recall__fab">
-            <Button variant="Primary" size="M" CTA="Try again" onClick={onRetry} />
+            {/* A group of one, so the CTA fills its column like every other
+                primary in the build. A bare Button hugs its label — this came
+                out 91 wide beside 358s everywhere else. */}
+            {/* Size M — the one button size the build uses, on every screen. */}
+            <ButtonGroup variant="Vertical" size="M">
+              <Button variant="Primary" size="M" CTA="Try again" onClick={onRetry} />
+            </ButtonGroup>
             <RecallEscapes {...escapes} />
           </div>
         </div>
@@ -2217,14 +2561,23 @@ export function ComparisonScreen({
               </span>
               Correct answer
             </h2>
-            {/* `listItem` at Strong — the violet checked disc the file draws
-                beside each point, and the same marker the summary's strong
-                list uses. One component, both places. */}
-            <ListItemGroup label="The correct answer, point by point">
-              {answerPoints.map((point, i) => (
-                <ListItem key={point} variant="Strong" label={point} showDivider={i > 0} />
+            {/* NOT `listItem`, and that was wrong before. The marker here is
+                GREEN and 16px — `border/success` ringing a `feedback/success/
+                bold` disc with a `text/primary` tick — where `listItem`'s
+                Strong is violet and 24px. They are not the same marker doing
+                the same job: the summary's list says "you recalled this", the
+                comparison's says "this is the correct answer". Sharing the
+                component made the second one wear the first one's colour. */}
+            <ul className="knw-compare__points">
+              {answerPoints.map((point) => (
+                <li key={point} className="knw-compare__point">
+                  <span className="knw-compare__tick" aria-hidden="true">
+                    <CheckMarkIcon />
+                  </span>
+                  <span className="knw-compare__point-text">{point}</span>
+                </li>
               ))}
-            </ListItemGroup>
+            </ul>
           </section>
 
           {/* THE SAME CARD, DELIBERATELY. Figma builds these two differently —
@@ -2242,8 +2595,12 @@ export function ComparisonScreen({
               is. */}
           <section className="knw-compare__card">
             <h2 className="knw-compare__card-head" data-part="yours">
+              {/* The same mic the rest of the build uses. It inherits the card
+                  head's colour, so it reads as "what you said" here rather than
+                  as the feature — one drawing, the surrounding colour carrying
+                  the meaning. */}
               <span className="knw-compare__card-icon">
-                <MicrophoneIcon />
+                <RailMicIcon />
               </span>
               Your answer
             </h2>
@@ -2252,9 +2609,9 @@ export function ComparisonScreen({
         </div>
       }
       bottomContent={
-        <ButtonGroup variant="Vertical" size="L">
-          <Button variant="Primary" size="L" CTA="Revise now" onClick={onRevise} />
-          <Button variant="Secondary" size="L" CTA="Try again" onClick={onTryAgain} />
+        <ButtonGroup variant="Vertical" size="M">
+          <Button variant="Primary" size="M" CTA="Revise now" onClick={onRevise} />
+          <Button variant="Secondary" size="M" CTA="Try again" onClick={onTryAgain} />
         </ButtonGroup>
       }
     />
@@ -2408,8 +2765,8 @@ export function SessionRatingScreen({
       bottomContent={
         /* A group of one, so Continue fills the 358 Figma draws. A bare Button
            hugs its label, and the scaffold's bottom slot centres it. */
-        <ButtonGroup variant="Vertical" size="L">
-          <Button variant="Primary" size="L" CTA="Continue" onClick={onContinue} />
+        <ButtonGroup variant="Vertical" size="M">
+          <Button variant="Primary" size="M" CTA="Continue" onClick={onContinue} />
         </ButtonGroup>
       }
     />
@@ -2546,9 +2903,9 @@ export function SummaryScreen({
            layout convenience in the file rather than a sheet — there is nothing
            to dismiss. `recall-summary.png` puts them flat at the bottom, and
            that is what the slot is for. */
-        <ButtonGroup variant="Vertical" size="L">
-          <Button variant="Primary" size="L" CTA="Revise now" onClick={onRevise} />
-          <Button variant="Secondary" size="L" CTA="Try again" onClick={onTryAgain} />
+        <ButtonGroup variant="Vertical" size="M">
+          <Button variant="Primary" size="M" CTA="Revise now" onClick={onRevise} />
+          <Button variant="Secondary" size="M" CTA="Try again" onClick={onTryAgain} />
         </ButtonGroup>
       }
     />
@@ -2655,9 +3012,9 @@ export function ExitSheet({ onKeepGoing, onLeave }: ExitScreenProps) {
         />
       }
       bottomSection={
-        <ButtonGroup variant="Vertical" size="L">
-          <Button variant="Primary" size="L" CTA="Keep learning" onClick={onKeepGoing} />
-          <Button variant="Secondary" size="L" CTA="Leave" onClick={onLeave} />
+        <ButtonGroup variant="Vertical" size="M">
+          <Button variant="Primary" size="M" CTA="Keep learning" onClick={onKeepGoing} />
+          <Button variant="Secondary" size="M" CTA="Leave" onClick={onLeave} />
         </ButtonGroup>
       }
     />
@@ -2797,8 +3154,10 @@ export function LessonScreen({
         <button type="button" className="knw-lesson__eol" onClick={onExplainOutLoud}>
           <span className="knw-lesson__eol-body">
             <span className="knw-lesson__eol-head">
+              {/* Same feature, same mic — the fourth surface Explain out loud
+                  appears on, and the last one still drawing its own. */}
               <span className="knw-lesson__eol-icon" aria-hidden="true">
-                <MicIcon />
+                <RailMicIcon />
               </span>
               <span className="knw-lesson__eol-copy">
                 <span className="knw-lesson__eol-title">Explain out loud</span>

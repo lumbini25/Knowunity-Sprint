@@ -45,6 +45,20 @@ export interface ChipsProps extends Omit<HTMLAttributes<HTMLElement>, 'color'> {
    * Figma description says to use button for actions.
    */
   onPress?: () => void;
+  /**
+   * Makes the TRAILING icon its own control, inside the chip — a remove or
+   * dismiss affordance, as Figma's `EolChip` draws it (mic · label · ✕ in one
+   * pill).
+   *
+   * Separate from `onPress` on purpose. A pressable chip is a toggle and
+   * reports `aria-pressed`; removing something is not a toggle, so putting the
+   * remove action on the chip itself would announce "toggle button, not
+   * pressed" for a control that deletes. This gives the ✕ a real button with
+   * its own label while the chip stays a label.
+   */
+  onRightIconPress?: () => void;
+  /** Accessible name for the trailing control. Required when it is pressable. */
+  rightIconLabel?: string;
 }
 
 export function Chips({
@@ -57,6 +71,8 @@ export function Chips({
   leftIcon,
   rightIcon,
   onPress,
+  onRightIconPress,
+  rightIconLabel,
   ...rest
 }: ChipsProps) {
   const className = [
@@ -77,9 +93,20 @@ export function Chips({
       ) : null}
       <span className="knw-chip__label">{Text}</span>
       {showRightIcon ? (
-        <span className="knw-chip__icon" aria-hidden="true">
-          {rightIcon ?? <SquareIcon />}
-        </span>
+        onRightIconPress ? (
+          <button
+            type="button"
+            className="knw-chip__icon knw-chip__icon--pressable"
+            aria-label={rightIconLabel}
+            onClick={onRightIconPress}
+          >
+            {rightIcon ?? <SquareIcon />}
+          </button>
+        ) : (
+          <span className="knw-chip__icon" aria-hidden="true">
+            {rightIcon ?? <SquareIcon />}
+          </span>
+        )
       ) : null}
     </>
   );

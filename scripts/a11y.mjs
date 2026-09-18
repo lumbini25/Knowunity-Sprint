@@ -80,6 +80,23 @@ async function main() {
     hasTouch: true,
   });
 
+  /* `/recall/idle` opens on the mic permission primer for a student who has
+     not been asked yet, so without this the audit would check the primer twice
+     — once here and once at `/recall/permission-primer`, which is its own route
+     — and never check the first turn at all. Seeding the flag audits the turn;
+     the primer keeps its own row. Set before any page script runs, so the
+     provider reads it on its first render. */
+  await context.addInitScript(() => {
+    try {
+      window.sessionStorage.setItem(
+        'knw.recall.session',
+        JSON.stringify({ termIndex: 0, rung: 'attempt1', takeIndex: 0, outcomes: [], micGranted: true }),
+      );
+    } catch {
+      /* Blocked storage. The audit still runs; idle just shows the primer. */
+    }
+  });
+
   let total = 0;
   const failures = [];
 

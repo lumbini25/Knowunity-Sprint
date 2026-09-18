@@ -9,12 +9,11 @@
 
 import { SummaryScreen } from '../../../components/screens/RecallScreens/RecallScreens';
 import { useRouter } from 'next/navigation';
-import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
+import { useRecallSession } from '../../../lib/recall/session';
 import { SESSION } from '../../../lib/recall/script';
 
 export default function Page() {
   const session = useRecallSession();
-  const { goTo } = useRecallNav();
   const router = useRouter();
 
   /* Outcomes carry a termId; the titles live on the script. Terms the student
@@ -30,15 +29,21 @@ export default function Page() {
     <SummaryScreen
       topic={`World history · ${session.termCount} concepts`}
       terms={terms.length ? terms : undefined}
-      /* "Revise now" goes to the lesson — the concept back in front of the
-         student before they try explaining it again.
+      /* "Revise now" goes to the FOLDER PICKER, not to the lesson. The summary
+         is where a session ends, and what a student does next is choose the
+         material to revise — so it hands them back the shelf rather than
+         reopening the one concept they just left. `/recall/lesson` shows a
+         single set; `/entry/folders` is the choice between them.
 
-         "Try again" goes to `/entry/ready`, the Explain Out Loud entry screen
-         (`explain out ready`, 15619:8880). That was the last unwired control
-         in the build: the destination did not exist. Now the loop closes —
-         summary → entry → a fresh session. */
-      onRevise={goTo('lesson')}
-      onTryAgain={() => router.push('/entry/ready')}
+         "Try again" goes to the FRONT DOOR, not back into Explain out loud.
+         It used to push `/entry/ready`, which drops the student straight into
+         a fresh session on the same feature — a narrower choice than the words
+         promise. From `/entry` the whole rail is available, so "try again" can
+         mean the same feature, a different one, or a different topic. The two
+         together give the student the shelf (Revise now) or the chat (Try
+         again), which is every way out of a finished session. */
+      onRevise={() => router.push('/entry/folders')}
+      onTryAgain={() => router.push('/entry')}
     />
   );
 }

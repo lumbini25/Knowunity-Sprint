@@ -1,0 +1,44 @@
+/* Greed VF for the component catalog.
+
+   WHY THIS FILE EXISTS. The app loads the typeface with `next/font/local` in
+   `app/layout.tsx`, which defines the custom property `--font-greed` that the
+   design tokens point at. Storybook renders components without that layout —
+   it loads `build/css/tokens.css` straight — so `--font-greed` would be
+   undefined here and every story would fall through to a system font. Worse,
+   it would do so silently: the catalog would look subtly wrong and nothing
+   would report an error.
+
+   So the catalog declares the same face itself, from the same file, under the
+   same variable name. One typeface, one axis range, two loaders — because the
+   app is built by Next and the catalog is built by Vite.
+
+   The family name is local to this file. Nothing refers to `Greed VF` by name;
+   everything goes through `--font-greed`, which is what lets the app's hashed
+   next/font family and this plain one be interchangeable. */
+
+@font-face {
+  font-family: 'Greed VF';
+  /* Resolved and served by Vite. The same file the app hashes into its build —
+     not a copy, so the two can never drift apart. */
+  src: url('../app/GreedCollectionVF-TRIAL.ttf') format('truetype');
+  /* The variable weight axis, as a range: one file covers Light to Heavy, and
+     the browser interpolates every weight the type scale asks for. */
+  font-weight: 300 900;
+  /* The width axis. Declaring it is what lets `font-stretch: 100%` in
+     app/fonts.css resolve to Greed *Standard* rather than the font's own
+     default of 75, which is Condensed. */
+  font-stretch: 75% 130%;
+  font-style: normal;
+  /* Paint in the fallback immediately, repaint when Greed arrives, rather than
+     holding text invisible while it loads. */
+  font-display: swap;
+}
+
+/* The complete stack, because `--font-greed` is what the design token resolves
+   to — the token names the family and the loader owns the fallbacks. next/font
+   builds the app's copy of this list from its own `fallback` option (and adds a
+   metric-matched `greed Fallback` face of its own, which is why the app's
+   computed value is longer than this one). */
+:root {
+  --font-greed: 'Greed VF', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}

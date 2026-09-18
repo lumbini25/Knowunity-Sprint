@@ -45,6 +45,11 @@ Guard every traversal — this file has broken instance sublayers that throw on
 `componentProperties` and on `findAll`. Walk `node.children` manually inside try/catch, and coerce
 `figma.mixed` (a Symbol) before returning it.
 
+**Screenshot the frame before you trust your reading of it.** `figma_capture_screenshot` costs one
+call and catches the two ways a node walk misleads — a layer that is present but `visible: false`,
+and a name-filtered search that never saw the layers you did not think to name. See the checks under
+"Then check Figma" below, which exist because both of those shipped.
+
 ### 3. Query Storybook for every component you will use
 
 Call `mcp__storybook__docs-list` once, then `docs-show` for each component. **Never assume a prop
@@ -85,11 +90,44 @@ design value, and carries a paragraph saying so.
 To change tokens: edit `tokens/tokens.json`, then run `npm run tokens:css` **and** `npm run tokens`.
 `app/globals.css` and `build/css/tokens.css` are generated — never hand-edit them.
 
-### 7. 390px, dark mode, iOS only
+### 7. One concept, one icon — across every screen, not just this one
+
+**Before drawing any icon, check what the rest of the app already uses for that
+idea.** `components/*/icons.tsx` is the whole set; grep it. If the concept is
+already drawn somewhere, import that one. A second drawing of the same idea is
+a bug even when both are extracted from Figma, because the student reads them as
+two different things.
+
+This has gone wrong four times, and each looked local while it was happening:
+
+- **The composer's mic** was `chatInput`'s thin outline while the rail's was the
+  blue `RailMicIcon` — the same "Explain out loud" chip, two glyphs, one screen
+  apart.
+- **The streak** reused `BoltIcon`, so the app bar showed one glyph twice in two
+  colours and called one of them a flame.
+- **The exit and the menu** were the text characters `✕` and `☰` among real
+  SVGs, so their weight tracked the font rather than the icon set.
+- **The hint label** drew a filled lightbulb where the frame has a stroked
+  alert-circle.
+
+Two rules that would have caught all four:
+
+- **A control in the same position on two screens is not automatically the same
+  control.** The app bar's trailing slot is `clock-rewind` on the front door and
+  compose inside a chat; the difference is meaning, not drift. Check what it
+  does there before reusing what is there.
+- **Never a text character where an icon belongs.** A font glyph changes weight
+  with the type binding and will not match the SVGs beside it.
+
+Check this deliberately when you finish, by looking at the screen you built
+NEXT TO the one before it — `npm run consistency` reports icon boxes that drift
+in size, but it cannot tell you two glyphs mean the same thing.
+
+### 8. 390px, dark mode, iOS only
 
 No light mode, no desktop, no breakpoints. Safe-area insets top and bottom come from `Screen`.
 
-### 8. Build every state SPEC.md lists, including the failure ones
+### 9. Build every state SPEC.md lists, including the failure ones
 
 The failure states are the point of this feature — a misheard transcript, a silent recording, a
 denied mic. A screen with only its happy path is half-built.
@@ -97,7 +135,7 @@ denied mic. A screen with only its happy path is half-built.
 Two rules from `CLAUDE.md` apply to every recall screen: a **text fallback reachable in one tap**,
 and **a way out**. Sentence case on every label; proper nouns are Knowie, Knowunity, PRO.
 
-### 9. Every action goes where SPEC.md says
+### 10. Every action goes where SPEC.md says
 
 **A button that leads nowhere means the screen isn't finished.** Use `useRecallNav()`'s `go` /
 `goTo` with a `Destination` rather than hand-writing URLs.
@@ -112,8 +150,9 @@ Run all of it:
 ```
 npx tsc --noEmit && npm run lint
 npm run build
-npm run dev   # then, in another terminal:
-npm run a11y  # must be 0 violations
+npm run dev          # then, in another terminal:
+npm run a11y         # must be 0 violations
+npm run consistency  # the new screen must not add a row to the type table
 ```
 
 Plus Storybook's `test-run` — the MCP tool, not a package script. It wedges periodically; a full
@@ -121,6 +160,41 @@ Storybook restart is the only fix, killing the vitest worker is not enough.
 
 Then **walk the flow in the browser at 390×844 in dark mode**, clicking only. If any screen needed
 the address bar, it is not done.
+
+### `npm run consistency` — does this screen match the others?
+
+`scripts/consistency.mjs` walks every route at 390×844 dark and reports what no other check sees:
+values that are not a token step, **every size/line-height/weight triple in use**, icon boxes, and
+the gutter and gap per screen side by side.
+
+**The type table is the part that matters.** `SPEC.md` names the combinations the system uses; the
+audit prints the combinations actually rendered. A new screen must not add a row. A row that appears
+once, or two rows differing only in weight, is a partial type binding — and the usual cause is an
+element nobody styled taking `font-weight` from the browser instead of a token. That is invisible by
+eye and obvious here: it is how a `<strong>` rendering at the user-agent's 700 among the token's 600,
+and an exit control rendering at 400 among Bold, were both found.
+
+Run it **before and after**, so you can see what your screen added rather than guessing.
+
+### Then check Figma — the audit cannot tell you whether you match the design
+
+**Always check the screen against its Figma frame before calling it done.** `npm run consistency`
+proves the build agrees with *itself*; only Figma proves it agrees with the *design*. A screen can be
+perfectly consistent and perfectly wrong — every value a clean token step, every one of them the
+wrong step. Pull the frame with `figma-console` and compare the built screen property by property:
+type, spacing, padding, icon, colour.
+
+**Look at the frame, do not only read it.** `figma_capture_screenshot` on the node settles in one
+glance what a node walk gets wrong, and node walks get this file wrong in two specific ways:
+
+- **Present is not the same as on.** A layer in the tree may be `visible: false`. The home rail's
+  four `iconSlot`s are all switched off and hold a placeholder square, which was once read as "Figma
+  wants four icons we do not have". It wants none of them.
+- **A filtered walk is not a walk.** Searching the tree by name finds only what you guessed the name
+  would be. The same rail's real glyphs are called `Group 2136139921` and the like, so a search for
+  `/iconSlot|mic/` reported one icon on a rail that has five.
+
+Both of those shipped. A screenshot would have caught either in seconds.
 
 ### Then report
 

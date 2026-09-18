@@ -128,11 +128,43 @@ export interface RecallSession {
    * grammar of the pattern. Not persisted: a reload should not reopen it.
    */
   exitOpen: boolean;
+  /**
+   * Whether the microphone has been asked for yet this session.
+   *
+   * False on a new tab, which is what makes `/recall/idle` open on the
+   * permission primer instead of the first question — the "first-encounter
+   * screen" `reference/Voice_UX.md` lists as a Must, and which nothing routed
+   * to before: the three permission screens existed but only the dev index
+   * linked them.
+   */
+  micGranted: boolean;
+  /**
+   * Allow. Records the ask and lets the turn through.
+   *
+   * It does NOT claim the microphone works — this prototype captures no audio,
+   * and pretending to hold a real grant would be the dishonest bit. It records
+   * only that the student has been asked and said yes.
+   */
+  grantMic: () => void;
   /** ✕ on any turn. */
   requestExit: () => void;
   /** Stay — back to exactly the turn they were on, because it never left. */
   dismissExit: () => void;
 
+  /**
+   * The speaking has stopped and a take exists. Where does it go?
+   *
+   * THIS IS A TRANSCRIPTION QUESTION, NOT A JUDGING ONE, and the two are
+   * different moments. Whether the words came back cleanly is known the instant
+   * capture ends; whether they were the right words is not known until the
+   * judge has run. So this asks only the first: a take nothing was heard in
+   * goes to `no-audio`, one heard below `CONFIDENCE_THRESHOLD` goes to
+   * `misheard`, and a clean one goes to `answer-sent` to be read back and sent.
+   *
+   * CONSUMES NOTHING. A transcription failure is never the student's fault, so
+   * neither branch moves the rung — the same rule `submit` already applies.
+   */
+  handOver: () => Destination;
   /** Consume the current take. Returns where the student goes next. */
   submit: () => Destination;
   /** "That's what I said" — the contested verdict stands, and the rung moves. */
@@ -167,6 +199,20 @@ interface Persisted {
   rung: Rung;
   takeIndex: number;
   outcomes: TermOutcome[];
+  /**
+   * Whether the student has been asked for the microphone yet.
+   *
+   * IN sessionStorage, NOT localStorage, AND THAT IS THE POINT. A permission
+   * primer is a first-encounter screen, so it needs a definition of "first"
+   * — and for a prototype being demonstrated, the useful one is **a new tab is
+   * a new student**. localStorage would show it once per browser and never
+   * again, which is right for a shipping app and useless for showing anyone
+   * how the feature opens.
+   *
+   * Real permission state lives with the OS and is never ours to remember;
+   * this only records that the ask has happened.
+   */
+  micGranted: boolean;
 }
 
 function read(): Persisted | null {
@@ -212,8 +258,9 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     rung: 'attempt1',
     takeIndex: 0,
     outcomes: [],
+    micGranted: false,
   });
-  const { termIndex, rung, takeIndex, outcomes } = progress;
+  const { termIndex, rung, takeIndex, outcomes, micGranted } = progress;
   const [verdict, setVerdict] = useState<DisplayedVerdict | null>(null);
   const [resolved, setResolved] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
@@ -232,8 +279,12 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
      most once per session and only when there is something to resume. */
   useEffect(() => {
     const saved = read();
+    /* Defaulted rather than spread blindly: a record written before
+       `micGranted` existed has no such key, and `undefined` would read as
+       "not asked" by luck rather than by decision. Saying so makes a
+       mid-session reload keep whatever was already answered. */
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (saved) setProgress(saved);
+    if (saved) setProgress({ ...saved, micGranted: saved.micGranted ?? false });
   }, []);
 
   /* Skips the mount write, and only the mount write. */
@@ -377,6 +428,44 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     return 'result';
   }, [rung, term.id, settleTerm]);
 
+  /* Show a low-confidence transcript and let the student dispute it. Shared by
+     `handOver` (at capture, the normal path) and `submit` (the backstop), so
+     the two can never disagree about what a contestable take looks like. The
+     rung does not move: a transcription failure is not the student's fault. */
+  const showTranscriptAsContestable = useCallback(
+    (bad: ScriptedTake): Destination => {
+      setVerdict({
+        rung,
+        verdict: bad.verdict,
+        transcript: bad.transcript,
+        score: bad.score ?? null,
+        contestable: true,
+        got: bad.got ?? [],
+        stillMissing: bad.stillMissing ?? [],
+      });
+      return 'misheard';
+    },
+    [rung],
+  );
+
+  /**
+   * Where the take goes the moment the speaking stops. See `RecallSession`.
+   *
+   * The branch belongs HERE, not after the student has confirmed a transcript
+   * they were never shown. "Answer sent" reads the words back — so if the words
+   * are wrong, reading them back as though they were captured is the wrong
+   * screen, and `misheard` is the one that exists for it.
+   */
+  const handOver = useCallback((): Destination => {
+    /* No script for this rung. `submit` reports and climbs; here the honest
+       move is the screen that shows the take, which is where the student was
+       heading anyway. */
+    if (!take) return 'answer-sent';
+    if (isSilent(take)) return 'no-audio';
+    if (isContestable(take)) return showTranscriptAsContestable(take);
+    return 'answer-sent';
+  }, [take, showTranscriptAsContestable]);
+
   const submit = useCallback((): Destination => {
     /* A RUNG WITH NO TAKE IS A SCRIPTING HOLE, and this used to swallow it.
        Returning 'result' without setting a verdict or moving the rung put the
@@ -407,22 +496,17 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     /* Nothing heard. Its own state, its own cause, and no rung consumed. */
     if (isSilent(take)) return 'no-audio';
 
-    /* Heard badly. The student gets to say so before the verdict stands. */
-    if (isContestable(take)) {
-      setVerdict({
-        rung,
-        verdict: take.verdict,
-        transcript: take.transcript,
-        score: take.score ?? null,
-        contestable: true,
-        got: take.got ?? [],
-        stillMissing: take.stillMissing ?? [],
-      });
-      return 'misheard';
-    }
+    /* Heard badly. The student gets to say so before the verdict stands.
+
+       Normally already handled at capture by `handOver`, so this is the second
+       line rather than the first — a take that reaches here contestable came in
+       by a path that did not pass through the listening screen. Kept because
+       the rule is "a bad transcript never counts against the student", and a
+       rule with one enforcement point is a rule with one hole. */
+    if (isContestable(take)) return showTranscriptAsContestable(take);
 
     return settleTake(take);
-  }, [take, rung, term.id, settleTerm, settleTake]);
+  }, [take, rung, term.id, settleTerm, settleTake, showTranscriptAsContestable]);
 
 
   /**
@@ -469,6 +553,13 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
   }, [term.id, termIndex, settleTerm]);
 
 
+  /* Records the ask, nothing more. Goes through `setProgress` so it lands in
+     the same sessionStorage record as the rung and the outcomes — one place
+     that knows what this session has been through, not two. */
+  const grantMic = useCallback(() => {
+    setProgress((prev) => (prev.micGranted ? prev : { ...prev, micGranted: true }));
+  }, []);
+
   const requestExit = useCallback(() => setExitOpen(true), []);
   const dismissExit = useCallback(() => setExitOpen(false), []);
 
@@ -504,8 +595,11 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       resolved,
       outcomes,
       exitOpen,
+      micGranted,
+      grantMic,
       requestExit,
       dismissExit,
+      handOver,
       /* XP is a flat completion bonus. It reads 0 on every recall screen and
          moves once, at the summary. Do not wire it to per-term outcomes. */
       xp: 0,
@@ -520,7 +614,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     }),
     [
       term, termIndex, rung, rungScript, take, verdict, resolved, outcomes, exitOpen,
-      requestExit, dismissExit,
+      micGranted, grantMic, requestExit, dismissExit, handOver,
       submit, confirm, discard, contest, retryAfterSilence, skip, advance, saveAndLeave,
     ],
   );

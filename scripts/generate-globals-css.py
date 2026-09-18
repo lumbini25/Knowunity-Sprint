@@ -62,7 +62,24 @@ def literal(value, type_, path):
             sys.exit(f"FATAL unmapped fontWeight {value!r} at {path}")
         return WEIGHT[value]
     if type_ == "fontFamily":
-        return f'"{value}"'
+        # A fontFamily token may hold one name or a whole stack, and DTCG
+        # expresses a stack as an array. Each entry is quoted only if it needs
+        # to be, because quoting changes meaning here rather than just style:
+        # "var(--font-greed)" asks for a family with that literal name, and
+        # "sans-serif" asks for a font called sans-serif instead of invoking
+        # the generic. So a var() reference is passed through untouched, and a
+        # name is quoted only when it contains a space. Every CSS generic
+        # keyword is single-word, so the space rule leaves them alone.
+        names = value if isinstance(value, list) else [value]
+        rendered = []
+        for name in names:
+            if not isinstance(name, str):
+                sys.exit(f"FATAL fontFamily entry is not a string at {path}: {name!r}")
+            if name.startswith("var(") or " " not in name:
+                rendered.append(name)
+            else:
+                rendered.append(f'"{name}"')
+        return ", ".join(rendered)
     if type_ == "duration":
         # DTCG duration values carry their own unit ("200ms"), unlike dimension,
         # which is a bare number the CSS layer has always suffixed with px.

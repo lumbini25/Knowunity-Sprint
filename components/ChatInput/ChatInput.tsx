@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { XCloseIcon } from '../BottomSheet/icons';
 import { LoadingIcon, MicrophoneIcon, PlusIcon, SendIcon } from './icons';
 import './ChatInput.css';
@@ -44,6 +44,47 @@ export interface ChatInputProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
   onLeadingPress?: () => void;
   /** Trailing action: microphone, send, or inert while Loading. */
   onTrailingPress?: () => void;
+  /**
+   * Draw the send affordance even on a status that would otherwise show the
+   * microphone.
+   *
+   * ONE MICROPHONE PER SCREEN. Figma's composer on `selecting explain feature`
+   * shows Send with the field still empty, and the reason is legibility rather
+   * than state: the Explain out loud chip attached just above it already
+   * carries a mic, and a second mic beside it says the same word twice about
+   * two different things. The screens that attach a feature pass this; the
+   * plain composer does not, and keeps the microphone.
+   */
+  showSend?: boolean;
+  /**
+   * Accessible name for the trailing control when it is the send affordance.
+   *
+   * It exists because `showSend` can draw Send before there is anything to
+   * send — on the empty composer the button supplies the topic, and calling
+   * that "Send" would be a label that lies about what pressing it does.
+   */
+  sendLabel?: string;
+  /**
+   * Makes the text area itself pressable.
+   *
+   * TYPING IS MOCKED HERE, as the speech is. On a device the field takes focus
+   * and the OS raises a keyboard; this prototype has no text entry, so Figma's
+   * own prototype models it as a tap — `full container` on `selecting explain
+   * feature` navigates to `choosing chip`, the identical screen with the topic
+   * already in the field. This is that tap.
+   */
+  onFieldPress?: () => void;
+  /**
+   * Content pinned INSIDE the field, on its own line above the text — Figma's
+   * `EolChip` sitting inside `chat box` on `choosing chip` (15896:16019).
+   *
+   * This is what makes an attached feature read as part of the message the
+   * student is about to send, rather than as a separate control floating above
+   * the composer. The field is a row until something is passed here and a
+   * wrapped two-line box after, so every status without an attachment renders
+   * exactly as it did.
+   */
+  attachment?: ReactNode;
 }
 
 /** Maps the Figma status onto the class the stylesheet keys off. */
@@ -68,6 +109,10 @@ export function ChatInput({
   value = '',
   onLeadingPress,
   onTrailingPress,
+  showSend = false,
+  sendLabel = 'Send',
+  onFieldPress,
+  attachment,
   ...rest
 }: ChatInputProps) {
   const isRecording = status === 'Recording';
@@ -92,18 +137,35 @@ export function ChatInput({
         </button>
       ) : null}
 
-      <div className="knw-chat__field">
-        <div className="knw-chat__text">
-          {/* Typing shows the caret ahead of the placeholder, as Figma does. */}
-          {status === 'Typing' ? <span className="knw-chat__caret" aria-hidden="true" /> : null}
-          <span className="knw-chat__value">{showsValue ? value : placeholder}</span>
-        </div>
+      <div
+        className={`knw-chat__field${attachment ? ' knw-chat__field--with-attachment' : ''}`}
+      >
+        {/* First child, so it takes the top line of the box and the text and
+            send share the one beneath — the order Figma's `chat box` uses. */}
+        {attachment ? <div className="knw-chat__attachment">{attachment}</div> : null}
 
-        {SENDS.has(status) ? (
+        {/* A button only when something is listening — the rule the leading
+            control and voiceFab already follow. Left alone it stays a plain
+            div, so the five statuses that do not take a field tap are
+            unchanged. */}
+        {onFieldPress ? (
+          <button type="button" className="knw-chat__text knw-chat__text--pressable" onClick={onFieldPress}>
+            {status === 'Typing' ? <span className="knw-chat__caret" aria-hidden="true" /> : null}
+            <span className="knw-chat__value">{showsValue ? value : placeholder}</span>
+          </button>
+        ) : (
+          <div className="knw-chat__text">
+            {/* Typing shows the caret ahead of the placeholder, as Figma does. */}
+            {status === 'Typing' ? <span className="knw-chat__caret" aria-hidden="true" /> : null}
+            <span className="knw-chat__value">{showsValue ? value : placeholder}</span>
+          </div>
+        )}
+
+        {SENDS.has(status) || showSend ? (
           <button
             type="button"
             className="knw-chat__send"
-            aria-label="Send"
+            aria-label={sendLabel}
             onClick={onTrailingPress}
           >
             <span className="knw-chat__send-icon">

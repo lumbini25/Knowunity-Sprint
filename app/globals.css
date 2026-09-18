@@ -154,8 +154,8 @@
   --primitive-size-score-badge: 44px;
   --primitive-size-bullet: 5px;
 
-  --primitive-font-family-default: "Greed Standard-TRIAL";
-  --primitive-font-family-display: "Greed Standard-TRIAL";
+  --primitive-font-family-default: var(--font-greed);
+  --primitive-font-family-display: var(--font-greed);
   --primitive-font-weight-regular: 400;
   --primitive-font-weight-semibold: 600;
   --primitive-font-weight-bold: 700;

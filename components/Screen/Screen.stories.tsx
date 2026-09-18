@@ -55,7 +55,7 @@ export const IPhone13: Story = {
         </p>
       </>
     ),
-    bottomContent: <Button variant="Primary" size="L" CTA="Start recall" />,
+    bottomContent: <Button variant="Primary" size="M" CTA="Start recall" />,
   },
   play: async ({ canvas, canvasElement }) => {
     // Every slot rendered, using existing components.
@@ -102,7 +102,7 @@ export const WithBottomSheet: Story = {
         middleSection={<p style={{ margin: 0 }}>Your progress on this topic is saved.</p>}
         bottomSection={
           <>
-            <Button variant="Primary" size="L" CTA="Keep learning" />
+            <Button variant="Primary" size="M" CTA="Keep learning" />
             <Button variant="Tertiary" size="M" CTA="Leave anyway" />
           </>
         }
@@ -124,7 +124,7 @@ export const SlotsHidden: Story = {
     size: 'iPhone 13',
     topNavigation: <Chips size="S" color="Primary" active="True" Text="Practice round" />,
     middleContent: <p style={{ margin: 0 }}>Content only — both chrome slots are off.</p>,
-    bottomContent: <Button variant="Primary" size="L" CTA="Start recall" />,
+    bottomContent: <Button variant="Primary" size="M" CTA="Start recall" />,
     showTopNavSlot: false,
     showBottomNavSlot: false,
   },

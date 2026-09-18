@@ -12,7 +12,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "chromatic": "set -a && . ./.env.local && set +a && chromatic --exit-zero-on-changes",
-    "a11y": "node scripts/a11y.mjs"
+    "a11y": "node scripts/a11y.mjs",
+    "consistency": "node scripts/consistency.mjs"
   },
   "dependencies": {
     "next": "16.3.4",

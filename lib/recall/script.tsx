@@ -95,6 +95,27 @@ export const CONFIDENCE_THRESHOLD = 0.6;
  */
 export const JUDGE_LATENCY_MS = 2600;
 
+/**
+ * How long the scripted student speaks for, and the pause that ends it.
+ *
+ * THE ORB'S MOVEMENT IS THE CLAIM, SO IT HAS TO STOP. A moving orb says "you
+ * are speaking and I am listening"; if it keeps moving until the student taps
+ * it, the screen is asserting something about sound that stopped arriving
+ * seconds ago. So listening ends the way it does on a device — the take is
+ * handed over when the speaking does.
+ *
+ * Two values because the transition is two events, not one: the speaking, and
+ * the silence that is read as the end of it. Showing the silence briefly is
+ * what makes the send legible as a consequence rather than a jump cut.
+ *
+ * Mocked latency, like `JUDGE_LATENCY_MS`, not design motion — there is no
+ * speech detection here and nothing in `tokens/tokens.json` these could come
+ * from. Tapping the orb still sends immediately, so the student is never
+ * waiting on the mock.
+ */
+export const SPEAKING_MS = 3200;
+export const SILENCE_MS = 700;
+
 /* ------------------------------------------------------------------ */
 /* Shape                                                               */
 /* ------------------------------------------------------------------ */
