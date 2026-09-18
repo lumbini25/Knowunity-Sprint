@@ -1001,7 +1001,28 @@ export interface AnswerSentScreenProps extends RecallEscapesProps {
    */
   sent?: boolean;
   onSend?: () => void;
+  /**
+   * Throw the take away.
+   *
+   * CURRENTLY UNREFERENCED, ON PURPOSE. The trash now raises `bottom sheet
+   * for delete control` (16073:26275), and that frame offers two actions —
+   * "Say it again" and "Type instead" — both of which KEEP the turn. Nothing
+   * on it discards, and its app bar is the handle alone, so there is no
+   * dismissal to hang the discard on either.
+   *
+   * The frame's body text says deleting moves the student to the next
+   * question; SPEC.md:227 and :636 say the trash returns to `/recall/idle`
+   * with the rung intact. The two disagree and the frame is being revised.
+   * Wiring this to either reading now would be guessing, so the prop stays
+   * in the API and the route keeps passing it, ready for the answer.
+   */
   onDiscard?: () => void;
+  /**
+   * Whether the discard sheet is up. Leave it unset and the screen owns it,
+   * which is what the route wants; set it and the sheet is pinned, which is
+   * what a story wants — the same arrangement `sent` uses above.
+   */
+  discardSheetOpen?: boolean;
   onExit?: () => void;
   /**
    * Where the sent beat goes when it ends. Wired, this is the verdict route.
@@ -1057,7 +1078,7 @@ export function AnswerSentScreen({
   sent: sentProp,
   onSend,
   onRetry,
-  onDiscard,
+  discardSheetOpen: discardSheetOpenProp,
   onExit,
   onSkip,
   skipLabel,
@@ -1067,6 +1088,12 @@ export function AnswerSentScreen({
 }: AnswerSentScreenProps) {
   const [sentState, setSentState] = useState(false);
   const sent = sentProp ?? sentState;
+
+  /* Same arrangement as `sent`: the screen owns the sheet unless a story pins
+     it. Not session state — a reload part way through a confirmation should
+     open on the take again, not on the question about throwing it away. */
+  const [discardRaised, setDiscardRaised] = useState(false);
+  const discardSheetOpen = discardSheetOpenProp ?? discardRaised;
 
   /* The 300ms hold, and only on the second beat — the first waits for the
      student. Cleared on unmount so someone who leaves inside the beat is not
@@ -1129,15 +1156,78 @@ export function AnswerSentScreen({
                 buttons above — which is what makes the trash, Retry and
                 Continue three different things rather than three ways to
                 leave. */}
+            {/* THE TRASH ASKS FIRST. `bottom sheet for delete control`
+                (16073:26275) puts a confirmation between the pill and the
+                discard, which is what a destructive control with no undo
+                needs — the take is the only copy of what the student said. */}
             <VoiceFab
               state="Sent"
               onPress={undefined}
               showDiscard={!sent}
-              onDiscard={onDiscard}
+              onDiscard={() => setDiscardRaised(true)}
             />
             <RecallEscapes {...escapes} />
           </div>
         </div>
+      }
+      showBottomSheetBackground={discardSheetOpen}
+      bottomSheetOnly={
+        discardSheetOpen ? (
+          <BottomSheet
+            height="M"
+            /* HANDLE ONLY, NO ✕ — the same call the mic sheet makes, and for
+               the same reason: both ways out are on the sheet, so a third
+               silent one in the corner only muddies which is which. */
+            middleSection={
+              <div className="knw-recall__sheet-body">
+                <MascotSlot size="2XL" label="Knowie, asking">
+                  <Knowie pose="standby" />
+                </MascotSlot>
+
+                <div className="knw-recall__sheet-copy">
+                  <h2 className="knw-recall__sheet-title">
+                    Are you sure you want to delete this answer?
+                  </h2>
+                  {/* COPY DEPARTS FROM THE FRAME, and the frame is being
+                      revised. Figma reads "By deleting the answer you will be
+                      moved forward to the next question." SPEC.md says the
+                      opposite in three places — line 227, line 636 and line
+                      713: the trash returns to `/recall/idle` with the rung
+                      INTACT, and discarding a take before send is one of the
+                      four things that cost the student nothing. Shipping the
+                      frame's sentence would tell a student they were about to
+                      lose the question when they are not. The behaviour
+                      follows SPEC; this sentence says what the behaviour
+                      does. */}
+                  <p className="knw-recall__sheet-caption">
+                    Deleting it takes you back to the question. It costs you
+                    nothing — you can answer again.
+                  </p>
+                </div>
+              </div>
+            }
+            bottomSection={
+              <ButtonGroup variant="Vertical" size="M">
+                {/* Both of these already exist on the screen behind: "Say it
+                    again" is Retry, "Type instead" is the text fallback. The
+                    sheet offers the two ways to keep the turn, and neither
+                    moves the rung. */}
+                <Button
+                  variant="Primary"
+                  size="M"
+                  CTA="Say it again"
+                  onClick={onRetry}
+                />
+                <Button
+                  variant="Secondary"
+                  size="M"
+                  CTA="Type instead"
+                  onClick={escapes.onTypeAnswer}
+                />
+              </ButtonGroup>
+            }
+          />
+        ) : undefined
       }
     />
   );

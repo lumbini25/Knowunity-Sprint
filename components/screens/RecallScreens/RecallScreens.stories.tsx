@@ -395,6 +395,38 @@ export const AnswerSent: Story = {
   },
 };
 
+export const AnswerSentDiscardSheet: Story = {
+  name: 'The take · the delete confirmation',
+  // `discardSheetOpen` pins the sheet the way `sent` pins the beat — the route
+  // lets the screen raise it on the trash; a story has to hold it still.
+  render: () => (
+    <AnswerSentScreen
+      discardSheetOpen
+      onRetry={fn()}
+      onDiscard={fn()}
+      onTypeAnswer={fn()}
+      onSkip={fn()}
+      onExit={fn()}
+    />
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    // Follows `bottom sheet for delete control` (16073:26275): Knowie, the
+    // question, one line under it, and the two ways to keep the turn.
+    await expect(canvas.getByText('Are you sure you want to delete this answer?')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Say it again' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Type instead' })).toBeVisible();
+
+    // HANDLE ONLY, NO ✕ — the same call the mic sheet makes. Both ways out
+    // are on the sheet, so a third silent one in the corner would only muddy
+    // which is which.
+    await expect(canvas.queryByRole('button', { name: 'Close' })).toBeNull();
+
+    // The sheet is raised over the take, not instead of it: the screen behind
+    // still holds the transcript the student is deciding about.
+    await expect(canvasElement.querySelector('.knw-transcript')).toBeTruthy();
+  },
+};
+
 export const AnswerSentConfirmed: Story = {
   name: 'The take · beat 2, the 300ms flash',
   // `sent` pins the beat. The route lets the screen move between the two
