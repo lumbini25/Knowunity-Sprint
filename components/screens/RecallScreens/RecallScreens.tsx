@@ -726,7 +726,21 @@ export function ComposeScreen({
             }
           />
 
-          <div className="knw-recall__keyboard" aria-hidden="true" />
+          {/* Drawn here for the same reason as on the text fallback, and on the
+              same authority: `choosing chip` (16012:23063) puts a `key board`
+              frame in its bottomContent — the chat row, then the `Keyboard`
+              instance at x=0, 390x342, visible. Full width, at the component's
+              own size. A composer with no keys under it reads as a screenshot
+              rather than a screen you can type on. */}
+          <Image
+            className="knw-recall__keyboard"
+            src="/images/ios-keyboard.png"
+            alt=""
+            aria-hidden="true"
+            width={390}
+            height={342}
+            unoptimized
+          />
         </div>
       }
     />
@@ -1231,11 +1245,33 @@ export function TextFallbackScreen({
             value={answer}
             onTrailingPress={onSend}
           />
-          {/* Reserves what the OS keyboard occupies. Like the 390px device
-              width this is device chrome rather than a design value, so it is
-              a constant here and not a token — the same call
-              .storybook/withKeyboardInset.tsx already makes. */}
-          <div className="knw-recall__keyboard" aria-hidden="true" />
+          {/* THE KEYBOARD IS DRAWN, NOT JUST RESERVED.
+
+              This was an empty 342px box on the reasoning that the real
+              keyboard belongs to the operating system. That is true of a
+              shipped app and false of a prototype: in a browser no keyboard
+              ever rises, so the one screen whose whole premise is typing was
+              the one screen showing no way to type. The blank read as a bug,
+              not as restraint.
+
+              The asset is the `Keyboard` COMPONENT, node 3086:16935 on the
+              Knowunity components page — not the resized instance sitting in
+              the `text fallback` frame. Same rule as the alert icon: a frame
+              shows one instance, the component page shows the thing itself.
+              Exported at 3x to public/images/ios-keyboard.png.
+
+              Like the 390px device width, it is device chrome rather than a
+              design value, so its dimensions are constants and not tokens —
+              the same call .storybook/withKeyboardInset.tsx already makes. */}
+          <Image
+            className="knw-recall__keyboard"
+            src="/images/ios-keyboard.png"
+            alt=""
+            aria-hidden="true"
+            width={390}
+            height={342}
+            unoptimized
+          />
         </div>
       }
     />
@@ -1256,9 +1292,12 @@ export interface PermissionPrimerScreenProps {
   /**
    * Whether the permission sheet is raised. The primer is a two-beat screen:
    * the screen primes, the sheet asks.
+   *
+   * There is no `onDismissSheet`. Figma's app bar on this sheet is the grabber
+   * alone, so there is no ✕ to wire — and the sheet is not a thing to escape
+   * from, it is the question itself. Both answers are on it.
    */
   showSheet?: boolean;
-  onDismissSheet?: () => void;
 }
 
 /**
@@ -1298,7 +1337,6 @@ export function PermissionPrimerScreen({
   onAllow,
   onUseText,
   showSheet = false,
-  onDismissSheet,
 }: PermissionPrimerScreenProps) {
   return (
     <Screen
@@ -1339,27 +1377,58 @@ export function PermissionPrimerScreen({
         showSheet ? (
           <BottomSheet
             height="M"
-            descriptor="By giving access to the microphone you can practice answers and strengthen your memory"
-            onDismiss={onDismissSheet}
-            dismissLabel="Close"
+            /* HANDLE ONLY, NO ✕. Figma's app bar here is the grabber and
+               nothing else, and `BottomSheet`'s own Type=Default story already
+               says so in as many words — wire neither handler and the bar is
+               the handle alone. The ✕ that used to be here made a third way
+               out of a two-way decision, and this sheet already has its
+               opt-out: "Type instead" sits beside Allow, which is exactly
+               where Voice_UX principle 3 wants it rather than hidden in a
+               corner as a dismissal. */
             middleSection={
               <div className="knw-recall__sheet-body">
                 <MascotSlot size="2XL" label="Knowie, asking">
                   <Knowie pose="standby" />
                 </MascotSlot>
-                <TextBlock
-                  variant="L"
-                  title="Knowie would like to access your mic"
-                  showCaption={false}
-                  headingLevel={2}
-                />
+
+                {/* BOTH HALVES OF THE COPY LIVE IN THE BODY.
+
+                    The caption was passed as the sheet's `descriptor`, which
+                    renders it in the APP BAR — so the explanation sat above
+                    the mascot in caption/M, before the question it explains,
+                    and the sheet opened on its own small print. Figma stacks
+                    title over caption in one block under the mascot.
+
+                    NOT `TextBlock`, for want of a variant. Figma sets the
+                    title at 33/36 — `headline/L` — and no variant maps: L is
+                    `headline/XL` (44) and M drops all the way to
+                    `body/M-bold` (18). That is the same gap the primer's own
+                    headline is bound around three screens up, and it is logged
+                    in design-system.md rather than closed by inventing one. */}
+                <div className="knw-recall__sheet-copy">
+                  <h2 className="knw-recall__sheet-title">
+                    Knowie would like to access your mic
+                  </h2>
+                  <p className="knw-recall__sheet-caption">
+                    By giving access to the microphone you can practice answers
+                    and strengthen your memory
+                  </p>
+                </div>
               </div>
             }
             bottomSection={
-              <ButtonGroup variant="Vertical" size="M">
-                <Button variant="Primary" size="M" CTA="Allow" onClick={onAllow} />
-                <Button variant="Secondary" size="M" CTA="Type instead" onClick={onUseText} />
-              </ButtonGroup>
+              /* Figma draws this pair 8 apart, where `buttonGroup`'s own
+                 component stacks them flush — and the file agrees with itself,
+                 because what it draws here is a FRAME named "buttonGroup", not
+                 an instance of the set. The gap is applied on this screen
+                 rather than in the component, so the twelve other places the
+                 group is used keep the composition the set actually draws. */
+              <div className="knw-recall__sheet-actions">
+                <ButtonGroup variant="Vertical" size="M">
+                  <Button variant="Primary" size="M" CTA="Allow" onClick={onAllow} />
+                  <Button variant="Secondary" size="M" CTA="Type instead" onClick={onUseText} />
+                </ButtonGroup>
+              </div>
             }
           />
         ) : undefined
@@ -1918,12 +1987,18 @@ export function ProcessingScreen({
             <Knowie pose="thinking" />
           </div>
 
+          {/* ONE PROGRESS BAR ON THIS SCREEN, NOT TWO.
+
+              Figma's `thinking progress` draws a second `progressIndicator`
+              under the transcript at 350x24, and it was built. It is removed:
+              both bars were fed the same session percentage, so the screen
+              showed the same number twice — and the lower one read as "the
+              judge is working" while actually reporting "you are on term 1 of
+              4", which is the worse kind of wrong. It sat at 0 for the whole
+              wait on the first term. The header keeps the session bar, which is
+              the one every other screen in the loop also carries. */}
           <div className="knw-recall__judging">
             <TranscriptSection transcript={transcript} />
-            {/* The judge working. showText=false matches the instance, and the
-                bar is decorative here — the live region below is what actually
-                announces the state. */}
-            <ProgressIndicator progress={progress} showText={false} label="Checking your answer" />
           </div>
 
           <div className="knw-recall__fab">

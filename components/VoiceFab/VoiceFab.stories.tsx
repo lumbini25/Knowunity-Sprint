@@ -232,7 +232,18 @@ export const Thinking: Story = {
     const bs = getComputedStyle(button);
     await expect(bs.width).toBe('172px');
     await expect(bs.backgroundColor).toBe('rgb(145, 120, 230)');
-    await expect(bs.filter).toBe('blur(5px)');
+
+    // THE DEFOCUS PULSES, so the blur is sampled as a range rather than as a
+    // fixed value — it drifts between the scale's two steps, `blur-soft` (5)
+    // and `blur-glow` (10), on the same `breath` loop Recording runs. Recording
+    // swells, which reads as taking something in; Thinking defocuses, which
+    // reads as an idea not yet resolved. Nothing moves spatially.
+    await expect(bs.animationName).toBe('knw-fab-think');
+    await expect(bs.animationIterationCount).toBe('infinite');
+    await expect(bs.animationDirection).toBe('alternate');
+    const blur = parseFloat(bs.filter.match(/[\d.]+/)![0]);
+    await expect(blur).toBeGreaterThanOrEqual(5);
+    await expect(blur).toBeLessThanOrEqual(10);
 
     // The label dims along with the state, and sits below the orb.
     const label = canvasElement.querySelector('.knw-fab__label') as HTMLElement;

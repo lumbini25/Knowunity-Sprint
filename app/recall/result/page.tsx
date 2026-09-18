@@ -10,6 +10,7 @@
 
 import { ResultScreen } from '../../../components/screens/RecallScreens/RecallScreens';
 import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
+import { formatScore } from '../../../lib/recall/script';
 
 export default function Page() {
   const session = useRecallSession();
@@ -27,7 +28,9 @@ export default function Page() {
       /* A settled term has no next rung, so no hint. */
       hint={resolved ? undefined : rungScript?.hint?.body}
       hintLabel={rungScript?.hint?.label}
-      score={verdict?.score != null ? `${verdict.score}%` : undefined}
+      /* This route was already right; it goes through the shared formatter so
+         the two can never drift apart again. */
+      score={formatScore(verdict?.score)}
       missingItems={session.term.missingItems}
       progress={(session.termIndex / session.termCount) * 100}
       progressText={`${session.termIndex + 1} of ${session.termCount}`}

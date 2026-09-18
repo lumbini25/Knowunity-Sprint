@@ -255,9 +255,13 @@ export const Compose: Story = {
     await expect(rail.scrollWidth).toBeGreaterThan(rail.clientWidth);
     await expect(rail.getAttribute('tabindex')).toBe('0');
 
-    // The keyboard's room is reserved without drawing the keys — device chrome,
-    // the same constant the text fallback uses.
-    await expect(canvasElement.querySelector('.knw-recall__keyboard')).toBeTruthy();
+    // The keyboard is drawn, full width, at the component's own 390x342 —
+    // `choosing chip` (16012:23063) puts it in bottomContent at x=0, and the
+    // text fallback draws the same asset the same way.
+    const kb = canvasElement.querySelector('.knw-recall__keyboard') as HTMLElement;
+    await expect(kb).toBeTruthy();
+    await expect(kb.getAttribute('src')).toContain('ios-keyboard.png');
+    await expect(getComputedStyle(kb).height).toBe('342px');
   },
 };
 
@@ -454,6 +458,7 @@ export const TextFallback: Story = {
     // composer rather than leaving ~500px of nothing between them.
     const kb = canvasElement.querySelector('.knw-recall__keyboard') as HTMLElement;
     await expect(kb).toBeTruthy();
+    await expect(kb.getAttribute('src')).toContain('ios-keyboard.png');
     await expect(getComputedStyle(kb).height).toBe('342px');
     const composer = canvasElement.querySelector('.knw-chat') as HTMLElement;
     const gap = composer.getBoundingClientRect().top - answer.getBoundingClientRect().bottom;
@@ -491,15 +496,36 @@ export const PermissionPrimer: Story = {
 /** The second beat: the sheet is what actually asks for the microphone. */
 export const PermissionSheet: Story = {
   name: '7b · Mic permission sheet',
-  render: () => (
-    <PermissionPrimerScreen showSheet onAllow={fn()} onUseText={fn()} onDismissSheet={fn()} />
-  ),
+  render: () => <PermissionPrimerScreen showSheet onAllow={fn()} onUseText={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     await expect(canvasElement.querySelector('.knw-sheet')).toBeTruthy();
-    await expect(canvas.getByRole('heading', { name: /access your mic/ })).toBeVisible();
+
+    // THE TITLE IS 33/36, which is `headline/L` and which no `textBlock`
+    // variant reaches — L is headline/XL (44), M is body/M-bold (18). Bound on
+    // the screen, the same way and for the same reason as the priming beat's
+    // own headline.
+    const h = canvas.getByRole('heading', { name: /access your mic/ });
+    await expect(h).toBeVisible();
+    const hs = getComputedStyle(h);
+    await expect(hs.fontSize).toBe('33px');
+    await expect(hs.lineHeight).toBe('36px');
+
+    // AND THE CAPTION IS UNDER IT, not in the app bar. It was passed as the
+    // sheet's `descriptor`, which put the explanation above the mascot in
+    // caption/M — the sheet opened on its own small print.
+    const cap = canvasElement.querySelector('.knw-recall__sheet-caption') as HTMLElement;
+    await expect(cap).toBeTruthy();
+    await expect(getComputedStyle(cap).fontSize).toBe('15px');
+    await expect(cap.getBoundingClientRect().top).toBeGreaterThan(h.getBoundingClientRect().top);
+    await expect(canvasElement.querySelector('.knw-sheet__descriptor')).toBeNull();
+
+    // HANDLE ONLY. Figma's app bar is the grabber and nothing else, and a
+    // dismissal would be a third answer to a two-answer question.
+    await expect(canvas.queryByRole('button', { name: 'Close' })).toBeNull();
 
     // Voice_UX principle 3: the opt-out sits beside Allow, not absent and not
-    // buried. Both are size L in a vertical buttonGroup.
+    // buried. Figma separates the pair by 8 where the component stacks flush —
+    // what the sheet draws is a frame named buttonGroup, not an instance.
     const allow = canvas.getByRole('button', { name: 'Allow' });
     const type = canvas.getByRole('button', { name: 'Type instead' });
     await expect(allow).toBeVisible();
@@ -507,6 +533,9 @@ export const PermissionSheet: Story = {
     await expect(canvasElement.querySelector('.knw-buttongroup--Vertical')).toBeTruthy();
     await expect(Math.round(allow.getBoundingClientRect().width))
       .toBe(Math.round(type.getBoundingClientRect().width));
+    await expect(Math.round(
+      type.getBoundingClientRect().top - allow.getBoundingClientRect().bottom,
+    )).toBe(8);
 
     // The screen behind it dims, which is what the raised sheet is for.
     await expect(canvasElement.querySelector('.knw-screen__scrim')).toBeTruthy();
@@ -798,6 +827,21 @@ export const Processing: Story = {
     // The transcript stays up: it is the evidence the answer landed.
     await expect(canvas.getByText('WHAT YOU SAID')).toBeVisible();
     await expect(canvas.getByLabelText('Knowie is thinking')).toBeVisible();
+
+    // ONE PROGRESS BAR, NOT TWO. Figma draws a second one under the transcript
+    // and it was built, then removed: both were fed the same session
+    // percentage, so the lower one read as "the judge is working" while
+    // reporting "you are on term 1 of 4", and sat at 0 for the whole wait.
+    await expect(canvasElement.querySelectorAll('[role="progressbar"]')).toHaveLength(1);
+
+    // AND SOMETHING MOVES. With the second bar gone the screen was entirely
+    // still for 2.6s, which is the frozen-app read Voice_UX 6 covers. The orb
+    // drifts between the scale's two blur steps on the `breath` loop.
+    const orb = canvasElement.querySelector('.knw-fab--Thinking .knw-fab__button') as HTMLElement;
+    const os = getComputedStyle(orb);
+    await expect(os.animationName).toBe('knw-fab-think');
+    await expect(os.animationIterationCount).toBe('infinite');
+    await expect(os.animationDirection).toBe('alternate');
   },
 };
 

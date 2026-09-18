@@ -275,6 +275,20 @@ export const Correct: Story = {
     await expect(rs.borderTopWidth).toBe('2px');
     await expect(rs.borderTopColor).toBe('rgb(0, 195, 134)');
 
+    // THE FIGURE STAYS INSIDE THE RING. Not a style check — a guard against the
+    // data. `/recall/correct` once multiplied an already-percentage score by
+    // 100, so a real pass printed `10000%` and ran out of the circle and across
+    // the card. It never showed by URL, only mid-session, because without a
+    // verdict the card falls back to its own `100%`. `formatScore` in
+    // lib/recall/script.tsx is the single formatter both routes now use; this
+    // is the assertion that says what the ring can hold.
+    const text = canvasElement.querySelector('.knw-rrc__score-text') as HTMLElement;
+    const sb = score.getBoundingClientRect();
+    const tb = text.getBoundingClientRect();
+    await expect(tb.width).toBeLessThan(sb.width);
+    await expect(tb.left).toBeGreaterThanOrEqual(sb.left);
+    await expect(tb.right).toBeLessThanOrEqual(sb.right);
+
     // Correct has nothing to contest, so no action row — and the rebuilt set
     // dropped the Knowie answer block, leaving the transcript as the body.
     await expect(canvasElement.querySelector('.knw-rrc__actions')).toBeNull();

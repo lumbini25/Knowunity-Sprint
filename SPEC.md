@@ -366,7 +366,9 @@ Covers the wait. Voice_UX principle 6: four seconds of blank screen feels broken
 
 **States** — one.
 
-**Components** — `Screen`, `RecallHeader`, `Knowie` in the **`thinking`** pose (a third mascot asset, drawn at `size/fab/thinking` — Figma places it at 122×132, off every illustration step), `TranscriptSection`, `ProgressIndicator`, `VoiceFab` (state=Thinking, captioned "Evaluating…").
+**Components** — `Screen`, `RecallHeader`, `Knowie` in the **`thinking`** pose (a third mascot asset, drawn at `size/fab/thinking` — Figma places it at 122×132, off every illustration step), `TranscriptSection`, `VoiceFab` (state=Thinking, captioned "Evaluating…").
+
+**One progress bar, not two.** Figma's frame draws a second `progressIndicator` under the transcript at 350×24 and it was built, then removed. Both bars were fed the same session percentage, so the screen printed the same number twice — and the lower one read as *"the judge is working"* while actually reporting *"you are on term 1 of 4"*, sitting at 0 for the entire wait on the first term. The header keeps the session bar every other screen in the loop carries.
 
 **Nothing here is interactive**, and that is the point. Voice_UX 1C: *"Can do: nothing interactive."* `VoiceFab state=Thinking` enforces it in the component — a `<div role="img">`, not a button — so a student cannot double-submit by tapping the orb again, which is the failure this state exists to prevent.
 
@@ -378,7 +380,9 @@ Covers the wait. Voice_UX principle 6: four seconds of blank screen feels broken
 |---|---|
 | Wait | `/recall/result`, `/recall/misheard`, `/recall/no-audio` or `/recall/reveal`, whichever the verdict says |
 
-**The hold is mocked latency, not motion** — `JUDGE_LATENCY_MS` in `lib/recall/script.tsx`, a literal with a reason, the same class as the 342px keyboard reserve. The orb's pulse is the part that needs a motion scale, and stays static until one exists.
+**The hold is mocked latency, not motion** — `JUDGE_LATENCY_MS` in `lib/recall/script.tsx`, a literal with a reason, the same class as the 342px keyboard reserve.
+
+**The orb pulses, and it is the only thing that moves.** With the second bar gone, a 2.6s wait had a still mascot, a still transcript and a still orb — the frozen-app read Voice_UX principle 6 exists to cover. `VoiceFab state=Thinking` now drifts between the scale's two blur steps, `effect/blur-soft` (5) and `effect/blur-glow` (10), on `motion/duration/breath` at `motion/easing/continuous` — the same 1600ms symmetric loop Recording runs, saying a different thing with it. Recording *swells*, which reads as taking something in; Thinking *defocuses*, which reads as an idea not yet resolved. It moves nothing spatially, so there is nothing for vestibular sensitivity to react to on the one screen where the student can only wait, and `prefers-reduced-motion` holds it at the sharp end.
 
 ### The three verdicts, and why only two have a verdict screen
 
@@ -721,7 +725,7 @@ Then the escapes, which matter more than the happy path:
 
 Undecided. Listed rather than settled.
 
-- **There is no motion layer at all.** `tokens/tokens.json` has no duration, easing or delay tokens — the single hit for "motion" is inside the word "emotional". Processing turned out **not** to be blocked by this (Figma draws it static, and it ships), but three things stay still that should move: the recording orb's pulse, the waveform reading as live, and the result card's reveal. The two holds that *are* coded — the take's 300ms flash and `JUDGE_LATENCY_MS` — are mocked latency with a comment saying so, not design values. A motion scale would close all three at once.
+- ~~**There is no motion layer at all.**~~ **CLOSED.** `tokens/tokens.json` now carries `primitive.duration` (120 / 200 / 320 / 1600), `primitive.easing` (standard / enter / symmetric) and a `semantic.motion` layer naming them by job: `instant`, `quick`, `settle`, `breath`; `standard`, `enter`, `continuous`. Three of the four things that stayed still now move and bind to it — the recording orb's breath, the waveform reading as live, and the thinking orb's defocus pulse. **The result card's reveal is the one left.** The two holds that are coded — the take's 300ms flash and `JUDGE_LATENCY_MS` — remain mocked latency with a comment saying so, not design values, and neither draws on this scale.
 - **The XP number, and where it lands.** The bonus is flat and drawn as 0 throughout the loop, but the figure is a placeholder with no relationship to XP values elsewhere in the product — and **the summary has nowhere to show it**. Neither the Figma frame nor `recall-summary.png` draws an XP figure there, so the one moment `sprint-context.md` says XP moves has no component for it.
 - **The orb's size.** The shipped app measures roughly 146 total / 114 button. Figma draws 170 / 140 (`size/fab/ring`, `size/fab/button`), and the build follows Figma. This may be a deliberate redesign rather than drift — it needs a call, not a guess.
 - **The inline chat mascot is 44.** Figma draws Knowie at 44×44 beside the student's turn on the text fallback. Every illustration step is larger (XL 64, 2XL 120, 3XL 200, 4XL 320), and no screenshot contains a chat mascot to measure against. The build holds `XL`. Either `size/illustration/L` (44) gets requested, or the inline mascot is confirmed at 64.

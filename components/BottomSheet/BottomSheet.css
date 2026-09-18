@@ -33,19 +33,36 @@
 /* ===== app bar ===== */
 
 .knw-sheet__appbar {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: none;
 }
 
+/* THE GRABBER IS OVERLAID, NOT STACKED ON TOP.
+
+   Figma's `Bottom-sheet App Bar` is 72 tall whether or not it carries a ✕ or a
+   title, and the grabber sits INSIDE that 72 — measured off `bottomSheet`
+   (15794:19867): a 32 x 4 pill at y6, with the sheet's body starting at 72.
+
+   Ours stacked the handle above the bar as a flex row of its own, so the bar's
+   own 72 became 76 and every sheet in the build sat 4 low from the grabber
+   down. Taking the handle out of flow puts it exactly where the file draws it
+   and hands the 4 back — one change, every sheet.
+
+   `space/inset/xxs` is 6, which is Figma's inset exactly, and the handle's own
+   32 x 4 already come from `size/handle/*`. Nothing here is a literal. */
 .knw-sheet__handle {
+  position: absolute;
+  top: var(--semantic-space-inset-xxs);
+  left: 50%;
+  transform: translateX(-50%);
   width: var(--semantic-size-handle-width);
   height: var(--semantic-size-handle-height);
   /* Pill on a bar this short is exactly the 2px the design carries. */
   border-radius: var(--semantic-radius-pill);
   background: var(--semantic-background-floating);
-  flex: none;
 }
 
 .knw-sheet__bar {

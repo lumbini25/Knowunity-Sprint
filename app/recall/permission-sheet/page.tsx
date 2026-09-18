@@ -17,11 +17,15 @@ export default function Page() {
       showSheet
       /* Granted. Straight into the first term — the primer never returns. */
       onAllow={() => router.push('/recall/idle')}
-      /* The opt-out, as easy as the opt-in. Voice_UX principle 3. */
+      /* The opt-out, as easy as the opt-in. Voice_UX principle 3.
+
+         AND IT IS THE ONLY WAY OUT, deliberately. There was a ✕ on the sheet
+         wired back to the priming beat; Figma draws no ✕, and the sheet reads
+         better without one — a dismissal is a third answer to a two-answer
+         question, and the student who does not want the mic has "Type
+         instead" sitting right there, which is a decision rather than a
+         retreat. */
       onUseText={() => router.push('/recall/text-fallback')}
-      /* Dismissing the sheet drops back to the priming beat, not out of the
-         flow — the student has not said no, only not-yet. */
-      onDismissSheet={() => router.push('/recall/permission-primer')}
     />
   );
 }

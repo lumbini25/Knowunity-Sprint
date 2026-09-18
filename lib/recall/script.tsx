@@ -75,6 +75,32 @@ export function scoreFromRubric(take: Pick<ScriptedTake, 'got' | 'stillMissing' 
 }
 
 /**
+ * The score as the response card prints it, inside its 44px ring.
+ *
+ * ONE FORMATTER, BECAUSE TWO CALL SITES DISAGREED ABOUT THE SCALE.
+ * `scoreFromRubric` above returns a percentage already on 0–100, and the
+ * authored takes are written the same way — 55, 65, 60. `/recall/result`
+ * printed `${score}%` and was right. `/recall/correct` printed
+ * `${Math.round(score * 100)}%` and multiplied a percentage by a hundred, so a
+ * pass rendered `6500%` or `10000%` and ran clean out of the ring and across
+ * the card.
+ *
+ * IT ONLY EVER SHOWED MID-SESSION, which is why it survived. Opening
+ * `/recall/correct` by URL has no verdict to read, so the card fell back to its
+ * own `100%` default and measured correctly against Figma every time; the bug
+ * needed a real playthrough to appear.
+ *
+ * The clamp is not defensive noise. A percentage of one term recalled cannot be
+ * above 100 or below 0, so anything outside that range is a bug upstream — and
+ * a wrong number inside the ring is a smaller failure than a right one spilling
+ * across the screen it sits on.
+ */
+export function formatScore(score: number | null | undefined): string | undefined {
+  if (score == null || Number.isNaN(score)) return undefined;
+  return `${Math.round(Math.min(100, Math.max(0, score)))}%`;
+}
+
+/**
  * Below this, the misheard control appears. A confidence rule generalises where
  * a per-term flag does not.
  */

@@ -455,9 +455,34 @@ span.knw-recall__exit {
 .knw-recall--chat {
   gap: var(--semantic-space-layout-l);
   align-items: stretch;
-  justify-content: flex-end;
-  min-height: 100%;
+  /* GROW TO FILL, BUT NEVER SHRINK BELOW THE CONVERSATION.
+
+     This used to be `justify-content: flex-end` with `min-height: 100%`, and
+     the pair hid the question. `min-height: 100%` overrides a flex item's
+     automatic minimum size, so the item was free to shrink to the middle
+     slot's height while its children stayed full size; `flex-end` then pushed
+     the overflow off the TOP edge. Overflow in the start direction is not
+     counted in `scrollHeight`, so the middle slot reported nothing to scroll
+     and rendered no scrollbar — the question was not merely clipped, it was
+     unreachable. Below roughly 740px of viewport the student was asked to type
+     an answer to a question they could not see, which is the one thing this
+     screen exists to prevent.
+
+     `flex: 1 0 auto` says the opposite: take the spare height when there is
+     some, and never give up your own. When the conversation outgrows the slot
+     the slot scrolls, top-first, and the question is the first thing there. */
+  flex: 1 0 auto;
   text-align: left;
+}
+
+/* Bottom-aligns the conversation the way a chat is bottom-aligned, using an
+   auto margin rather than `justify-content`. The difference is the failure
+   mode: an auto margin distributes only FREE space, so it collapses to zero
+   the moment there is none and the turns fall back to normal top-down flow.
+   `justify-content: flex-end` has no such fallback — it keeps pushing after
+   the space runs out, which is what put the question off-screen. */
+.knw-recall--chat > .knw-recall__ask {
+  margin-block-start: auto;
 }
 
 /* Knowie's turn: plain text with the mascot beneath it, NO surface. Figma's
@@ -554,18 +579,33 @@ span.knw-recall__exit {
   width: 100%;
 }
 
-/* Reserves what the OS keyboard occupies on a 390pt device, so the turn is laid
-   out against the height the student actually has. 342 is the Figma asset's
-   height (node 3086:16935) — device chrome rather than a design value, which is
-   why it is a literal here and not a token, the same call
-   .storybook/withKeyboardInset.tsx makes for the same number. It is a reserve,
-   not a drawing: the real keyboard is the operating system's, so this paints
-   nothing. Filling it read as a grey void, which is worse than the dead space
-   it replaced — the point is that the composer sits where the student will
-   actually find it, not that the reserve is visible. */
+/* The keyboard the student types on. 390x342 is the Figma component's own size
+   (node 3086:16935) — device chrome rather than a design value, which is why
+   both numbers are literals here and not tokens, the same call
+   .storybook/withKeyboardInset.tsx makes for the same 342.
+
+   FULL BLEED, DESPITE FIGMA'S 16 INSET. The `text fallback` frame drops the
+   instance into a padded container and squashes it to 358 wide; the component
+   itself is 390, exactly the device width, which is what a keyboard is. So the
+   inset is the container's, not the keyboard's, and reproducing it would mean
+   either distorting the export by 8% or losing 28px off the reserve's height.
+   The slot's gutter is cleared instead, the same idiom `.knw-recall__bleed`
+   uses one section down.
+
+   The 16 BELOW is Figma's and is kept: `bottomContent` is 458 tall against the
+   keyboard's bottom edge at 442, so the slot's own bottom padding reproduces
+   it with nothing added. */
 .knw-recall__keyboard {
+  display: block;
   flex: none;
+  width: calc(100% + var(--semantic-space-layout-l) * 2);
+  /* Tailwind's preflight sets `img { max-width: 100% }`, which clamped the
+     bleed straight back to the slot's 358 — the negative margin applied, the
+     width did not, and the keyboard came out shifted left instead of full
+     width. Any image that bleeds past its slot has to release the cap. */
+  max-width: none;
   height: 342px;
+  margin-inline: calc(var(--semantic-space-layout-l) * -1);
 }
 
 /* ===== full-bleed children ===== */
@@ -643,13 +683,88 @@ span.knw-recall__exit {
 
 /* The permission sheet's body: Knowie above the ask, centred. Figma's
    middleSection is a 24-gap column padded 0/16/8/16. */
+/* `width: 100%` because both of the sheet's sections centre their children,
+   so an auto-width block here would size to its widest LINE and the measure
+   below would resolve against whatever the text happened to do. */
 .knw-recall__sheet-body {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--semantic-space-layout-xl);
-  padding-block-end: var(--semantic-space-layout-s);
+  width: 100%;
   text-align: center;
+}
+/* No `padding-block-end` here. `.knw-sheet__middle` already pads 8 below the
+   body, and this added a second 8 — which is the whole of the 8 the middle
+   section was running over Figma's 268. Figma leaves exactly one 8 between the
+   caption and the actions block. */
+
+/* Same reason, and a sharper one: without it the buttons stop filling. The
+   group sets `width: 100%`, which resolved against the sheet's own content box
+   while it was a direct child — wrapped in a centred div that hugs, 100% of
+   nothing is nothing, and Allow came out label-width. */
+.knw-recall__sheet-actions {
+  width: 100%;
+}
+
+/* The title and caption as one block, which is how Figma's `bottomSheet`
+   (15794:19867) draws them: `mascotSlot` 120, then 24, then a 320-wide frame
+   holding the title over the caption 4 apart.
+
+   THE MEASURE IS 326, NOT FIGMA'S 320, and the six pixels are deliberate. The
+   sheet's body already pads 16, leaving 358; taking another `space/layout/l`
+   on each side gives 326 and every value stays on the scale, where Figma's 35
+   gutter is on nothing. It buys the line breaks, which is the only thing the
+   width is doing here — both lines have tens of pixels of slack before the
+   next word could join them, so 326 breaks exactly where 320 does. */
+.knw-recall__sheet-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-xs);
+  box-sizing: border-box;
+  width: 100%;
+  padding-inline: var(--semantic-space-layout-l);
+  text-align: center;
+}
+
+/* Figma: 33/36 — `headline/L`. Bound here rather than through `textBlock`
+   because no variant reaches it: L is `headline/XL` (44) and M drops to
+   `body/M-bold` (18). Same binding, and the same reason, as
+   `.knw-recall__headline` on the priming beat. Logged in design-system.md. */
+.knw-recall__sheet-title {
+  margin: 0;
+  font-family: var(--semantic-type-scale-headline-l-font-family);
+  font-weight: var(--semantic-type-scale-headline-l-font-weight);
+  font-size: var(--semantic-type-scale-headline-l-font-size);
+  line-height: var(--semantic-type-scale-headline-l-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-l-letter-spacing);
+  color: var(--semantic-text-primary);
+}
+
+/* Figma: 15/20 on the secondary text colour — `body/S` regular. This is the
+   copy that used to render as the app bar's `descriptor` in caption/M, above
+   the mascot. */
+.knw-recall__sheet-caption {
+  margin: 0;
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+  color: var(--semantic-text-secondary);
+}
+
+/* Figma separates Allow from Type instead by 8, where `buttonGroup`'s own
+   component set stacks its rows flush so the pair reads as one block. The file
+   is not contradicting itself: what it draws in this sheet is a FRAME named
+   "buttonGroup", not an instance of the set.
+
+   Scoped to this one sheet through a wrapper rather than written into the
+   component or hung off `.knw-sheet__bottom`, either of which would quietly
+   move the exit sheet and the permission-denied sheet too. */
+.knw-recall__sheet-actions .knw-buttongroup--Vertical {
+  gap: var(--semantic-space-layout-s);
 }
 
 /* ===== processing ===== */

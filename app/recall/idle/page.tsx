@@ -42,7 +42,8 @@ export default function Page() {
       <PermissionPrimerScreen
         onStart={() => setSheetUp(true)}
         showSheet={sheetUp}
-        onDismissSheet={() => setSheetUp(false)}
+        /* No dismiss. Figma's sheet has no ✕, and both answers to the question
+           are on the sheet: Allow, or type instead. */
         /* Allow records the ask and falls through to the turn below — no
            navigation, because this is already the right route. */
         onAllow={session.grantMic}

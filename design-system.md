@@ -839,9 +839,19 @@ Screen
 
 **Only the student's turn gets a surface.** Figma's question container is 358 × 140 at radius 4 with **no fill**: Knowie's turn is plain text with the mascot under it. Giving one side of the conversation a surface is what makes it read as a conversation — an earlier build put the question in a filled bubble with a tail, and Knowie's turn then looked like the student's.
 
-**The keyboard is up, by definition.** This is the typing turn, so the screen lays out against the height the keyboard leaves. Figma draws the frame **1018** tall for the same reason: 342 of it is the `Keyboard` instance. The reserve paints nothing — the real keyboard is the operating system's, and filling it reads as a grey void, which is worse than the dead space it replaces.
+**The keyboard is up, by definition, and it is drawn.** This is the typing turn, so the screen lays out against the height the keyboard leaves. Figma draws the frame **1018** tall for the same reason: 342 of it is the `Keyboard` instance.
+
+This was previously an empty 342 reserve, on the reasoning that the real keyboard belongs to the operating system. That is true of a shipped app and false of a prototype — in a browser no keyboard ever rises, so the one screen whose premise is typing was the only screen showing no way to type, and the blank read as a bug rather than as restraint. The asset is the `Keyboard` **component**, `3086:16935`, exported at 3× to `public/images/ios-keyboard.png` — not the instance inside the `text fallback` frame, which is resized to 358. Same rule as the alert icon: *a frame shows one instance, the component page shows the thing itself.*
+
+**Full bleed, at 390 × 342.** `choosing chip` (`16012:23063`) settles it: its `bottomContent` holds a `key board` frame whose `Keyboard` instance sits at **x=0, 390 × 342** — the component's own size, edge to edge. The 16 inset in the `text fallback` frame is its container's, not the keyboard's, and honouring it would mean either distorting the export by 8% or losing 28px off the reserve. The compose screen draws the same asset the same way.
+
+**Tailwind's preflight will clamp any full-bleed image.** `img { max-width: 100% }` silently caps the width while the negative margin still applies, so the element comes out shifted rather than wide. `max-width: none` is required alongside the bleed.
 
 **The conversation is bottom-aligned**, the way a chat is: turns stack upward from just above the composer, so empty space sits above the first message rather than below the last.
+
+**Bottom-aligned with an auto margin, never `justify-content: flex-end`.** The pair `flex-end` + `min-height: 100%` hid the question below roughly 740px of viewport: `min-height` overrode the flex item's automatic minimum size, so it shrank while its children did not, and `flex-end` pushed the overflow off the **top**. Overflow in the start direction is not counted in `scrollHeight`, so the slot rendered no scrollbar and the question was unreachable, not merely clipped. An auto margin distributes only free space, so it collapses to zero when there is none and the turns fall back to normal top-down flow — the container then scrolls, question first.
+
+`npm run consistency` reports that auto margin as an off-scale space on `.knw-recall__ask` (58 at a 844 viewport). It is a false positive and expected: the number is whatever free height happens to be left, so it changes with the viewport and is not a value anyone chose. Same class as the calc-derived `-69` on `.knw-recall__mascot`. Do not replace it with a token.
 
 `chatInput` at rest carries the mic as its trailing control, which is the one-tap way back to voice — this screen needs no separate "speak instead".
 
@@ -859,19 +869,41 @@ Screen                showTopNavSlot=false
   bottomContent
     button            variant=Primary, size=M, "Let's Go"     -> raises the sheet
 
-bottomSheet           height=M, descriptor names the value
-  middleSection       mascotSlot size=2XL pose "standby" + textBlock variant=L,
-                      "Knowie would like to access your mic"
-  bottomSection       buttonGroup variant=Vertical size=L
-                        button variant=Primary,   size=L, "Allow"
-                        button variant=Secondary, size=L, "Type Instead"
+bottomSheet           height=M, node 15794:19867, 390 x 476
+  app bar      72      the HANDLE ALONE. No x-close.
+  middleSection 268
+    mascotSlot  120    size=2XL, pose "standby"
+                 24    gap
+    copy block  116    320 wide, centred
+      title      72    "Knowie would like to access your mic", headline/L 33/36
+                  4    gap
+      caption    40    "By giving access to the microphone you can practice
+                       answers and strengthen your memory", body/S 15/20,
+                       fill: text/secondary
+  bottomSection 136    padding 16
+    buttonGroup 104    358 wide, gap 8
+      button     48    variant=Primary,   size=M, "Allow"
+      button     48    variant=Secondary, size=M, "Type instead"
 ```
 
 The section's fourth node is a mock of the **iOS native dialog** that fires after Allow — reference, not a screen to build.
 
 Voice_UX principle 3 is the whole design: you get one native prompt, so never fire it cold. Explain the value first, and let the student opt out just as easily. The opt-out is on the **sheet**, beside Allow and at the same size — reading only the screen frame makes the design look like a one-way door into the OS dialog, and it is not.
 
-ONE DEPARTURE, for want of a token: the screen frame carries a **20px LAYER_BLUR** over the mascot block, and the only blur token is `effect/blur-soft` (4), so Knowie renders crisp.
+**Four things the first build of the sheet got wrong**, each worth keeping because each was invisible until the frame was measured against it:
+
+1. **The caption was passed as the sheet's `descriptor`**, which renders in the APP BAR. So the explanation sat *above* the mascot, in `caption/M`, before the question it explains — the sheet opened on its own small print. Figma stacks title over caption in one block under the mascot, and `textBlock` has a `caption` prop for exactly this.
+2. **The app bar drew a ✕.** Figma's is the handle alone, and `BottomSheet`'s own `Type=Default` story says so. A dismissal is a third answer to a two-answer question, and the opt-out is already on the sheet.
+3. **The title was `textBlock variant="L"` — 44/44.** Figma sets 33/36. No variant maps: L is `headline/XL` (44), M drops to `body/M-bold` (18). Bound on the screen, the same way and for the same reason as the priming beat's own headline. **A `textBlock` variant at `headline/L` is now wanted by two screens.**
+4. **The buttons stacked flush.** Figma separates them by 8 — and the file is not contradicting its own component, because what it draws here is a **frame** named `buttonGroup`, not an instance of the set. Applied on the screen, so the twelve other uses keep the composition the set draws.
+
+**The app bar was 76 against Figma's 72 — fixed in the component, and it moved every sheet.** The bar row is right: `.knw-sheet__action` reserves `size/tapTarget/min` (48) and the padding is 12 either side, which is 72. What was wrong is that the grabber was stacked ON TOP of that as a flex row of its own, adding its 4. Figma's app bar is 72 *including* the grabber — a 32 × 4 pill at y6, measured off the sheet, with the body starting at 72. The handle is now taken out of flow (`position: absolute`, `top: space/inset/xxs`, which is 6 exactly), so the bar keeps its height and the pill lands where the file draws it.
+
+One change, and the exit sheet and the permission-denied settings sheet each gained back the 4 they were sitting low by. **Where a shared component is 4px out, check whether the error is in the row or in what is stacked around it** — the temptation was to shave the tap target, which would have been wrong twice over.
+
+ONE DEPARTURE, for want of a token: the **screen frame** carries a 20px LAYER_BLUR over the mascot block — see the `effect/blur-glow` entry in Gaps, which this screen closed.
+
+**The measure is 326, not Figma's 320.** The sheet's body already pads 16, leaving 358; another `space/layout/l` each side gives 326, and every value stays on the scale where Figma's 35 gutter is on nothing. The width is only buying line breaks, and both lines have tens of pixels of slack before the next word could join them — so 326 breaks exactly where 320 does. Measured: title 72 tall (two lines), caption 40 (two lines), both matching the frame to the pixel.
 
 ### Screen 8 — permission denied
 

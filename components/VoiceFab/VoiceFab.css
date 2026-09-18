@@ -306,6 +306,41 @@
     var(--semantic-motion-easing-continuous) infinite alternate;
 }
 
+/* THINKING MOVES TOO, AND IT MOVES DIFFERENTLY FROM RECORDING.
+
+   It was static, and that is the whole failure of the processing screen: a
+   2.6s wait with a still mascot, a still transcript and a still orb reads as a
+   frozen app, which is exactly the case Voice_UX principle 6 exists to cover.
+
+   Recording's breath says "I can still hear you". Thinking has a different
+   thing to say — "I am working on it" — so it takes the same `breath` cycle
+   and the same `continuous` curve, a symmetric 1600ms loop with no frame that
+   reads as a beginning, and changes WHAT moves instead of how fast.
+
+   IT PULSES THE DEFOCUS, NOT THE SIZE. A swell reads as taking something in,
+   which is Recording's job. Drifting between the two blur steps the scale
+   already carries — `blur-soft` (5) and `blur-glow` (10) — reads instead as an
+   idea not yet resolved. It also moves nothing: no scale, no translation,
+   nothing for vestibular sensitivity to react to on the one screen where the
+   student can do nothing but wait. `filter` is GPU-composited, so it costs
+   what a transform would have.
+
+   NOTHING IS INVENTED. Both blur steps and both motion values are existing
+   semantic tokens, and the loop is the one Recording already runs. */
+@keyframes knw-fab-think {
+  from {
+    filter: blur(var(--semantic-effect-blur-soft));
+  }
+  to {
+    filter: blur(var(--semantic-effect-blur-glow));
+  }
+}
+
+.knw-fab--Thinking .knw-fab__button {
+  animation: knw-fab-think var(--semantic-motion-duration-breath)
+    var(--semantic-motion-easing-continuous) infinite alternate;
+}
+
 /* The orb changing size between states is the student's own tap answering
    them, so it takes the standard curve at `quick`. Not the breath — that is
    the loop, and the two are different things. */
@@ -330,6 +365,15 @@
   .knw-fab--Recording .knw-fab__button {
     animation: none;
     box-shadow: 0 0 calc(var(--semantic-effect-glow) * 2) var(--semantic-mascot-glow);
+  }
+
+  /* Thinking holds at the SHARP end of its cycle, where Recording holds at the
+     lit end. Same reasoning, opposite direction: the point of Recording's
+     resting frame is that the cue stays legible, and for a defocus the legible
+     frame is the one with less blur. The base rule already paints it, so the
+     animation is simply dropped. */
+  .knw-fab--Thinking .knw-fab__button {
+    animation: none;
   }
 
   .knw-fab__button,
