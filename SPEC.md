@@ -195,10 +195,18 @@ Runs the identical ladder and the identical hints as the voice path. Say-it-back
 
 | The student can | Which leads to |
 |---|---|
-| Send an answer | `/recall/processing`, then wherever the verdict says |
+| Send an answer | `/recall/processing`, then the **verdict** — `result`, `correct` or `reveal` |
 | Tap the mic in the composer | `/recall/idle` — back to voice |
 | Tap "Skip question" | Next term, or `/recall/summary` if it was the last |
 | Tap ✕ | `/recall/exit` |
+
+**Send goes through `answerByText()`, not plain `submit()`, and the difference is two questions it does not ask.** `submit()` checks the take for the two *microphone* failures first — nothing heard (`no-audio`) and heard badly (`misheard`). Neither can be true of something the student typed. Send used to push straight to `/recall/processing`, which runs `submit()` unchanged, so on the two terms whose script opens with a capture failure a student who had typed a full answer was told the app heard nothing — on the one screen that exists **because** they could not speak. The ladder was never reached, and neither were rating and summary.
+
+Everything after those two questions is shared on purpose: same rungs, same hints, same verdicts, same `settleTake`. Where the scripted take *is* a capture failure, the rung's clean take is used instead — a silent take carries an empty transcript and a contestable one carries a garbled one, and showing either back as "what you said" after the student typed is the same lie in a quieter font. Every rung that scripts a failure also scripts the clean take beside it, which is the one `contest()` and `retryAfterSilence()` already hand back.
+
+**Verified by typing only, on the term whose ladder runs out:** `attempt1 → hint1 → hint2 → hint3 → reveal → wrong → rating → summary`. All four rungs, and the same tail the voice path takes. The voice path is unchanged — a silent take still reaches `no-audio` and a low-confidence one still reaches `misheard`.
+
+**Figma's prototype does not wire this.** The `text fallback` frame carries no reactions at all, so Send has no drawn destination; the ladder and the `rating → summary` tail that the prototype *does* draw are what this follows.
 
 ### 5 · The take — `/recall/answer-sent`
 

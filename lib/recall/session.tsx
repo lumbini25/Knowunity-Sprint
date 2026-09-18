@@ -167,6 +167,21 @@ export interface RecallSession {
   handOver: () => Destination;
   /** Consume the current take. Returns where the student goes next. */
   submit: () => Destination;
+  /**
+   * "Send" on the text fallback.
+   *
+   * THE TEXT PATH IS THE SAME LADDER, NOT A SIDE DOOR. It goes to `processing`
+   * like every other answer, so the judge runs during the same wait; what
+   * changes is that `submit()` then skips the two microphone failures. Nothing
+   * the student types can be unheard or misheard, and sending a typed answer to
+   * "we didn't catch anything" was the loop telling someone who had just
+   * written a paragraph that it heard nothing — on the screen that exists
+   * precisely because they could not speak.
+   *
+   * So a typed answer climbs the four rungs, reaches the reveal, and settles
+   * through rating into the summary by exactly the route a spoken one takes.
+   */
+  answerByText: () => Destination;
   /** "That's what I said" — the contested verdict stands, and the rung moves. */
   confirm: () => Destination;
   /** The take is thrown away before send. No rung consumed. */
@@ -265,6 +280,20 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
   const [resolved, setResolved] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
 
+  /**
+   * Whether the answer now in front of the judge was typed rather than spoken.
+   *
+   * IN MEMORY, LIKE `verdict`, AND FOR THE SAME REASON. It describes one answer
+   * in flight, not the session's progress, so it has no business in the
+   * sessionStorage record — a reload mid-judge should land on a turn, not on a
+   * half-finished submission.
+   *
+   * It exists so `submit()` stays the single entry to the judge. The processing
+   * screen runs the judge during its wait and must not have to know which
+   * screen the student came from; this is the session remembering instead.
+   */
+  const [typed, setTyped] = useState(false);
+
   /* Restore once, on mount.
      Deliberately not a `useState` initialiser: that runs during the server
      render too, where `sessionStorage` does not exist, and a client-only
@@ -347,6 +376,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     if (termIndex + 1 >= SESSION.length) return 'rating';
     setProgress((prev) => ({ ...prev, termIndex: termIndex + 1, rung: 'attempt1', takeIndex: 0 }));
     setVerdict(null);
+    setTyped(false);
     setResolved(false);
     return 'idle';
   }, [termIndex]);
@@ -493,6 +523,32 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       return 'result';
     }
 
+    /* A TYPED ANSWER SKIPS THE TWO CAPTURE FAILURES, AND ONLY THOSE.
+       "Nothing heard" and "heard badly" are both microphone outcomes. Neither
+       can happen to something the student typed, and routing a typed answer to
+       "we didn't catch anything" was the loop telling a student who had just
+       written out a paragraph that it heard nothing — the single most
+       confidence-destroying thing this flow could say, on the screen that
+       exists because the student could not speak in the first place.
+
+       The rest is identical on purpose: same rungs, same hints, same verdicts,
+       the same `settleTake`, so the text path climbs the ladder and reaches
+       rating and summary by exactly the route the voice path does. The text
+       fallback is a way of answering, not a lesser mode — `reference/Voice_UX.md`
+       principle 5 is that some students cannot speak at all.
+
+       WHERE THE SCRIPT'S TAKE IS A CAPTURE FAILURE, THE CLEAN ONE IS USED.
+       A silent take carries an empty transcript, and a contestable one carries
+       a garbled transcript — showing either back as "what you said" after the
+       student typed would be the same lie in a quieter font. Every rung that
+       scripts a failure also scripts the clean take beside it, which is the one
+       `contest()` and `retryAfterSilence()` already hand back. */
+    if (typed) {
+      setTyped(false);
+      const clean = rungScript?.takes.find((t) => !isSilent(t) && !isContestable(t));
+      return settleTake(clean ?? take);
+    }
+
     /* Nothing heard. Its own state, its own cause, and no rung consumed. */
     if (isSilent(take)) return 'no-audio';
 
@@ -506,7 +562,20 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     if (isContestable(take)) return showTranscriptAsContestable(take);
 
     return settleTake(take);
-  }, [take, rung, term.id, settleTerm, settleTake, showTranscriptAsContestable]);
+  }, [take, typed, rungScript, rung, term.id, settleTerm, settleTake, showTranscriptAsContestable]);
+
+  /**
+   * "Send" on the text fallback. Hands the typed answer to the judge.
+   *
+   * It goes to `processing` rather than straight to a verdict, because that is
+   * where `submit()` runs and the wait is the judge working — the typed path
+   * gets the same beat, and the screen the student lands on is a verdict on the
+   * ladder rather than a capture failure.
+   */
+  const answerByText = useCallback((): Destination => {
+    setTyped(true);
+    return 'processing';
+  }, []);
 
 
   /**
@@ -522,6 +591,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
 
   const discard = useCallback((): Destination => {
     setVerdict(null);
+    setTyped(false);
     return 'idle';
   }, []);
 
@@ -530,12 +600,14 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
        a transcription failure is never the student's fault. */
     setProgress((prev) => ({ ...prev, takeIndex: prev.takeIndex + 1 }));
     setVerdict(null);
+    setTyped(false);
     return 're-record';
   }, []);
 
   const retryAfterSilence = useCallback((): Destination => {
     setProgress((prev) => ({ ...prev, takeIndex: prev.takeIndex + 1 }));
     setVerdict(null);
+    setTyped(false);
     return 'idle';
   }, []);
 
@@ -547,6 +619,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       if (index + 1 >= SESSION.length) return 'rating';
       setProgress((prev) => ({ ...prev, termIndex: index + 1, rung: 'attempt1', takeIndex: 0 }));
       setVerdict(null);
+      setTyped(false);
       setResolved(false);
       return 'idle';
     }
@@ -574,6 +647,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       takeIndex: 0,
     }));
     setVerdict(null);
+    setTyped(false);
     setResolved(false);
     setExitOpen(false);
     /* 'summary', not 'rating'. Leaving early skips the confidence question on
@@ -604,6 +678,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
          moves once, at the summary. Do not wire it to per-term outcomes. */
       xp: 0,
       submit,
+      answerByText,
       confirm,
       discard,
       contest,
@@ -615,7 +690,8 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     [
       term, termIndex, rung, rungScript, take, verdict, resolved, outcomes, exitOpen,
       micGranted, grantMic, requestExit, dismissExit, handOver,
-      submit, confirm, discard, contest, retryAfterSilence, skip, advance, saveAndLeave,
+      submit, answerByText, confirm, discard, contest, retryAfterSilence, skip, advance,
+      saveAndLeave,
     ],
   );
 
