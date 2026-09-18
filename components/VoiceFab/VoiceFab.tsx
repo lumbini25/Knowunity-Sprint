@@ -39,7 +39,10 @@ export type VoiceFabState = 'Idle' | 'Recording' | 'Sent' | 'Disabled' | 'Thinki
 
 /** Figma sets a different label default per state. */
 const DEFAULT_LABEL: Record<VoiceFabState, string> = {
-  Idle: 'Tap to answer',
+  /* "Speak to start", not Figma's "Tap to answer". The caption names the act
+     the student performs — speaking — rather than the gesture that begins it,
+     and it is the same word on every screen that shows a resting orb. */
+  Idle: 'Speak to start',
   Recording: 'Tap to send',
   Sent: 'Answer sent',
   Disabled: 'Microphone unavailable',

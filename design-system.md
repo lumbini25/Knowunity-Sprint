@@ -206,7 +206,7 @@ The two screens whose columns run tighter make up the difference on `.knw-recall
 
 ### Variant axis: state
 
-**state=Idle** — mic is ready. Student has not started speaking. Ring at 15% opacity. Icon: mic. Label: "Tap to answer".
+**state=Idle** — mic is ready. Student has not started speaking. Ring at 15% opacity. Icon: mic. Label: "Tap to answer" in Figma; the build says **"Speak to start"** — the caption names the act rather than the gesture, on every screen with a resting orb.
 
 **state=Recording** — student is actively speaking. Ring pulses at full opacity (`mascot/primary`). Button fill: `interactive/primary`. Icon: mic illustration (fixed asset, not swappable via icon property). Label: "Tap to send". Push-to-talk: student taps the button again to submit, or taps the trash discard icon to cancel and re-record.
 
@@ -224,7 +224,7 @@ TOKEN NOTES: Figma binds Deny's button to `feedback/destructive/surface/bold 2`,
 
 ### Properties
 
-`label` (text) — overrides the caption below the button. Idle default: "Tap to answer". Recording default: "Tap to send". Sent default: "Answer sent".
+`label` (text) — overrides the caption below the button. Idle default: "Speak to start" (Figma says "Tap to answer"). Recording default: "Tap to send". Sent default: "Answer sent".
 
 `showLabel` (boolean) — hides the Label node. Default: true. Set to false when the parent screen provides its own label, or for compact placements.
 

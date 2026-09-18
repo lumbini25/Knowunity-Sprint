@@ -411,10 +411,17 @@ export const AnswerSentDiscardSheet: Story = {
   ),
   play: async ({ canvas, canvasElement }) => {
     // Follows `bottom sheet for delete control` (16073:26275): Knowie, the
-    // question, one line under it, and the two ways to keep the turn.
+    // question, the warning under it, and an ordinary Yes / No.
     await expect(canvas.getByText('Are you sure you want to delete this answer?')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Say it again' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Type instead' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Yes' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'No' })).toBeVisible();
+
+    // THE WARNING IS THE POINT. Deleting moves the student on, so the sheet
+    // says so before they answer Yes — the trash is the one control here that
+    // costs them the question.
+    await expect(
+      canvas.getByText(/moved forward to the next question/),
+    ).toBeVisible();
 
     // HANDLE ONLY, NO ✕ — the same call the mic sheet makes. Both ways out
     // are on the sheet, so a third silent one in the corner would only muddy
@@ -673,7 +680,7 @@ export const Misheard: Story = {
     // THE ORB IS LIVE. This screen exists so the student can say it again, so
     // a disabled mic would contradict the whole screen.
     await expect(canvasElement.querySelector('.knw-fab--Idle')).toBeTruthy();
-    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
 
     // No skip: the free re-attempt is already here, so a skip would trade it
     // for a recorded miss.
@@ -766,7 +773,7 @@ export const Idle: Story = {
   render: () => <IdleScreen onRecord={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The resting state: the question is up and the orb is waiting.
-    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
 
     // Idle is the ONLY recall turn that asks the question in the bubble, with
     // Knowie tucked behind it. Everything downstream restates it flat.
@@ -917,7 +924,7 @@ export const ResultHint1: Story = {
     await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
 
     // The orb is ON this screen: the next attempt starts here, not back at idle.
-    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
 
     // The question is restated flat, with no mascot tucked behind it.
     await expect(canvasElement.querySelector('.knw-recall__askbar')).toBeTruthy();

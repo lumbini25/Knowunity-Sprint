@@ -17,7 +17,21 @@
    THREE EXITS, AND ONLY ONE COSTS A RUNG:
      Continue  submit this take       → processing, rung consumed
      Retry     say it again           → listening, rung intact
-     Trash     throw the take away    → idle, rung intact  */
+     Trash     ask first, then drop   → the NEXT question, scored as a miss
+
+   THE TRASH ASKS, AND THEN IT COSTS SOMETHING. It used to drop the take on
+   the first tap and return to `idle` on the same term with the rung intact.
+   `bottom sheet for delete control` (16073:26275) revises both halves: a Yes
+   / No confirmation stands in front of it, and its body says "you will be
+   moved forward to the next question".
+
+   So Yes is `skip()`, not `discard()`. Deleting the only take and moving on
+   means nobody answered the term, and `skip()` is the call that records that
+   — `settleTerm({ skipped: true })` — as well as advancing. `discard()`
+   returns to the same question and now has no caller; it is left in the
+   session API rather than removed as a side effect of a copy change.
+
+   SPEC.md:227, :636 and :713 still describe the old behaviour. */
 
 import { AnswerSentScreen } from '../../../components/screens/RecallScreens/RecallScreens';
 import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
@@ -31,7 +45,7 @@ export default function Page() {
       transcript={session.take?.transcript}
       onAdvance={goTo('processing')}
       onRetry={goTo('recording')}
-      onDiscard={() => go(session.discard())}
+      onDiscard={() => go(session.skip())}
       onTypeAnswer={goTo('text-fallback')}
       onSkip={() => go(session.skip())}
       onExit={session.requestExit}

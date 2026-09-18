@@ -1002,19 +1002,16 @@ export interface AnswerSentScreenProps extends RecallEscapesProps {
   sent?: boolean;
   onSend?: () => void;
   /**
-   * Throw the take away.
+   * Throw the take away, on Yes from the discard sheet — never straight from
+   * the trash, which only raises the sheet.
    *
-   * CURRENTLY UNREFERENCED, ON PURPOSE. The trash now raises `bottom sheet
-   * for delete control` (16073:26275), and that frame offers two actions —
-   * "Say it again" and "Type instead" — both of which KEEP the turn. Nothing
-   * on it discards, and its app bar is the handle alone, so there is no
-   * dismissal to hang the discard on either.
-   *
-   * The frame's body text says deleting moves the student to the next
-   * question; SPEC.md:227 and :636 say the trash returns to `/recall/idle`
-   * with the rung intact. The two disagree and the frame is being revised.
-   * Wiring this to either reading now would be guessing, so the prop stays
-   * in the API and the route keeps passing it, ready for the answer.
+   * It moves the student ON, which is what `bottom sheet for delete control`
+   * (16073:26275) warns about in as many words: "you will be moved forward to
+   * the next question". The route reaches that with `skip()`, not `discard()`
+   * — deleting the only take and leaving means the term is answered by
+   * nobody, and `skip()` is the call that records that outcome as well as
+   * advancing. SPEC.md:227 and :636 describe the older behaviour, where the
+   * trash returned to the same question with the rung intact.
    */
   onDiscard?: () => void;
   /**
@@ -1078,6 +1075,7 @@ export function AnswerSentScreen({
   sent: sentProp,
   onSend,
   onRetry,
+  onDiscard,
   discardSheetOpen: discardSheetOpenProp,
   onExit,
   onSkip,
@@ -1188,41 +1186,33 @@ export function AnswerSentScreen({
                   <h2 className="knw-recall__sheet-title">
                     Are you sure you want to delete this answer?
                   </h2>
-                  {/* COPY DEPARTS FROM THE FRAME, and the frame is being
-                      revised. Figma reads "By deleting the answer you will be
-                      moved forward to the next question." SPEC.md says the
-                      opposite in three places — line 227, line 636 and line
-                      713: the trash returns to `/recall/idle` with the rung
-                      INTACT, and discarding a take before send is one of the
-                      four things that cost the student nothing. Shipping the
-                      frame's sentence would tell a student they were about to
-                      lose the question when they are not. The behaviour
-                      follows SPEC; this sentence says what the behaviour
-                      does. */}
+                  {/* THE FRAME'S OWN SENTENCE, and it is now true. The
+                      revised node answers what the first draft left open:
+                      deleting moves the student on, so this warns them before
+                      they do it. SPEC.md:227 and :636 still describe the old
+                      behaviour — the trash returning to the same question with
+                      the rung intact — and are now stale on this point. */}
                   <p className="knw-recall__sheet-caption">
-                    Deleting it takes you back to the question. It costs you
-                    nothing — you can answer again.
+                    By deleting the answer you will be moved forward to the
+                    next question.
                   </p>
                 </div>
               </div>
             }
             bottomSection={
               <ButtonGroup variant="Vertical" size="M">
-                {/* Both of these already exist on the screen behind: "Say it
-                    again" is Retry, "Type instead" is the text fallback. The
-                    sheet offers the two ways to keep the turn, and neither
-                    moves the rung. */}
-                <Button
-                  variant="Primary"
-                  size="M"
-                  CTA="Say it again"
-                  onClick={onRetry}
-                />
+                {/* YES GOES THROUGH WITH IT, NO PUTS THE TAKE BACK.
+                    The first draft of this frame offered "Say it again" and
+                    "Type instead" — two ways to keep the turn and no way to
+                    confirm — so the trash had nowhere to land. The revision
+                    makes it an ordinary confirmation, and the take is still
+                    there behind the sheet if the answer is No. */}
+                <Button variant="Primary" size="M" CTA="Yes" onClick={onDiscard} />
                 <Button
                   variant="Secondary"
                   size="M"
-                  CTA="Type instead"
-                  onClick={escapes.onTypeAnswer}
+                  CTA="No"
+                  onClick={() => setDiscardRaised(false)}
                 />
               </ButtonGroup>
             }
@@ -1719,7 +1709,7 @@ export interface MisheardScreenProps extends Pick<RecallEscapesProps, 'onTypeAns
  * one above it. That was an open question until the set was rebuilt; the card
  * owns the transcript now.
  *
- * THE ORB IS LIVE. It reads `state=Idle` — "Tap to answer" — because the whole
+ * THE ORB IS LIVE. It reads `state=Idle` — "Speak to start" — because the whole
  * point of this screen is that the student can say it again. It was `Disabled`
  * while the screen was being drawn, which would have said "Microphone
  * unavailable" on the one screen that most needs a working mic.

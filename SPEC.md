@@ -468,7 +468,7 @@ The **correct** path's first beat. Follows `correct-answer` (`15664:13017`).
 | Tap the orb | `/recall/correct-feedback` — Knowie's own answer, to read this one against |
 | Tap "Type your answer" | `/recall/text-fallback` |
 
-**Figma captions the orb "Tap to answer"**, which is `VoiceFab` Idle's default label rather than a decision — nothing is being answered here. It is captioned "Compare with Knowie" for what it actually does.
+**Figma captions the orb "Tap to answer"**, which is `VoiceFab` Idle's default label (the build renders that default as "Speak to start") rather than a decision — nothing is being answered here. It is captioned "Compare with Knowie" for what it actually does.
 
 ### 13b · Correct — Knowie's answer — `/recall/correct-feedback`
 

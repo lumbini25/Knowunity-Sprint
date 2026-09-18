@@ -9,7 +9,7 @@ const FIGMA_DESCRIPTION = `Circular tap target for voice input in the Explain Ou
 **VARIANT AXIS** — \`state\`: Idle | Recording | Sent | Disabled | Thinking
 
 **PROPERTIES**
-- \`label\` (text) — Overrides the caption below the button. Idle default: "Tap to answer" · Recording default: "Tap to send" · Sent default: "Answer sent".
+- \`label\` (text) — Overrides the caption below the button. Idle default: "Speak to start" · Recording default: "Tap to send" · Sent default: "Answer sent".
 - \`showLabel\` (boolean) — Hides the Label node. Default: true. Set to false when the parent screen provides its own label, or for compact placements.
 - \`icon\` (instance swap) — Swaps the icon in state=Sent. Default: iconSlot Size=400. In state=Idle and state=Recording the icon is the mic illustration (custom vectors, not swappable via this property).
 
@@ -20,7 +20,7 @@ const FIGMA_DESCRIPTION = `Circular tap target for voice input in the Explain Ou
 
 Each state also carries its own description in Figma:
 
-> **Idle** — Mic is ready. Student has not started speaking. Ring at 15% opacity. Icon: mic. Label: 'Tap to answer'.
+> **Idle** — Mic is ready. Student has not started speaking. Ring at 15% opacity. Icon: mic. Label: 'Tap to answer'. **The build says "Speak to start"** — the caption names the act rather than the gesture, on every screen that shows a resting orb.
 >
 > **Recording** — Student is actively speaking. Ring pulses at full opacity (mascot/primary). Push-to-talk: student taps the button again to submit, or taps the trash discard icon to cancel and re-record.
 >
@@ -66,7 +66,7 @@ That last one reverses what is recorded below: Thinking's overlay rectangle used
 
 **Figma contradicts itself about Recording.** Both the component description and design-system.md give Recording the Idle anatomy — Ring 170 + Button 140 + mic icon. The actual \`state=Recording\` node is the orb at 215×215 with the mic layer *hidden*, built like Thinking. The node was followed, not the prose, because the node is what renders.
 
-**Idle puts its caption above the button; every other state puts it below.** design-system.md's anatomy lists the Label last in all of them, so the file and the docs disagree. Rendering the variants confirmed the file: Idle really does draw "Tap to answer" on top. The file is followed here, because the file is what renders — but one of the two is wrong and it is worth deciding which.
+**Idle puts its caption above the button; every other state puts it below.** design-system.md's anatomy lists the Label last in all of them, so the file and the docs disagree. Rendering the variants confirmed the file: Idle really does draw its caption ("Speak to start") on top. The file is followed here, because the file is what renders — but one of the two is wrong and it is worth deciding which.
 
 **The Thinking and Disabled labels fail AA, and are kept deliberately.** Both bind to \`text/disabled\` — 40% white — which reads 3.77:1 on the page, under the 4.5:1 minimum. The bindings are exactly what Figma specifies so they have not been changed. \`text/tertiary\` (48%, 4.66:1) is the smallest fix. This is the same failure \`tabs\` reports on its inactive labels, from the same token — worth fixing once in \`tokens.json\` rather than per component.
 
@@ -101,9 +101,9 @@ export const Idle: Story = {
   name: 'state=Idle',
   args: { state: 'Idle', onPress: fn() },
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Tap to answer')).toBeVisible();
+    await expect(canvas.getByText('Speak to start')).toBeVisible();
     // Idle is a real tap target.
-    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
 
     // Proves the token stylesheet reached the fab: ring 170, button 140, and
     // the halo at 15%.
@@ -261,7 +261,7 @@ export const NoLabel: Story = {
   play: async ({ canvas, canvasElement }) => {
     await expect(canvasElement.querySelector('.knw-fab__label')).toBeNull();
     // The button keeps its name even with the caption hidden.
-    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
   },
 };
 
