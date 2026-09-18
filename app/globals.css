@@ -189,6 +189,7 @@
   --primitive-effect-blur: 16px;
   --primitive-effect-glow: 37px;
   --primitive-effect-blur-soft: 5px;
+  --primitive-effect-blur-glow: 10px;
 
   --primitive-duration-100: 120ms;
   --primitive-duration-200: 200ms;
@@ -473,6 +474,7 @@
   --semantic-effect-blur: var(--primitive-effect-blur);
   --semantic-effect-glow: var(--primitive-effect-glow);
   --semantic-effect-blur-soft: var(--primitive-effect-blur-soft);
+  --semantic-effect-blur-glow: var(--primitive-effect-blur-glow);
 
   --semantic-highlight-border: var(--primitive-color-violet-highlight);
 

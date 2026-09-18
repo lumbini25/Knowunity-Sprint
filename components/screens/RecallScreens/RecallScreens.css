@@ -304,16 +304,17 @@ span.knw-recall__exit {
    (16) on the strength of the raw number turned Knowie into an unreadable
    smear where the frame still shows the ears and the eyes.
 
-   Converted first, the nearest step flips: |10 − 5| beats |10 − 16|, so
-   `effect/blur-soft` is the closer token. An earlier note here claimed
-   blur-soft was the ONLY blur token and shipped the mascot crisp; both have
-   existed all along.
+   `effect/blur-glow` is that converted 10, and it exists because this screen
+   asked for it: the scale had 5 and 16, one tighter than the design and one
+   that erased the mascot, and nothing between. It is NOT `effect/glow` (37),
+   which is an outer glow radius cast by a control that stays sharp — here the
+   subject itself goes out of focus.
 
    On the block, not the mascot, because that is where Figma puts it: the
    padding blurs with it, so the glow falls off inside the frame instead of
    ending at the illustration's edge. */
 .knw-recall--primer .knw-recall__hero {
-  filter: blur(var(--semantic-effect-blur-soft));
+  filter: blur(var(--semantic-effect-blur-glow));
 }
 
 /* ===== permission denied ===== */

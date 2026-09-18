@@ -175,6 +175,7 @@
   --primitive-effect-blur: 16px;
   --primitive-effect-glow: 37px;
   --primitive-effect-blur-soft: 5px;
+  --primitive-effect-blur-glow: 10px;
   --primitive-duration-100: 120ms;
   --primitive-duration-200: 200ms;
   --primitive-duration-300: 320ms;
@@ -438,6 +439,7 @@
   --semantic-effect-blur: var(--primitive-effect-blur); /** Background blur behind a floating badge. */
   --semantic-effect-glow: var(--primitive-effect-glow); /** Soft outer glow behind a live control. voiceFab while recording. */
   --semantic-effect-blur-soft: var(--primitive-effect-blur-soft); /** Slight defocus on a non-interactive surface. voiceFab while thinking. */
+  --semantic-effect-blur-glow: var(--primitive-effect-blur-glow); /** Defocus heavy enough that the blurred thing reads as light rather than as itself. The mic permission primer's mascot, which is a glow behind the headline rather than a character in front of it. NOT effect/glow, which is an outer glow RADIUS cast by a control that stays sharp (voiceFab while recording); this is the subject itself going out of focus. Figma writes it as a 20 LAYER_BLUR -- its radius drives a Gaussian at sigma = radius/2, where CSS blur(N) sets sigma = N, so 20 there is 10 here. */
   --semantic-highlight-border: var(--primitive-color-violet-highlight); /** Edge of the active tab. Brighter than border/selected and off the violet scale. */
   --semantic-motion-duration-instant: var(--primitive-duration-100); /** A state flipping under the student's finger. Press feedback, a chip selecting. */
   --semantic-motion-duration-quick: var(--primitive-duration-200); /** A control answering. The orb changing state, a sheet's handle. */
