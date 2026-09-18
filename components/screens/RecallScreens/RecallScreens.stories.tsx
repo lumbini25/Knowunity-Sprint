@@ -1025,7 +1025,7 @@ export const Correct: Story = {
 
 export const CorrectFeedback: Story = {
   name: "13b · Correct — Knowie's answer",
-  render: () => <CorrectFeedbackScreen onSayItBack={fn()} onTypeAnswer={fn()} onExit={fn()} />,
+  render: () => <CorrectFeedbackScreen onNextQuestion={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The model answer, to read against what the student actually said.
     await expect(canvas.getByText(/critically analyzing evidence/)).toBeVisible();
@@ -1042,7 +1042,12 @@ export const CorrectFeedback: Story = {
     const slot = canvasElement.querySelector('.knw-mascot') as HTMLElement;
     await expect(slot.classList.contains('knw-mascot--2XL')).toBe(true);
 
-    await expect(canvas.getByRole('button', { name: 'Say it back' })).toBeVisible();
+    // THE TERM IS SETTLED, SO THE ORB MOVES ON. It used to read "Say it back"
+    // and route through the recorder, which re-judged a passed term and put
+    // the student back on `correct`. Figma's `Next question after correct
+    // answer` (16071:25942) is what follows this screen.
+    await expect(canvas.getByRole('button', { name: 'Next question' })).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: 'Say it back' })).toBeNull();
   },
 };
 

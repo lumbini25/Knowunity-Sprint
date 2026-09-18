@@ -2348,8 +2348,9 @@ export interface CorrectFeedbackScreenProps extends Pick<RecallEscapesProps, 'on
   answer?: string;
   progress?: number;
   progressText?: string;
-  /** Say the model answer back. Costs no rung — the term is already passed. */
-  onSayItBack?: () => void;
+  /** Move on to the next question. The term is already passed; nothing here
+      is judged, so this settles nothing and only advances. */
+  onNextQuestion?: () => void;
   onExit?: () => void;
 }
 
@@ -2378,7 +2379,7 @@ export function CorrectFeedbackScreen({
   answer = 'Historical thinking is the process of critically analyzing evidence to understand the past, rather than just memorizing facts or dates. It involves placing events within their specific context, identifying potential biases, and evaluating multiple perspectives to build a reasoned interpretation.',
   progress = 0,
   progressText = '1 of 4',
-  onSayItBack,
+  onNextQuestion,
   onExit,
   ...escapes
 }: CorrectFeedbackScreenProps) {
@@ -2401,8 +2402,17 @@ export function CorrectFeedbackScreen({
             <RecallResponseCard State="Reveal" answerText={answer} />
           </div>
 
+          {/* THE ORB MOVES ON; IT DOES NOT RECORD.
+              Figma's `Next question after correct answer` (16071:25942) is
+              what follows this screen, and the term is already passed, so
+              there is nothing left here to judge. Saying it back routed
+              through the recorder, which re-ran a settled term and landed the
+              student back on `correct` — the screen they had just left.
+
+              The caption says what the tap does. `result` reaches the same
+              conclusion by the same reasoning: `resolved ? advance() : record`. */}
           <div className="knw-recall__fab">
-            <VoiceFab state="Idle" label="Say it back" onPress={onSayItBack} />
+            <VoiceFab state="Idle" label="Next question" onPress={onNextQuestion} />
             <RecallEscapes {...escapes} />
           </div>
         </div>
