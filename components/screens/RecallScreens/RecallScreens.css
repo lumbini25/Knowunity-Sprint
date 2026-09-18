@@ -924,6 +924,20 @@ span.knw-recall__exit {
   width: 100%;
 }
 
+/* The 24 is measured to the orb, not to the box around it.
+   `.knw-fab` carries `padding: l` all round, from the component's own Figma
+   auto-layout. Down the sides and along the bottom that padding is doing its
+   job. At the top it sits between the content and the first thing the student
+   can see — the caption on Idle, the orb on every other state — so the rule
+   above lands the WRAPPER at 24 and the visible fab at 40. Nine screens, all
+   40, all of them 16 further from the content than the rule says.
+   The component keeps its padding, because a voiceFab on its own in Storybook
+   wants it. This composition cancels the top edge alone: the sides and bottom
+   are untouched, and the first visible row now starts where the wrapper does. */
+.knw-recall__fab > .knw-fab {
+  padding-block-start: 0;
+}
+
 /* THE ORB SITS THE SAME DISTANCE BELOW THE CONTENT ON EVERY TURN.
 
    Each screen's column sets its own gap for its own stack, and the gap applies
