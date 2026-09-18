@@ -47,5 +47,17 @@ next-env.d.ts
 # claude code local settings
 .claude/settings.local.json
 
+# MCP server config. Local-only: it names dev servers and is the file a token
+# would land in if one were ever needed, so it stays out of the repo.
+.mcp.json
+
+# Licensed fonts. The trial Greed VF is loaded by next/font/local from app/ and
+# must not be redistributed — publishing the repo would republish the font.
+# A licensed copy goes in the same place and stays ignored the same way.
+*.ttf
+*.otf
+*.woff
+*.woff2
+
 *storybook.log
 storybook-static
