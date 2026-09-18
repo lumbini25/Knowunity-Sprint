@@ -194,6 +194,16 @@ Do not use during the processing state — this component appears only once a ve
 
 Circular tap target for voice input in the Explain Out Loud recall loop.
 
+### The orb sits `space/layout/xl` (24) below the content above it, on every turn
+
+One distance, everywhere the orb appears: listening, the take, processing, the two ladder screens, correct, correct-feedback, reveal, wrong and misheard. Nine screens, 24 on all of them.
+
+It was not, and nothing had chosen otherwise — it was inherited. Each screen's column sets its own `gap` for its own stack, and the gap applies to the orb along with everything else, so the same component came out **24** on the listening and take screens, **16** on the two hint-ladder screens (`.knw-recall--result` tightens its column for the ladder, the ask bar and the card), and **0** on processing, where the column is flush because Figma stacks the `thinking` pose straight onto the transcript box. At 0 the orb butted against the transcript.
+
+Figma is unambiguous that the approach should match: `reveal`, `hint2` and `cancel option` all draw the same `voiocefab` frame — 390 × 300, padding 8, orb at y21 — whether the orb follows a card or a transcript. `hint3` is the single exception at 258 with no padding, and it is the frame whose column also carries the promoted hint panel.
+
+The two screens whose columns run tighter make up the difference on `.knw-recall__fab` itself, written as `xl − l` rather than as `8`, so it stays true if either token moves. **A column gap is for the column's own stack; the orb's approach to the content is a separate decision and is stated separately.**
+
 ### Variant axis: state
 
 **state=Idle** — mic is ready. Student has not started speaking. Ring at 15% opacity. Icon: mic. Label: "Tap to answer".

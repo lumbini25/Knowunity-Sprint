@@ -924,6 +924,41 @@ span.knw-recall__exit {
   width: 100%;
 }
 
+/* THE ORB SITS THE SAME DISTANCE BELOW THE CONTENT ON EVERY TURN.
+
+   Each screen's column sets its own gap for its own stack, and the gap applies
+   to the orb as well as to everything else — so the same component came out 24
+   below the content on the listening and take screens, and 16 on the two hint
+   ladder screens, purely because `.knw-recall--result` tightens its column for
+   the ladder, the ask bar and the card. Nothing chose that; it was inherited.
+
+   Figma is unambiguous that they should match. `reveal`, `hint2` and `cancel
+   option` all draw the same `voiocefab` frame — 390 x 300, 8 padding, the orb
+   at y21 — so the orb's approach is identical whether it follows a card or a
+   transcript. (`hint3` is the one exception at 258 with no padding, and it is
+   the frame whose column also carries the promoted hint panel.)
+
+   Stated as the difference rather than as a number, so it stays true if either
+   token moves: `xl` is the loop's orb spacing, `l` is what the ladder column
+   already contributes, and the margin is the remainder. */
+.knw-recall--result > .knw-recall__fab {
+  margin-block-start: calc(var(--semantic-space-layout-xl) - var(--semantic-space-layout-l));
+}
+
+/* Processing runs its column at 0 and that is right for what is above the orb
+   — Figma stacks the `thinking` pose straight onto the transcript box with
+   nothing between them — but the orb inherited the 0 too and butted against
+   the transcript. It takes the loop's spacing in full, since the column
+   contributes none.
+
+   Figma actually floats it further still, at 123 below the transcript in a
+   477-tall frame that centres it. That is a composition for one screen; the
+   orb keeping the same approach as every other turn is the thing being asked
+   for here, and 24 is that distance. */
+.knw-recall--processing > .knw-recall__fab {
+  margin-block-start: var(--semantic-space-layout-xl);
+}
+
 .knw-recall__fab > .knw-buttongroup {
   align-self: stretch;
 }
