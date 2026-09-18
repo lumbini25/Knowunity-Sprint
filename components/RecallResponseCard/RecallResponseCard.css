@@ -430,19 +430,6 @@
   outline-offset: var(--semantic-space-layout-xxs);
 }
 
-/* Figma right-aligns this, matching the next-action link it replaces — the
-   set description still says centre. */
-.knw-rrc__helper {
-  margin: 0;
-  text-align: right;
-  color: var(--semantic-text-secondary);
-  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
-  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
-  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
-  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
-}
-
 /* Correct only. Figma insets it 2px top and bottom from the card. */
 .knw-rrc__strip {
   position: absolute;

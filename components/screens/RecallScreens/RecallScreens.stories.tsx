@@ -1029,7 +1029,7 @@ export const CorrectFeedback: Story = {
   play: async ({ canvas, canvasElement }) => {
     // The model answer, to read against what the student actually said.
     await expect(canvas.getByText(/critically analyzing evidence/)).toBeVisible();
-    await expect(canvas.getByText('Try it yourself after reading')).toBeVisible();
+    await expect(canvas.queryByText('Try it yourself after reading')).toBeNull();
 
     // IT IS NOT THE REVEAL, though they share the card. Reveal is where a term
     // is declared wrong, so it keeps the ladder and restates the question the
@@ -1228,7 +1228,7 @@ export const Reveal: Story = {
     await expect(canvasElement.querySelector('.knw-transcript')).toBeNull();
     await expect(canvas.queryByRole('button', { name: 'App misheard me' })).toBeNull();
     await expect(canvas.getByText(/critically analyzing evidence/)).toBeVisible();
-    await expect(canvas.getByText('Try it yourself after reading')).toBeVisible();
+    await expect(canvas.queryByText('Try it yourself after reading')).toBeNull();
 
     // THE WAY ON IS TO ANSWER. There is no "next question" here: a student who
     // has just read the answer says it back or types it, because tapping past

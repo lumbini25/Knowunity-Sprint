@@ -2432,7 +2432,9 @@ export interface RevealScreenProps extends Pick<RecallEscapesProps, 'onTypeAnswe
  *
  * `recallResponseCard State=Reveal` drops the transcript and the contest
  * buttons — there is nothing left to contest — and shows the model answer under
- * an "Answer" badge, with "Try it yourself after reading" beneath.
+ * an "Answer" badge, with nothing beneath it. Figma draws a helper line there
+ * reading "Try it yourself after reading"; the orb below already carries "Say
+ * it back", which is the same instruction at the control the student uses.
  *
  * SAYING IT BACK IS REQUIRED, NOT OFFERED. There is no "next question" here:
  * the way on is to answer, by voice or by keyboard. This is the only moment in

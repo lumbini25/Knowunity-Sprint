@@ -118,8 +118,6 @@ export interface RecallResponseCardProps extends HTMLAttributes<HTMLDivElement> 
   stillMissingItems?: string[];
   /** The model answer. Reveal only — Correct no longer carries an answer box. */
   answerText?: string;
-  /** The helper line under the card. Reveal only. */
-  helperLabel?: string;
   /** Labels on the two verdict-correction buttons. Default only. */
   primaryActionLabel?: string;
   secondaryActionLabel?: string;
@@ -165,7 +163,6 @@ export function RecallResponseCard({
     'Not filtered through interpretation',
   ],
   answerText = 'Historical thinking is the process of weighing evidence, placing it in context, and judging how reliable it is.',
-  helperLabel = 'Try it yourself after reading',
   primaryActionLabel,
   secondaryActionLabel,
   onPrimaryAction,
@@ -346,16 +343,20 @@ export function RecallResponseCard({
         </div>
       </div>
 
-      {/* Reveal swaps the next-action link for the helper line; it does not
-          carry both.
+      {/* Reveal carries nothing under the card — no next-action link, and no
+          helper line either.
+
+          Figma gave Reveal a helper reading "Try it yourself after reading".
+          On the screen it is redundant: the idle voiceFab sits directly below
+          with "Say it back" written above it, which says the same thing at the
+          moment the student can act on it, and says it at the control rather
+          than at the card. Two instructions for one action read as two.
 
           The link becomes a real <button> only when a handler is supplied.
           Figma sets it to "Skip Question" on the hint rungs, where it is the
           screen's only skip — but the states that merely report a verdict have
           nothing to tap, and their stories assert exactly that. */}
-      {State === 'Reveal' ? (
-        <p className="knw-rrc__helper">{helperLabel}</p>
-      ) : onNextAction ? (
+      {State === 'Reveal' ? null : onNextAction ? (
         <button
           type="button"
           className="knw-rrc__next knw-rrc__next--button"

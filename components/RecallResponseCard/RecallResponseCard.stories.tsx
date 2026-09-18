@@ -30,7 +30,7 @@ Each variant also carries its own description:
 >
 > **Default/False** — Partial result. Student touched the concept but didn't fully cover it. Shows partial badge, transcript, and errorButton row. No Divider or Missing Section.
 >
-> **Reveal** — Model answer revealed. Transcript and Action Buttons replaced by full model answer text. Helper label 'Try it yourself after reading' sits below card. Badge reads 'Answer' in neutral pill.
+> **Reveal** — Model answer revealed. Transcript and Action Buttons replaced by full model answer text. Nothing sits below the card. Badge reads 'Answer' in neutral pill.
 >
 > **Correct** — Passing result. Percentage circle (44×44) and green '✓ Correct' badge replace the standard badge row. Action Buttons replaced by Knowie Answer text block. Left Accent Strip runs along left edge of card.
 
@@ -60,7 +60,7 @@ Unlike most gaps this session these were all *already bound* in Figma — the se
 
 **Nothing was reusable, and one near-miss is worth naming.** The Correct state's 44px score ring looks like \`percentage\`, but that component is a 121px arc with a score and a caption; this is a closed 44px ring with a bare percentage. Different token, different content, no shared markup. \`chips\` does not fit the badge either — its axes are size/color/active with Primary and pro fills, not verdict colours. The only reuse is \`XCloseIcon\` from BottomSheet for the ✗ on the incorrect badge.
 
-**State=Reveal no longer has a next-action link.** Figma now gives it only the Card and the Helper Label — "Try it yourself after reading" — where the other three states carry "Next question" or "Reveal answer". The helper is also **right**-aligned now, matching the link it replaces; the set description still describes it as centred.
+**State=Reveal carries nothing under the card.** Figma gives it the Card and a Helper Label — "Try it yourself after reading" — where the other three states carry "Next question" or "Reveal answer". The helper is not built: on the screen the idle voiceFab sits directly below the card with "Say it back" written above it, which says the same thing at the control, at the moment the student can act on it. Two instructions for one action read as two. The \`helperLabel\` prop is gone with it.
 
 **The badges were rebuilt in Figma while this component was being written, and the code follows the new nodes.** All three glyph badges now put their icon in an \`iconSlot\` at \`Size=200\` and keep the words in the label, instead of baking a character into the string:
 
@@ -233,7 +233,10 @@ export const Reveal: Story = {
   args: { State: 'Reveal' },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText('Answer')).toBeVisible();
-    await expect(canvas.getByText('Try it yourself after reading')).toBeVisible();
+    // Reveal carries nothing under the card. The helper line it used to draw
+    // said the same thing as "Say it back" above the orb, one screen element
+    // earlier and further from the control.
+    await expect(canvas.queryByText('Try it yourself after reading')).toBeNull();
 
     // A neutral outlined pill, not a verdict colour.
     const badge = canvasElement.querySelector('.knw-rrc__badge') as HTMLElement;
