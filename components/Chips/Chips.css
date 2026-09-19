@@ -19,8 +19,54 @@
 /* A chip is a label by default. It only becomes interactive when something is
    listening -- design-system.md keeps chips out of CTA duty. */
 .knw-chip--pressable {
+  position: relative;
   cursor: pointer;
+  /* Kept, and now honest. Suppressing the native highlight while supplying
+     nothing in its place left a pressable chip with NO tap feedback at all --
+     on a touch device, indistinguishable from a tap the screen never
+     registered. It is only correct to remove the platform's affordance once
+     the system's own is in place, which is the rule below. */
   -webkit-tap-highlight-color: transparent;
+}
+
+/* THE HIT AREA, NOT THE PILL. A chip's height comes from its size variant --
+   the largest is 40 -- so every pressable chip was under the 44 floor on the
+   one axis nobody looks at, including Home's "Explain out loud", the control
+   that starts the whole feature. Growing the pill would change the design on
+   every screen that draws one, so the target grows instead of the chip:
+   `size/tapTarget/min` says so itself -- "Controls shorter than this keep it
+   as a transparent hit area."
+
+   Centred on the pill and never smaller than it, so a chip already wider than
+   the floor keeps its own width and only gains height. Vertical only in
+   practice, so chips sitting side by side in a rail cannot steal each other's
+   taps. */
+.knw-chip--pressable::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, var(--semantic-size-tap-target-min));
+  height: max(100%, var(--semantic-size-tap-target-min));
+}
+
+/* Pressed: a translucent wash laid over the resting fill, the same shape as
+   `button`'s pressed state -- a `::after` at inset 0 rather than a background
+   swap, because the chip's own fill has to stay underneath.
+
+   `interactive/pressed-inverse`, not `interactive/pressed`. The two differ by
+   the surface they sit on and say so: pressed is "on light or vivid surfaces"
+   (which is why `button` uses it over a brand-filled pill), pressed-inverse is
+   "on dark surfaces -- layer over secondary or card fills". A chip rests on
+   `background/surface`, a card fill, so it takes the inverse. */
+.knw-chip--pressable:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--semantic-interactive-pressed-inverse);
+  pointer-events: none;
 }
 
 .knw-chip__icon {
@@ -36,11 +82,26 @@
    which is how Figma's `EolChip` draws its ✕. It keeps the icon box's size so
    the chip's geometry does not change; only the element type does. */
 .knw-chip__icon--pressable {
+  position: relative;
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* The ✕ is drawn at the icon box's size -- 16 on the compose screen's "Remove
+   Explain out loud", which is a third of the floor and the smallest control in
+   the entry path. Same treatment as the chip itself: the glyph stays the size
+   Figma draws it, the target underneath reaches `size/tapTarget/min`. */
+.knw-chip__icon--pressable::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, var(--semantic-size-tap-target-min));
+  height: max(100%, var(--semantic-size-tap-target-min));
 }
 
 .knw-chip__icon--pressable:focus-visible {

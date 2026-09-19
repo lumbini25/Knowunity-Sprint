@@ -24,6 +24,10 @@
   overflow: visible;
 }
 
+/* One geometry, two circles. The track and the arc are the same ring drawn
+   twice — sharing the rule is what keeps them concentric, since a radius that
+   drifted between them would read as a wobble rather than as a fill. */
+.knw-percentage__track,
 .knw-percentage__arc {
   cx: 50%;
   cy: 50%;
@@ -32,6 +36,17 @@
   r: calc((var(--semantic-size-score-ring) - var(--semantic-size-score-stroke)) / 2);
   stroke-width: var(--semantic-size-score-stroke);
   fill: none;
+}
+
+/* border/subtle is the token for this and says so: its own description reads
+   "Faintest container edge. progressIndicator track", and ProgressIndicator
+   already binds it for the same job. The unfilled part of a progress shape is
+   an established thing in this system, not a new one. */
+.knw-percentage__track {
+  stroke: var(--semantic-border-subtle);
+}
+
+.knw-percentage__arc {
   stroke: var(--semantic-accent-brand-bold);
   /* Round caps give the arc the same soft ends as Figma's Radius/150 corners,
      without needing a radius value. */
@@ -61,7 +76,20 @@
 
 .knw-percentage__label {
   margin: 0;
-  color: var(--semantic-text-tertiary);
+  /* DEPARTURE FROM FIGMA, ON THE CONTRAST GATE. The file binds `text/tertiary`
+     here (design-system.md's anatomy says so), and measured on the real summary
+     card — `background/surface`, rgb(34 36 47) — tertiary resolves to
+     rgba(245 243 255 / 0.48) and lands at 4.36:1. "Recalled" is 18px regular,
+     which is under WCAG's large-text threshold (24px, or 18.66px bold), so it
+     needs 4.5:1 and misses by 0.14. Not a consequence of the 15→18px move
+     either: body text needs 4.5:1 at either size.
+
+     `text/secondary` is the next step up the same ramp and measures 7.26:1, and
+     its own description — "Supporting content, subtitles, captions, timestamps"
+     — is what this label is. So the nearest passing step is also the more
+     accurate one. No token invented, no value hard-coded; logged against the
+     percentage spec in design-system.md. */
+  color: var(--semantic-text-secondary);
   /* Figma moved the label up from 15/20 to 18/24, which is body/M-regular. */
   font-family: var(--semantic-type-scale-body-m-regular-font-family);
   font-weight: var(--semantic-type-scale-body-m-regular-font-weight);

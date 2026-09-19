@@ -13,7 +13,7 @@ const FIGMA_DESCRIPTION = `Pill-shaped label with optional leading and trailing 
 
 \`color\` only changes anything while \`active\` is True. An inactive Primary chip and an inactive Pro chip are identical — both rest on \`background/surface\`.
 
-A chip renders as plain text by default. Pass \`onPress\` and it becomes a toggle button reporting \`aria-pressed\`; without it there is nothing to click, which keeps chips out of CTA duty as the description asks.`;
+A chip renders as plain text by default. Pass \`onPress\` and it becomes a button; add \`toggle\` and that button reports \`aria-pressed\`. The two are separate because a chip that navigates is not a toggle, and announcing one as "toggle button, not pressed" describes the wrong action. Without \`onPress\` there is nothing to click, which keeps chips out of CTA duty as the description asks.`;
 
 const meta = {
   title: 'Components/Chips',
@@ -169,10 +169,34 @@ export const WithoutIcons: Story = {
 
 export const AsToggle: Story = {
   name: 'onPress set (filter toggle)',
-  args: { size: 'S', color: 'Primary', active: 'True', Text: 'Coach me', onPress: () => {} },
+  args: {
+    size: 'S',
+    color: 'Primary',
+    active: 'True',
+    Text: 'Coach me',
+    onPress: () => {},
+    /* This chip really is a toggle, so it says so. `onPress` alone used to
+       imply it, which made every navigational chip announce as "toggle button,
+       not pressed" — see the `toggle` prop. */
+    toggle: true,
+  },
   play: async ({ canvas }) => {
-    // With a handler the chip becomes a real toggle and reports its state.
+    // A toggle chip reports its state.
     const chip = canvas.getByRole('button', { name: 'Coach me' });
     await expect(chip).toHaveAttribute('aria-pressed', 'true');
+  },
+};
+
+/** The other kind: a chip that presses to go somewhere. */
+export const AsNavigation: Story = {
+  name: 'onPress set, no toggle (navigates)',
+  args: { size: 'S', color: 'Primary', active: 'False', Text: 'Coach me', onPress: () => {} },
+  play: async ({ canvas }) => {
+    /* A plain button, and no `aria-pressed` anywhere on it. Home's "Explain
+       out loud" chip is this kind: it leaves the screen, so announcing it as a
+       toggle told a student the tap would switch something on and keep them
+       where they are. */
+    const chip = canvas.getByRole('button', { name: 'Coach me' });
+    await expect(chip).not.toHaveAttribute('aria-pressed');
   },
 };

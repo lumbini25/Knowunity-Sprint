@@ -12,7 +12,9 @@ tracks missing **components**.
 
 | What | Screen it was for | Date |
 |---|---|---|
-| _(nothing yet)_ | | |
+| **Key term callout** — a bordered, tinted box holding a label and one line of definition. `textBlock` is the closest thing in Storybook and has no surface and no border, so there was nothing to reach for. Bound to the **decorative** green ramp (`accent/green/*`), not `feedback/success/*`: a key term is a category marker, not a verdict. | `/entry/summarize` | 2026-09-19 |
+| **Quiz answer option** — a card-shaped control with a resting state and a correct/wrong state. `button` is a pill and has no verdict state; `listItem` is a row with a fixed tick. Bound to the **feedback** ramp, the opposite call from the callout above and for the opposite reason. | `/entry/quiz` | 2026-09-19 |
+| **Quiz result bar** — the verdict, a feedback row and two actions on a tinted surface in `Screen`'s bottom slot. `bottomSheet` was the near miss: it is the right shape but implies something to dismiss, and there is nothing here to dismiss — the way on is "Continue". Its contents are all real components (`chipFeedback`, `chips`, `buttonGroup`); only the tinted container is local. | `/entry/quiz` | 2026-09-19 |
 
 ## Token requests this list points at
 

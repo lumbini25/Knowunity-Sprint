@@ -172,7 +172,24 @@ export function ChatInput({
               <SendIcon />
             </span>
           </button>
-        ) : (
+        ) : isLoading || onTrailingPress ? (
+          /* THE SAME RULE THE LEADING BUTTON AND THE FIELD ALREADY FOLLOW, and
+             the only one of the three that was not keeping it. Unwired, this
+             branch still rendered a focusable control announced as "Record
+             voice" — on Home and on Explain out loud, where nothing was
+             listening. A voice-first product's front door offered a microphone
+             that did nothing.
+
+             It also drew a SECOND microphone. The rail already carries
+             `RailMicIcon` for Explain out loud, so every screen with an
+             unwired composer showed two different glyphs for one idea —
+             `ComposeScreen` was hardened against exactly this with `showSend`,
+             Home and Ready were not. Gating the control removes the duplicate
+             drawing at the same time, because the one that was wrong is the
+             one that was never wired.
+
+             `isLoading` still draws: the spinner is a status, not an offer,
+             and its button is already disabled so nothing can tap it. */
           <button
             type="button"
             className="knw-chat__trailing-icon"
@@ -183,7 +200,7 @@ export function ChatInput({
           >
             {isLoading ? <LoadingIcon /> : <MicrophoneIcon />}
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

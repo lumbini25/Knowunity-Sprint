@@ -14,6 +14,13 @@ export default function Page() {
 
   return (
     <MisheardScreen
+      /* WHERE THE STUDENT ACTUALLY IS. No progress props were passed, so the
+         header fell through to `RecallHeader`'s defaults and announced
+         "Terms answered: 0 of 4" on every term — a student misheard on term 3
+         read "0 of 4". `/recall/idle` computes these two lines correctly one
+         file away; this is the same computation. */
+      progress={(session.termIndex / session.termCount) * 100}
+      progressText={`${session.termIndex + 1} of ${session.termCount}`}
       transcript={session.verdict?.transcript}
       onMisheard={() => go(session.contest())}
       /* "That's what I said" lets the verdict stand — and letting it stand

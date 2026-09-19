@@ -10,7 +10,10 @@ import { TextBlock } from '../../TextBlock/TextBlock';
 import { Button } from '../../Button/Button';
 import { ButtonGroup } from '../../ButtonGroup/ButtonGroup';
 import { Chips } from '../../Chips/Chips';
+import { ChipFeedback } from '../../ChipFeedback/ChipFeedback';
 import { FolderCard } from '../../FolderCard/FolderCard';
+import { FOLDERS } from '../../../lib/recall/folders';
+import type { Folder } from '../../../lib/recall/folders';
 import { Checkbox } from '../../Checkbox/Checkbox';
 import { MascotSlot } from '../../MascotSlot/MascotSlot';
 import { ProgressIndicator } from '../../ProgressIndicator/ProgressIndicator';
@@ -30,6 +33,7 @@ import {
   HistoryIcon,
   ProBadge,
   ComposeIcon,
+  ChevronLeftIcon,
   CloseIcon,
   HintBulbIcon,
   ScanIcon,
@@ -243,12 +247,34 @@ export function ChatHeader({
   xp = 2,
   streak = 3,
   onMenu,
+  onBack,
   onHistory,
   inChat = false,
 }: {
   xp?: number;
   streak?: number;
+  /** The real thing: opens the app's menu in place. */
   onMenu?: () => void;
+  /**
+   * Leaves the screen.
+   *
+   * SEPARATE FROM `onMenu` BECAUSE IT IS A DIFFERENT CONTROL. Every sub-screen
+   * of the entry chat passed its "go back to /entry" handler as `onMenu`, so
+   * the bar drew a hamburger, announced itself as "Menu", and then navigated
+   * away — three things that do not agree. A student reading the glyph expects
+   * a drawer over this screen; a screen reader is told the same; the tap does
+   * neither.
+   *
+   * Wired here instead, the leading control draws the app's existing close
+   * glyph and says "Close". No new icon: ✕ is already what this prototype
+   * means by "leave this screen", on every recall turn, and the build-screen
+   * skill's rule is explicit that a control in the same position on two
+   * screens is not automatically the same control.
+   *
+   * Pass one or the other. `onMenu` wins if both are given, since a screen
+   * with a real menu has somewhere better to put its way out.
+   */
+  onBack?: () => void;
   onHistory?: () => void;
   /**
    * The bar the chat screens draw, rather than the front door's.
@@ -287,6 +313,13 @@ export function ChatHeader({
         <button type="button" className="knw-recall__exit" aria-label="Menu" onClick={onMenu}>
           <span className="knw-entry__appbar-icon">
             <MenuIcon />
+          </span>
+        </button>
+      ) : onBack ? (
+        /* The glyph follows the action, not the position. */
+        <button type="button" className="knw-recall__exit" aria-label="Close" onClick={onBack}>
+          <span className="knw-entry__appbar-icon">
+            <CloseIcon />
           </span>
         </button>
       ) : (
@@ -385,8 +418,29 @@ export interface HomeScreenProps {
   greeting?: string;
   /** The feature the prototype actually opens. */
   onExplainOutLoud?: () => void;
-  /** A recent folder, straight into its concepts. */
-  onOpenFolder?: () => void;
+  /**
+   * A recent folder, straight into its concepts.
+   *
+   * IT CARRIES WHICH FOLDER. The chip is labelled after the last thing the
+   * student worked on, and the handler took no argument — so tapping the one
+   * control named "Chemistry prep" led to a screen headed "World History
+   * Foundations" over three unrelated folders, with no way back to the thing
+   * they tapped for. The label was already a promise; this is the screen
+   * keeping it.
+   */
+  onOpenFolder?: (folder: string) => void;
+  /**
+   * The rail's other two live features, one screen each.
+   *
+   * They used to be `undefined` on purpose — "drawn and not pressable" — but
+   * an inert `Chips` renders as a `<span>` that looks exactly like the live
+   * chip beside it, so the two read as tappable and gave nothing back when
+   * tapped. That is `reference/Voice_UX.md` principle 1's failure mode moved
+   * from a microphone to a finger. Each now opens the single screen Figma's
+   * `Ai Chat/ Quiz` draws for it.
+   */
+  onQuiz?: () => void;
+  onSummarize?: () => void;
   /** The app bar's leading control. */
   onMenu?: () => void;
   /** The app bar's trailing control. */
@@ -416,9 +470,20 @@ export function HomeScreen({
   greeting = 'Evening study session, Harry?',
   onExplainOutLoud,
   onOpenFolder,
+  onQuiz,
+  onSummarize,
   onMenu,
   onHistory,
 }: HomeScreenProps) {
+  /* Which handler each rail chip gets. Scan is still the one feature with no
+     screen behind it, so it stays a label rather than a button — `Chips`
+     draws a `<span>` without `onPress`, which is the honest rendering of a
+     thing that does not open. */
+  const RAIL_ACTIONS: Record<string, (() => void) | undefined> = {
+    'Explain out loud': onExplainOutLoud,
+    Quiz: onQuiz,
+    Summarize: onSummarize,
+  };
   return (
     <Screen
       /* THE FRONT DOOR HAS AN APP BAR. The first pass ran this screen with
@@ -439,7 +504,7 @@ export function HomeScreen({
         <div className="knw-home__foot">
           <div className="knw-home__rail">
             {HOME_FEATURES.map(({ label, Icon, accent }) => {
-              const live = label === 'Explain out loud';
+              const open = RAIL_ACTIONS[label];
               return (
                 <Chips
                   key={label}
@@ -459,7 +524,7 @@ export function HomeScreen({
                     </span>
                   }
                   showRightIcon={false}
-                  onPress={live ? onExplainOutLoud : undefined}
+                  onPress={open}
                 />
               );
             })}
@@ -477,7 +542,7 @@ export function HomeScreen({
                 </span>
               }
               showRightIcon={false}
-              onPress={onOpenFolder}
+              onPress={onOpenFolder ? () => onOpenFolder(HOME_RECENT.label) : undefined}
             />
           </div>
 
@@ -587,7 +652,7 @@ export interface ComposeScreenProps {
  * `choosing chip` draws anyway — and Send is what moves the student on.
  */
 export function ComposeScreen({
-  value = 'World history',
+  value = 'World War II',
   onFill,
   onSend,
   onClearFeature,
@@ -598,7 +663,7 @@ export function ComposeScreen({
       /* The chat bar, not the front door's: compose instead of history, and no
          streak. Figma swaps both between `entrypoint` and `selecting explain
          feature`, the screen this one is. */
-      topNavigation={<ChatHeader onMenu={onBack} inChat />}
+      topNavigation={<ChatHeader onBack={onBack} inChat />}
       middleContent={
         /* Figma puts a `mascotSlot` at 120 here holding `standby` — the same
            pose and the same size the home screen uses. The first pass left this
@@ -749,16 +814,21 @@ export function ComposeScreen({
 
 export interface FoldersScreenProps {
   title?: string;
+  /**
+   * The folders to show.
+   *
+   * A PROP SO THAT NONE IS EXPRESSIBLE. The list was a module constant, which
+   * meant the empty state was not something the screen could be asked for —
+   * not a state that was cut, a state that could not be reached. A student
+   * whose folders have not loaded, or who has never studied anything, is the
+   * first thing this screen will meet in a real app.
+   */
+  folders?: Folder[];
   onOpen?: (folder: string) => void;
+  /** Nothing studied yet — the way to make the first set. */
+  onCompose?: () => void;
   onBack?: () => void;
 }
-
-/** Figma's three, in Figma's order. */
-const FOLDERS = [
-  { title: 'World War II', dateLabel: '1939 – 1945', conceptCount: '18 concepts', accent: 'Blue' as const },
-  { title: 'The Cold War', dateLabel: '1947 – 1991', conceptCount: '22 concepts', accent: 'Magenta' as const },
-  { title: 'Civil Rights Movement', dateLabel: '1954 – 1968', conceptCount: '10 concepts', accent: 'Gold' as const },
-];
 
 /**
  * Follows `choose folder screen`, node `15647:11079`.
@@ -766,15 +836,33 @@ const FOLDERS = [
  * The other way in: rather than describing a topic in the chat, the student
  * picks something they have already studied. Both paths end at the same place —
  * a set of concepts and the orb.
+ *
+ * THE EMPTY STATE HAS NO FIGMA FRAME. The file draws the list and nothing
+ * else, so what an empty shelf says is a decision rather than a reading: it
+ * names what is missing, says why the shelf is empty rather than broken, and
+ * offers the one thing that fills it. `reference/Voice_UX.md`'s rule that
+ * every state keeps a way out applies here as much as to a recall turn — an
+ * empty list with no action is a dead end wearing a sentence.
  */
 export function FoldersScreen({
-  title = 'World History Foundations',
+  /* THE SHELF'S NAME, NOT A FOLDER'S. Figma titles this screen "World History
+     Foundations", which read fine when no folder was called that — and now one
+     is, so the heading and the first card said the same words and meant
+     different things. It was Title Case too, against CLAUDE.md's sentence-case
+     rule, which nothing had caught because it was read as a proper noun.
+
+     Opened with a topic — from the ready card, or Home's recent chip — the
+     heading is still what the student asked for. This is only the fallback. */
+  title = 'Your folders',
+  folders = FOLDERS,
   onOpen,
+  onCompose,
   onBack,
 }: FoldersScreenProps) {
+  const empty = folders.length === 0;
   return (
     <Screen
-      topNavigation={<ChatHeader onMenu={onBack} />}
+      topNavigation={<ChatHeader onBack={onBack} />}
       middleContent={
         <div className="knw-folders">
           <div className="knw-folders__head">
@@ -783,22 +871,46 @@ export function FoldersScreen({
                 that jumped h1 → h3 left a hole in the outline — caught by axe
                 in the story, not by looking at it. It is a section heading over
                 the list either way. */}
-            <h2 className="knw-folders__ask">What have you studied so far?</h2>
-            <p className="knw-folders__hint">Choose one among the list to start revising</p>
+            <h2 className="knw-folders__ask">
+              {empty ? 'Nothing here yet' : 'What have you studied so far?'}
+            </h2>
+            <p className="knw-folders__hint">
+              {empty
+                ? 'Folders appear once you have studied something. Make a set and this shelf fills up.'
+                : 'Choose one among the list to start revising'}
+            </p>
           </div>
 
-          <div className="knw-folders__list">
-            {FOLDERS.map((f) => (
-              <FolderCard
-                key={f.title}
-                accent={f.accent}
-                title={f.title}
-                dateLabel={f.dateLabel}
-                conceptCount={f.conceptCount}
-                onOpen={() => onOpen?.(f.title)}
-              />
-            ))}
-          </div>
+          {empty ? (
+            /* Knowie, then the way out. The mascot is at screen level and
+               alone — never inside a card, which is the rule the explain card
+               was breaking. */
+            <div className="knw-folders__empty">
+              <MascotSlot size="2XL" label="Knowie, waiting">
+                <Knowie pose="standby" />
+              </MascotSlot>
+              {/* A way out, not just a sentence. Drawn only when a caller can
+                  actually take the student somewhere — the same rule the app
+                  bar's controls follow. */}
+              {onCompose ? (
+                <Button variant="Primary" size="M" CTA="Make your first set" onClick={onCompose} />
+              ) : null}
+            </div>
+          ) : (
+            <div className="knw-folders__list">
+              {folders.map((f) => (
+                <FolderCard
+                  key={f.title}
+                  accent={f.accent}
+                  title={f.title}
+                  description={f.description}
+                  dateLabel={f.dateLabel}
+                  conceptCount={f.conceptCount}
+                  onOpen={() => onOpen?.(f.title)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       }
     />
@@ -852,9 +964,9 @@ export interface ExplainEntryScreenProps {
  * the nearest step that is also the right role. See `.knw-entry__start`.
  */
 export function ExplainEntryScreen({
-  topic = 'World history',
-  reply = "I'll make a focused speaking-practice set for broad world history, covering the most important foundations.",
-  setTitle = 'World history foundations',
+  topic = 'World War II',
+  reply = "I'll make a focused speaking-practice set on World War II, covering the turning points, the policy that failed to prevent it, and the order built afterwards.",
+  setTitle = 'World War II',
   duration = '~2-3 min',
   generating = false,
   onStart,
@@ -863,7 +975,7 @@ export function ExplainEntryScreen({
 }: ExplainEntryScreenProps) {
   return (
     <Screen
-      topNavigation={<ChatHeader onMenu={onBack} />}
+      topNavigation={<ChatHeader onBack={onBack} />}
       middleContent={
         <div className="knw-entry">
           <div className="knw-entry__student">
@@ -872,6 +984,22 @@ export function ExplainEntryScreen({
                 the file does — the chip the student attached in the composer. */}
             <p className="knw-entry__picked">✨ Explain out loud</p>
           </div>
+
+          {/* KNOWIE OPENS THE REPLY, AND IS NOT IN THE CARD. This sat inside
+              `.knw-entry__start` — a mascot nested in a card, which
+              design-system.md's Never list forbids outright, on the one screen
+              that starts every session. Out here it is a direct child of the
+              chat column exactly as Home, Compose and the take screen already
+              place it, so Knowie's turn begins with Knowie and the card below
+              is a card.
+
+              2XL, like every other screen-level mascot in this file. The XL it
+              used inside the card was sized to fit the card, which is the
+              tell: a mascot scaled by its container was a mascot in a
+              container. */}
+          <MascotSlot size="2XL" label="Knowie, ready">
+            <Knowie pose="excited" />
+          </MascotSlot>
 
           <Chips size="XS" color="pro" active="True" Text="Smart Answer" showLeftIcon={false} showRightIcon={false} />
 
@@ -901,13 +1029,6 @@ export function ExplainEntryScreen({
               </span>
               <span className="knw-entry__start-set">{setTitle}</span>
             </span>
-
-            {/* Knowie peeking out of the card. XL (64) against the 44 the file
-                draws — the same inline-mascot gap the text fallback already
-                logs, and the same decision. */}
-            <MascotSlot size="XL" label="Knowie, ready">
-              <Knowie pose="excited" />
-            </MascotSlot>
           </button>
 
           {onFeedback ? (
@@ -927,6 +1048,254 @@ export function ExplainEntryScreen({
            nothing is focused when a student arrives here, least of all when
            they arrive from the summary's "Try again". */
         <ChatInput status="Inactive" placeholder="Ask anything" />
+      }
+    />
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* The rail's other two features, one screen each                      */
+/* ------------------------------------------------------------------ */
+
+export interface SummarizeScreenProps {
+  /** What the student asked, in their own words. */
+  topic?: string;
+  /** Knowie's opening line, above the key term. */
+  intro?: string;
+  /** The term the summary turns on. */
+  term?: string;
+  /** What that term means, in one line. */
+  definition?: string;
+  /** The explanation under the key term. */
+  body?: string;
+  /** 👍 / 👎 under the answer. Omit it and the row is not drawn. */
+  onFeedback?: (helpful: boolean) => void;
+  onBack?: () => void;
+  onHistory?: () => void;
+}
+
+/**
+ * Follows the first frame of `Ai Chat/ Quiz` (node `13499:3850`).
+ *
+ * ONE SCREEN, NOT A FEATURE. Summarize is a rail chip that had no destination,
+ * so tapping it did nothing and looked identical to a tap the app missed. This
+ * is the pattern the file draws for it — a question answered in Knowie's voice
+ * with the key term called out — and it ends where it starts, at the chat.
+ *
+ * IT IS THE SAME CHAT TURN `ExplainEntryScreen` DRAWS, and deliberately so: the
+ * student's question as a pill on the right, Knowie's answer as running text on
+ * the left, the feedback row under it, the composer at the foot. Reusing
+ * `.knw-entry` rather than inventing a second chat layout is what keeps the two
+ * features looking like one app.
+ *
+ * WHAT IS NEW IS THE KEY TERM CALLOUT, and Storybook had nothing for it —
+ * `textBlock` is a title and a caption with no surface and no border. Built
+ * inside this screen from tokens and logged in component-gaps.md.
+ */
+export function SummarizeScreen({
+  topic = "What's mitosis?",
+  intro = 'Mitosis is how one cell makes an exact copy of itself.',
+  term = 'Cell',
+  definition = 'the tiny building block of living things',
+  body = 'The cell is like a soccer team. Before the big match, it makes a full copy of its playbook so both new teams know exactly what to do. Then the cell carefully splits into two new cells, and each one gets the same instructions.',
+  onFeedback,
+  onBack,
+  onHistory,
+}: SummarizeScreenProps) {
+  return (
+    <Screen
+      topNavigation={<ChatHeader onBack={onBack} onHistory={onHistory} />}
+      middleContent={
+        <div className="knw-entry">
+          <div className="knw-entry__student">
+            <p className="knw-entry__bubble">{topic}</p>
+            <p className="knw-entry__picked">✨ Summarize</p>
+          </div>
+
+          {/* Screen level, never inside the callout below — the same Never
+              rule the explain-out-loud card was breaking. */}
+          <MascotSlot size="2XL" label="Knowie, explaining">
+            <Knowie pose="excited" />
+          </MascotSlot>
+
+          <p className="knw-entry__reply">{intro}</p>
+
+          {/* The key term, called out. Figma sets it in a green-bordered box
+              because it is the one line worth carrying away from the answer. */}
+          <div className="knw-keyterm">
+            <p className="knw-keyterm__label">Key term</p>
+            {/* TWO LINES, WHERE FIGMA HAS "Key Term: Cell" ON ONE. Sentence
+                case is a CLAUDE.md rule and proper nouns are the only
+                exception, so a colon would have forced either a capital
+                mid-sentence or a term that reads as a typo. The label names
+                what the box is; the term opens its own line, where a capital
+                is simply correct. */}
+            <p className="knw-keyterm__body">
+              {term} — {definition}
+            </p>
+          </div>
+
+          <p className="knw-entry__reply">{body}</p>
+
+          {onFeedback ? (
+            <div className="knw-entry__feedback">
+              <p className="knw-entry__feedback-ask">Happy with the answer?</p>
+              <div className="knw-entry__feedback-row">
+                <Chips size="S" color="Primary" active="False" Text="👍 Helpful" showLeftIcon={false} showRightIcon={false} onPress={() => onFeedback(true)} />
+                <Chips size="S" color="Primary" active="False" Text="👎 Unhelpful" showLeftIcon={false} showRightIcon={false} onPress={() => onFeedback(false)} />
+              </div>
+            </div>
+          ) : null}
+        </div>
+      }
+      bottomContent={
+        /* Unwired, so it draws no microphone — the rule `chatInput` now keeps.
+           There is nothing here to record, and this prototype captures no
+           audio anywhere. */
+        <ChatInput status="Inactive" placeholder="And what about…" />
+      }
+    />
+  );
+}
+
+export interface QuizOption {
+  label: string;
+  correct?: boolean;
+}
+
+export interface QuizScreenProps {
+  question?: string;
+  /** Figma draws two. More would wrap rather than break. */
+  options?: QuizOption[];
+  /**
+   * Which option the student picked, or `null` while the question stands.
+   *
+   * THE WHOLE SCREEN IS THIS ONE VALUE. Unanswered, the options are live and
+   * there is no result. Answered, the options lock, the verdict appears, and
+   * the way on is the button rather than another tap.
+   */
+  chosen?: number | null;
+  progress?: number;
+  progressText?: string;
+  xp?: number;
+  onAnswer?: (index: number) => void;
+  /** Move on. The single screen ends here. */
+  onContinue?: () => void;
+  /** Knowie explains the answer. */
+  onWhy?: () => void;
+  onFeedback?: (helpful: boolean) => void;
+  onExit?: () => void;
+}
+
+/**
+ * Follows the second frame of `Ai Chat/ Quiz` (node `13499:3851`).
+ *
+ * ONE SCREEN, AND IT SAYS SO. The rail's Quiz chip had no destination; this is
+ * the single question the file draws, with its answered state, and "Continue"
+ * hands the student back rather than into a second question. A whole quiz loop
+ * is a different piece of work and `sprint-context.md` has not scoped one.
+ *
+ * THE HEADER IS THE RECALL HEADER, because the frame draws the recall header:
+ * ✕, a progress bar, the XP count. Same control in the same place doing the
+ * same job, so it is the same component — the build-screen skill's rule about
+ * a control in the same position runs both ways.
+ *
+ * A WRONG ANSWER STILL REVEALS THE RIGHT ONE. The frame only draws the correct
+ * case, so this is a decision rather than a reading: marking the chosen option
+ * wrong and leaving the student to guess which was right would make the one
+ * screen that teaches teach nothing. Both are marked once the answer is in.
+ *
+ * THE OPTIONS ARE BUILT HERE, not from `button`. A quiz option is a tall
+ * card-shaped control with a correct/wrong state, and `button` is a pill with
+ * neither. Logged in component-gaps.md.
+ */
+export function QuizScreen({
+  question = 'A cell copies its whole playbook before it splits. Why?',
+  options = [
+    { label: 'So both new cells get the same instructions', correct: true },
+    { label: 'So the cell can grow bigger first' },
+  ],
+  chosen = null,
+  progress = 20,
+  progressText = '1 of 5',
+  xp = 2,
+  onAnswer,
+  onContinue,
+  onWhy,
+  onFeedback,
+  onExit,
+}: QuizScreenProps) {
+  const answered = chosen !== null && chosen !== undefined;
+  const right = answered ? Boolean(options[chosen]?.correct) : false;
+
+  return (
+    <Screen
+      topNavigation={
+        <RecallHeader progress={progress} progressText={progressText} xp={xp} onExit={onExit} />
+      }
+      middleContent={
+        <div className="knw-quiz">
+          <div className="knw-quiz__ask">
+            <MascotSlot size="XL" label="Knowie, asking">
+              <Knowie pose="standby" />
+            </MascotSlot>
+            <p className="knw-quiz__question">{question}</p>
+          </div>
+
+          <div className="knw-quiz__options">
+            {options.map((o, i) => {
+              /* Resting until an answer is in. After that the picked option
+                 carries its verdict and the right one is always shown. */
+              const state = !answered
+                ? 'Resting'
+                : o.correct
+                  ? 'Correct'
+                  : i === chosen
+                    ? 'Wrong'
+                    : 'Resting';
+              return (
+                <button
+                  key={o.label}
+                  type="button"
+                  className="knw-quiz__option"
+                  data-state={state}
+                  /* Locked once answered — a second tap cannot change a
+                     verdict the student has already been given. */
+                  disabled={answered}
+                  onClick={onAnswer ? () => onAnswer(i) : undefined}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      }
+      bottomContent={
+        answered ? (
+          <div className="knw-quiz__result" data-verdict={right ? 'Correct' : 'Wrong'}>
+            <div className="knw-quiz__result-head">
+              {/* The system's own verdict chip, relabelled — Figma says
+                  "Nice!", and `chipFeedback` documents `label` for exactly
+                  this. No second drawing of a tick. */}
+              <ChipFeedback
+                verdict={right ? 'Correct' : 'Wrong'}
+                label={right ? 'Nice!' : 'Not quite'}
+              />
+              {onFeedback ? (
+                <div className="knw-entry__feedback-row">
+                  <Chips size="S" color="Primary" active="False" Text="👍" showLeftIcon={false} showRightIcon={false} onPress={() => onFeedback(true)} />
+                  <Chips size="S" color="Primary" active="False" Text="👎" showLeftIcon={false} showRightIcon={false} onPress={() => onFeedback(false)} />
+                </div>
+              ) : null}
+            </div>
+
+            <ButtonGroup variant="Horizontal" size="M">
+              <Button variant="Secondary" size="M" CTA="Why?" onClick={onWhy} />
+              <Button variant="Primary" size="M" CTA="Continue" onClick={onContinue} />
+            </ButtonGroup>
+          </div>
+        ) : undefined
       }
     />
   );
@@ -960,6 +1329,18 @@ export function RecallSkip({
   onSkip,
   skipLabel = 'Skip question',
 }: Pick<RecallEscapesProps, 'onSkip' | 'skipLabel'>) {
+  /* NO HANDLER, NO CONTROL. Without this the button rendered anyway with
+     `onClick={undefined}` — present, focusable, announced to a screen reader as
+     a button, and doing nothing when tapped. A control that lies about being a
+     control is worse than an absent one, and it made omitting the prop look
+     like it omitted the skip when it did not.
+
+     Every screen that means to offer skip passes a handler, so this changes
+     nothing that exists; it makes leaving the prop off mean what it reads as.
+     The turn reached from the reveal is the first caller to rely on it — see
+     `app/recall/recording` and `app/recall/text-fallback`. */
+  if (!onSkip) return null;
+
   return (
     <div className="knw-recall__skip">
       <button type="button" className="knw-recall__skip-control" onClick={onSkip}>
@@ -1071,7 +1452,7 @@ export interface AnswerSentScreenProps extends RecallEscapesProps {
  * beats, so the flash does not read as a layout jump.
  */
 export function AnswerSentScreen({
-  transcript = '"...context and... being critical of sources. Primary source is available in archives."',
+  transcript = '"It was when Britain kept a pease? with Hitler to avoid a war, I think."',
   sent: sentProp,
   onSend,
   onRetry,
@@ -1229,13 +1610,34 @@ export function AnswerSentScreen({
 
 export interface TextFallbackScreenProps extends Pick<RecallEscapesProps, 'onSkip' | 'skipLabel'> {
   prompt?: ReactNode;
-  /** What the student has typed so far. Figma shows a half-written answer. */
+  /** What the student has typed. */
   answer?: string;
+  /**
+   * Which beat of the typing turn this is.
+   *
+   * THE SCREEN HAD ONE STATE AND THE TURN HAS THREE. It always drew a finished
+   * answer sitting in the composer with Send live — so there was no picture of
+   * the answer being written, and none of it having gone. A typed turn is:
+   *
+   *   Typing  the answer is going in, caret up, nothing sendable yet
+   *   Ready   the answer is complete and Send is live
+   *   Sent    it has left the composer and become the student's message
+   *
+   * `Sent` is what Figma's `text fallback` frame actually draws: the answer is
+   * a message in the thread and the composer has reset to a placeholder. The
+   * build was drawing it in the box instead, which is the Ready beat.
+   */
+  state?: 'Typing' | 'Ready' | 'Sent';
+  /** What the composer offers once the answer has gone. Figma's own line. */
+  placeholder?: string;
   /** The student's initial, on the avatar beside their own message. */
   initial?: string;
   onSend?: () => void;
   /** Back to the voice path — the student is never locked into text either. */
   onUseVoice?: () => void;
+  /** Where the turn is in the session, for the header's bar. */
+  progress?: number;
+  progressText?: string;
   onExit?: () => void;
 }
 
@@ -1266,18 +1668,31 @@ export interface TextFallbackScreenProps extends Pick<RecallEscapesProps, 'onSki
  * of the set (XL 64, 2XL 120, 3XL 200, 4XL 320). `XL` is used.
  */
 export function TextFallbackScreen({
-  prompt = 'Could you explain what the Neolithic Revolution was and why it marked such a significant turning point for early human societies?',
-  answer = 'Neolithic settelment is',
+  /* Figma's own strings, and now the folder's subject. The defaults described
+     the Neolithic Revolution while the session asked about World War II — and
+     the route never passed `answer` at all, so every real student typing an
+     answer watched "Neolithic settelment is" appear in the box. A fixture
+     standing in for live state, the same shape as the summary's demo data. */
+  prompt = 'Could you explain what were the main causes of World War II, and how did the Treaty of Versailles contribute to the situation?',
+  answer = 'The main causes of World War II included the harsh terms of the Treaty of Versailles, economic hardship, the rise of Nazi Germany and Adolf Hitler, and aggressive expansion by Germany,',
+  state = 'Ready',
+  placeholder = 'Tell me about why Germany attacked Poland in 1939?',
   initial = 'L',
   onSend,
   onUseVoice,
+  progress = 0,
+  progressText = '1 of 4',
   onExit,
   onSkip,
   skipLabel,
 }: TextFallbackScreenProps) {
+  const sent = state === 'Sent';
+
   return (
     <Screen
-      topNavigation={<RecallHeader progress={0} progressText="0 of 3" onExit={onExit} />}
+      topNavigation={
+        <RecallHeader progress={progress} progressText={progressText} onExit={onExit} />
+      }
       middleContent={
         <div className="knw-recall knw-recall--chat">
           <div className="knw-recall__ask">
@@ -1300,13 +1715,18 @@ export function TextFallbackScreen({
             <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
           </div>
 
-          {/* The student's turn, mirrored right and given the surface. */}
-          <div className="knw-recall__answer">
-            <p className="knw-recall__answer-text">{answer}</p>
-            <span className="knw-recall__avatar" aria-hidden="true">
-              {initial}
-            </span>
-          </div>
+          {/* The student's turn, mirrored right and given the surface.
+              ONLY ONCE IT HAS BEEN SENT. An answer still in the composer is
+              not yet a message: drawing it in both places at once said the
+              student had said something they had not finished saying. */}
+          {sent ? (
+            <div className="knw-recall__answer">
+              <p className="knw-recall__answer-text">{answer}</p>
+              <span className="knw-recall__avatar" aria-hidden="true">
+                {initial}
+              </span>
+            </div>
+          ) : null}
         </div>
       }
       bottomContent={
@@ -1320,11 +1740,19 @@ export function TextFallbackScreen({
               draws the mic — so `onSend` had been wired to the LEADING control,
               which is labelled "Add attachment". A typed answer could not be
               sent, and the button that claimed to attach a file submitted it. */}
-          <ChatInput
-            status="Ready to send"
-            value={answer}
-            onTrailingPress={onSend}
-          />
+          {/* THE COMPOSER IS THE STATE. Typing draws the caret against the
+              words going in and offers no Send, because there is nothing
+              finished to send. Ready holds the whole answer with Send live.
+              Sent is empty again — the answer has become the message above —
+              and carries Figma's own placeholder, unwired, so it draws no
+              trailing control at all. */}
+          {state === 'Typing' ? (
+            <ChatInput status="Typing" placeholder={answer} />
+          ) : sent ? (
+            <ChatInput status="Inactive" placeholder={placeholder} />
+          ) : (
+            <ChatInput status="Ready to send" value={answer} onTrailingPress={onSend} />
+          )}
           {/* THE KEYBOARD IS DRAWN, NOT JUST RESERVED.
 
               This was an empty 342px box on the reasoning that the real
@@ -1684,6 +2112,16 @@ export function PermissionDeniedScreen({
 
 export interface MisheardScreenProps extends Pick<RecallEscapesProps, 'onTypeAnswer'> {
   transcript?: string;
+  /**
+   * Where the student is in the session.
+   *
+   * THE HEADER WAS HARDCODED. This screen passed nothing, so the bar read
+   * "0 of 4" whichever term the student was actually on — misheard on term 3,
+   * told they had answered none. Every other turn in the loop computes these
+   * from the session; this one now takes them the same way.
+   */
+  progress?: number;
+  progressText?: string;
   /** The student says the transcript is wrong — re-record without penalty. */
   onMisheard?: () => void;
   /** The student confirms the transcript — judge it as-is. */
@@ -1719,7 +2157,9 @@ export interface MisheardScreenProps extends Pick<RecallEscapesProps, 'onTypeAns
  * recorded miss.
  */
 export function MisheardScreen({
-  transcript = '"...context and... being critical of sources. Primary source is available in archives."',
+  transcript = '"It was when Britain kept a pease? with Hitler to avoid a war, I think."',
+  progress = 0,
+  progressText = '1 of 4',
   onMisheard,
   onConfirmed,
   onRetry,
@@ -1728,7 +2168,9 @@ export function MisheardScreen({
 }: MisheardScreenProps) {
   return (
     <Screen
-      topNavigation={<RecallHeader progress={0} progressText="0 of 4" onExit={onExit} />}
+      topNavigation={
+        <RecallHeader progress={progress} progressText={progressText} onExit={onExit} />
+      }
       middleContent={
         <div className="knw-recall">
           <div className="knw-recall__mascot">
@@ -1870,11 +2312,22 @@ export interface IdleScreenProps extends RecallEscapesProps {
  * renders, so the node is followed.
  */
 export function IdleScreen({
-  intro = "Welcome to your study session on world history. Let's start with the foundations of human development.",
+  /* NO DEFAULT, BECAUSE ABSENCE IS THE COMMON CASE. Knowie's welcome belongs
+     to the session, not to every turn: only the first term authors an `intro`,
+     so the route passes `undefined` for the other three — and a default here
+     filled that silence with "Welcome to your study session ... let's start
+     with the foundations of human development" on terms 2, 3 and 4. Skipping
+     to the last question greeted the student three questions in, under a line
+     naming a different term's topic.
+
+     Same shape as the summary screen's demo-data default: a fixture standing
+     in for real state on a live route. A story that wants the welcome passes
+     it. */
+  intro,
   prompt = (
     <>
-      Could you explain what the <strong>Neolithic Revolution</strong> was and why it marked such
-      a significant turning point for early human societies?
+      What were the major <strong>turning points</strong> of World War II, and why were they
+      significant?
     </>
   ),
   progress = 0,
@@ -2039,7 +2492,7 @@ export interface ProcessingScreenProps {
  * that needs a motion scale, and it stays static until one exists.
  */
 export function ProcessingScreen({
-  transcript = '"...context and... being critical of sources. Primary source is available in archives."',
+  transcript = '"It was when Britain kept a pease? with Hitler to avoid a war, I think."',
   progress = 0,
   progressText = '1 of 4',
   onDone,
@@ -2160,14 +2613,14 @@ export function ResultScreen({
   rung = 'hint1',
   question = (
     <>
-      Explain what <strong>historical thinking</strong> means, in your own words.
+      What was <strong>appeasement</strong>, and why did it fail?
     </>
   ),
-  transcript = '"It\'s about putting events in the right order and remembering what happened when."',
+  transcript = '"It was when Britain and France kept giving Hitler what he asked for to avoid another war."',
   hint = (
     <>
-      You&rsquo;ve got the sequence idea. But historical thinking goes further than ordering events
-      — it&rsquo;s about interrogating why sources exist and what biases they carry.
+      Chamberlain came back from a meeting in 1938 holding a piece of paper and promising
+      &ldquo;peace for our time&rdquo;. Which city, and what had just been handed over?
     </>
   ),
   hintLabel = 'Hint 1',
@@ -2364,7 +2817,7 @@ export interface CorrectScreenProps extends Pick<RecallEscapesProps, 'onTypeAnsw
  * `Idle` and the label comes with it. It is captioned for what it does here.
  */
 export function CorrectScreen({
-  transcript = '"Historical thinking is the process of critically analyzing evidence to understand the past, rather than just memorizing facts or dates."',
+  transcript = '"Stalingrad and D-Day, mainly. Stalingrad is where the German advance east finally broke, and D-Day put an army back into western Europe so Germany was fighting both sides at once."',
   score = '100%',
   progress = 0,
   progressText = '1 of 4',
@@ -2456,7 +2909,7 @@ export interface CorrectFeedbackScreenProps extends Pick<RecallEscapesProps, 'on
  * one model-answer card rather than two is worth it.
  */
 export function CorrectFeedbackScreen({
-  answer = 'Historical thinking is the process of critically analyzing evidence to understand the past, rather than just memorizing facts or dates. It involves placing events within their specific context, identifying potential biases, and evaluating multiple perspectives to build a reasoned interpretation.',
+  answer = 'Stalingrad, Midway and D-Day are the three usually named. Each one ended an advance and started a retreat: Stalingrad stopped Germany in the east, Midway broke Japan’s naval initiative in the Pacific, and D-Day opened the western front Germany could no longer hold on two sides.',
   progress = 0,
   progressText = '1 of 4',
   onNextQuestion,
@@ -2538,10 +2991,11 @@ export interface RevealScreenProps extends Pick<RecallEscapesProps, 'onTypeAnswe
 export function RevealScreen({
   question = (
     <>
-      Explain what <strong>historical thinking</strong> means, in your own words.
+      What <strong>new order</strong> did the Allies build after 1945, and what was it meant to
+      prevent?
     </>
   ),
-  answer = 'Historical thinking is the process of critically analyzing evidence to understand the past, rather than just memorizing facts or dates. It involves placing events within their specific context, identifying potential biases, and evaluating multiple perspectives to build a reasoned interpretation.',
+  answer = 'The United Nations, the Bretton Woods institutions and the division of Germany between the occupying powers. All of it was built against the memory of 1919: a settlement that punished without rebuilding, and left no standing forum to stop the next crisis.',
   progress = 0,
   progressText = '1 of 4',
   onSayItBack,
@@ -2558,10 +3012,14 @@ export function RevealScreen({
           <HintLadder rung="reveal" />
           <p className="knw-recall__askbar">{question}</p>
 
+          {/* ONE BLEED, LIKE EVERY SIBLING. `knw-recall__bleed` clears the
+              slot's gutter and re-applies the card's own, so it is a transform
+              that must be applied exactly once. Nested, it compounded: the card
+              measured 430px on a 390px screen, hanging 20px off each edge and
+              clipped by an ancestor's overflow rather than scrolling, so
+              nothing about it looked broken. The block pull doubled with it. */}
           <div className="knw-recall__bleed">
-            <div className="knw-recall__bleed">
             <RecallResponseCard State="Reveal" answerText={answer} />
-          </div>
           </div>
 
           {/* NO "NEXT QUESTION". The student cannot move on without answering
@@ -2613,7 +3071,7 @@ export interface WrongScreenProps extends Pick<RecallEscapesProps, 'onTypeAnswer
  * ladder left.
  */
 export function WrongScreen({
-  transcript = '"It was a law that, um, stopped people from being treated differently based on their race."',
+  transcript = '"The United Nations. I am not sure about the rest of it."',
   missingItems,
   progress = 0,
   progressText = '1 of 4',
@@ -2690,12 +3148,12 @@ export interface ComparisonScreenProps {
  * again or to try it again.
  */
 export function ComparisonScreen({
-  question = 'What was the Civil Rights Act of 1964?',
+  question = 'What new order did the Allies build after 1945, and what was it meant to prevent?',
   answerPoints = [
-    'The Civil Rights Act of 1964 was a landmark federal law that outlawed discrimination based on race, color, religion, sex, or national origin.',
-    'It ended unequal application of voter registration requirements and racial segregation in schools, the workplace, and facilities that served the general public.',
+    'The United Nations, the Bretton Woods institutions, and the division of Germany between the occupying powers.',
+    'All of it was built against the memory of 1919 — a settlement that punished without rebuilding, and left no standing forum to stop the next crisis.',
   ],
-  transcript = '"It was a law that, um, stopped people from being treated differently based on their race. I think it also had something to do with schools and, like, public places."',
+  transcript = '"The UN, and Germany occupied rather than just fined — because 1919 punished and walked away."',
   onRevise,
   onTryAgain,
   onExit,
@@ -2776,6 +3234,10 @@ export function ComparisonScreen({
         </div>
       }
       bottomContent={
+        /* Revising always leads here. This screen is reached only after a miss
+           that ran the whole ladder out, so there is no reading of it where
+           another attempt is the better offer — unlike the summary, which sees
+           a whole session and asks the student how it felt. */
         <ButtonGroup variant="Vertical" size="M">
           <Button variant="Primary" size="M" CTA="Revise now" onClick={onRevise} />
           <Button variant="Secondary" size="M" CTA="Try again" onClick={onTryAgain} />
@@ -2789,11 +3251,27 @@ export function ComparisonScreen({
 /* Session rating — asked before the score, never after                */
 /* ------------------------------------------------------------------ */
 
-/** Figma's three rows, in Figma's order: least confident first. */
+/**
+ * Figma's three rows, ordered as a scale: least confident first.
+ *
+ * THE COMMENT SAID THIS AND THE ARRAY DID NOT. The order was low, high,
+ * medium — "I need to practice", "pretty confident", "somewhat less
+ * confident" — so the three rows were three unrelated statements rather than
+ * positions on a line. A scale is read by where an option SITS: a student who
+ * knows they are somewhere in the middle should be able to reach for the
+ * middle row without reading all three. Out of order, every answer costs a
+ * full re-read, which is the opposite of what a one-tap self-report is for.
+ *
+ * Reordered low → medium → high. Figma lists them in its own order; this is a
+ * deliberate departure, because the rows are a scale in meaning whatever order
+ * they sit in the file.
+ *
+ * "for most part" also gained its article.
+ */
 export const RATING_OPTIONS = [
   'I need to practice',
-  'I am pretty confident for most part',
   'Somewhat less confident',
+  'I am pretty confident for the most part',
 ] as const;
 
 export type RatingOption = (typeof RATING_OPTIONS)[number];
@@ -2850,7 +3328,10 @@ export interface SessionRatingScreenProps {
  *    real variant, and the two agree.
  */
 export function SessionRatingScreen({
-  topics = ['World War II', 'American Colonial History', 'Civil Rights Movement'],
+  /* The shelf's own folders. "American Colonial History" was never one of
+     them, so the one screen that asks what the student wants to revise next
+     offered something the app cannot open. */
+  topics = ['World War II', 'The Cold War', 'Civil Rights Movement'],
   value: valueProp,
   onChange,
   onContinue,
@@ -2955,6 +3436,21 @@ export interface SummaryScreenProps {
   /** What the session covered. Figma: "Civil Rights Movement · 10 concepts". */
   topic?: string;
   terms?: SummaryTerm[];
+  /**
+   * What the student said about themselves on the rating screen, one screen
+   * back. `null` when they declined to answer, which is allowed.
+   *
+   * THE SECOND OPINION, AND IT IS ALLOWED TO DISAGREE. Everything else on this
+   * screen sorts terms by what the SCRIPT saw: passed, hinted, missed. This is
+   * what the STUDENT saw. Where the two agree it changes nothing; where they
+   * disagree it is the more useful of the two, because a term that only landed
+   * with a hint and left the student unsure is precisely the one they will
+   * fail on next week.
+   *
+   * So `low` moves the hinted passes into the review list. Not a nag — the
+   * student asked for it, in the only question this loop asks them.
+   */
+  confidence?: 'low' | 'medium' | 'high' | null;
   /** Back to the topic breakdown with the weak terms marked. */
   onRevise?: () => void;
   /** Run the weak terms back through the ladder. */
@@ -2962,10 +3458,10 @@ export interface SummaryScreenProps {
 }
 
 const SUMMARY_DEMO: SummaryTerm[] = [
-  { title: 'Primary sources', passedAt: 'attempt1', skipped: false },
-  { title: 'Historical thinking', passedAt: 'hint1', skipped: false },
-  { title: 'The Neolithic Revolution', passedAt: 'attempt1', skipped: false },
-  { title: 'Historiography', passedAt: null, skipped: false },
+  { title: 'Turning points', passedAt: 'attempt1', skipped: false },
+  { title: 'Appeasement', passedAt: 'hint1', skipped: false },
+  { title: 'Total war', passedAt: 'attempt1', skipped: false },
+  { title: 'The post-war order', passedAt: null, skipped: false },
 ];
 
 /**
@@ -2994,8 +3490,9 @@ const SUMMARY_DEMO: SummaryTerm[] = [
  * design-system.md.
  */
 export function SummaryScreen({
-  topic = 'World history · 4 concepts',
+  topic = 'World War II · 4 concepts',
   terms = SUMMARY_DEMO,
+  confidence = null,
   onRevise,
   onTryAgain,
 }: SummaryScreenProps) {
@@ -3005,9 +3502,24 @@ export function SummaryScreen({
   const missed = terms.filter((t) => t.passedAt === null && !t.skipped);
   const skipped = terms.filter((t) => t.skipped);
 
+  /* THE STUDENT'S OWN ANSWER DECIDES WHAT COUNTS AS UNFINISHED. Said they need
+     practice, and the terms that only landed with a hint join the review list
+     — they passed, and the student has just said they do not trust them. The
+     strong list keeps the unaided passes, which are the ones nobody is
+     arguing about. */
+  const wantsMore = confidence === 'low';
+  const strong = wantsMore ? unaided : passed;
+
   /* Skipped first: a term the student could not start is the clearest gap they
-     have, which is why sprint-context.md puts it at the head of the list. */
-  const review = [...skipped, ...missed];
+     have, which is why sprint-context.md puts it at the head of the list.
+     Hinted passes come last — they are the softest kind of gap. */
+  const review = wantsMore ? [...skipped, ...missed, ...hinted] : [...skipped, ...missed];
+
+  /* WHICH WAY OUT LEADS. Revising is the primary action for anyone who is not
+     sure; someone who says they are confident is offered another go instead.
+     The two controls never change, only which one is the filled one — the
+     student always has both. */
+  const reviseLeads = confidence !== 'high';
 
   return (
     <Screen
@@ -3026,6 +3538,9 @@ export function SummaryScreen({
                 here first and logged in component-gaps.md, which is what that
                 list is for. Figma's own order: help taken, then unaided, then
                 what got away. */}
+            {/* `missed` counts the review list, so when a hinted pass moves
+                into it the tile moves with it — the number under the ring and
+                the list below it are the same claim. */}
             <SummaryStatTile
               hinted={hinted.length}
               perfect={`${unaided.length}/${terms.length}`}
@@ -3036,7 +3551,7 @@ export function SummaryScreen({
           {/* Figma nests the review block inside StrongAreas, which is what
               keeps the two lists tighter to each other than to the card above. */}
           <div className="knw-summary__groups">
-            {passed.length > 0 && (
+            {strong.length > 0 && (
               <section className="knw-summary__group">
                 <h2 className="knw-summary__group-label">You are strong in</h2>
                 {/* ListItemGroup, not a div: `ListItem` renders an <li>, so its
@@ -3045,7 +3560,7 @@ export function SummaryScreen({
                     `strongCard` itself, so the screen adds no styling of its
                     own on top. */}
                 <ListItemGroup label="Topics you recalled well">
-                  {passed.map((t, i) => (
+                  {strong.map((t, i) => (
                     <ListItem key={t.title} variant="Strong" label={t.title} showDivider={i > 0} />
                   ))}
                 </ListItemGroup>
@@ -3071,8 +3586,18 @@ export function SummaryScreen({
            to dismiss. `recall-summary.png` puts them flat at the bottom, and
            that is what the slot is for. */
         <ButtonGroup variant="Vertical" size="M">
-          <Button variant="Primary" size="M" CTA="Revise now" onClick={onRevise} />
-          <Button variant="Secondary" size="M" CTA="Try again" onClick={onTryAgain} />
+          <Button
+            variant={reviseLeads ? 'Primary' : 'Secondary'}
+            size="M"
+            CTA="Revise now"
+            onClick={onRevise}
+          />
+          <Button
+            variant={reviseLeads ? 'Secondary' : 'Primary'}
+            size="M"
+            CTA="Try again"
+            onClick={onTryAgain}
+          />
         </ButtonGroup>
       }
     />
@@ -3240,6 +3765,18 @@ export interface LessonScreenProps {
   practiceTime?: string;
   /** Straight back into the recall loop. */
   onExplainOutLoud?: () => void;
+  /**
+   * Back to the shelf, for a folder with no speaking set behind it.
+   *
+   * WITHOUT THIS THE SCREEN ENDED AT ITS OWN LAST PARAGRAPH. A folder that has
+   * no scripted session draws no practice card — correctly, since the card
+   * would start a different folder's questions — and what was left was reading
+   * with nothing under it. The back control in the bar is a way out, but a
+   * screen whose only forward motion is the top-left corner is a screen that
+   * has stopped. This says plainly why there is no card, and offers the thing
+   * that does have one.
+   */
+  onBrowseFolders?: () => void;
   onBack?: () => void;
 }
 
@@ -3270,14 +3807,15 @@ export function LessonScreen({
      session showed "Primary sources" over a paragraph about the Voting Rights
      Act. Both now come from the term the screen is most likely to be
      revising. */
-  title = 'Primary sources',
+  title = 'Turning points',
   conceptCount = 9,
   estimatedTime = '~18 min',
   difficulty = 'Medium',
-  body = 'A primary source is evidence created at the time of the event by someone connected to it — a letter, a photograph, a treaty, a diary. It has not been filtered through anyone else’s interpretation.',
-  practiceTopic = 'World history foundations',
+  body = 'Stalingrad, Midway and D-Day are the three usually named. Each one ended an advance and started a retreat: Stalingrad stopped Germany in the east, Midway broke Japan’s naval initiative in the Pacific, and D-Day opened the western front Germany could no longer hold on two sides.',
+  practiceTopic = 'World War II',
   practiceTime = '~2-3 min',
   onExplainOutLoud,
+  onBrowseFolders,
   onBack,
 }: LessonScreenProps) {
   const stats: Array<[string, string]> = [
@@ -3290,8 +3828,15 @@ export function LessonScreen({
     <Screen
       topNavigation={
         <div className="knw-lesson__bar">
+          {/* A DRAWN CHEVRON, NOT THE CHARACTER `‹`. See `ChevronLeftIcon`:
+              this was a text glyph, which is the one defect design-system.md
+              had already recorded as closed. Wrapped in the same icon box the
+              app bar's controls use, so it sizes off the icon scale rather
+              than off the font. */}
           <button type="button" className="knw-recall__exit" aria-label="Back" onClick={onBack}>
-            ‹
+            <span className="knw-entry__appbar-icon">
+              <ChevronLeftIcon />
+            </span>
           </button>
         </div>
       }
@@ -3312,12 +3857,38 @@ export function LessonScreen({
           </dl>
 
           <p className="knw-lesson__body">{body}</p>
+
+          {/* KNOWIE AT SCREEN LEVEL, NOT IN THE CARD. This sat inside
+              `.knw-lesson__eol` — a mascot nested in a card, which
+              design-system.md's Never list forbids outright, and the same
+              violation the Explain out loud card was carrying. Out here it is
+              a child of the screen's own column, exactly as Home, Compose and
+              the take screen place it, and the card below is a card.
+
+              Only where there is a set to practise: the mascot is the
+              invitation, so on a folder with nothing behind it there is
+              nothing for Knowie to be waiting for. */}
+          {onExplainOutLoud ? (
+            <div className="knw-lesson__mascot">
+              <MascotSlot size="2XL" label="Knowie, ready">
+                <Knowie pose="standby" />
+              </MascotSlot>
+            </div>
+          ) : null}
         </div>
       }
       bottomContent={
         /* The card is a button, not a card with a button in it — the whole
            block is the target, which is what Figma draws and what a thumb
-           expects at that size. */
+           expects at that size.
+
+           DRAWN ONLY WHERE THERE IS SOMETHING TO PRACTISE. It rendered
+           unconditionally, so a lesson opened for a folder with no scripted
+           session offered a full-width "Explain out loud" card that did
+           nothing — the largest dead control in the build. Unwired it is not
+           there, and `Screen` gives the body the bottom safe-area inset in its
+           place. */
+        onExplainOutLoud ? (
         <button type="button" className="knw-lesson__eol" onClick={onExplainOutLoud}>
           <span className="knw-lesson__eol-body">
             <span className="knw-lesson__eol-head">
@@ -3333,10 +3904,24 @@ export function LessonScreen({
             </span>
             <span className="knw-lesson__eol-topic">{practiceTopic}</span>
           </span>
-          <MascotSlot size="XL">
-            <Knowie pose="standby" />
-          </MascotSlot>
         </button>
+        ) : onBrowseFolders ? (
+          /* No speaking set behind this folder. Say so, and offer the one that
+             has one — a reading screen with nothing under it is not a dead end
+             in the strict sense, since the bar still goes back, but it is a
+             screen that stops. */
+          <div className="knw-lesson__no-set">
+            <p className="knw-lesson__no-set-note">
+              No speaking set for this folder yet. World War II has one ready.
+            </p>
+            <Button
+              variant="Secondary"
+              size="M"
+              CTA="Choose another folder"
+              onClick={onBrowseFolders}
+            />
+          </div>
+        ) : undefined
       }
     />
   );

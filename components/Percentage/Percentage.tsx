@@ -60,6 +60,13 @@ export function Percentage({
       {...rest}
     >
       <svg className="knw-percentage__ring" aria-hidden="true" focusable="false">
+        {/* THE TRACK IS WHAT MAKES ZERO A RING. The arc alone is the score, so
+            a session where nothing landed drew `0 100` — a dash of no length,
+            and the score floated in an empty frame with no ring around it at
+            all. Exactly the session that most needs the shape to hold. Drawn
+            first so the arc paints over it; no dash array, so it is the whole
+            circle at every value. */}
+        <circle className="knw-percentage__track" pathLength={100} />
         {/* pathLength normalises the circumference to 100, so the dash array is
             a percentage and the geometry stays entirely in the stylesheet. */}
         <circle

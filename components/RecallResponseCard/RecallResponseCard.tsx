@@ -356,7 +356,21 @@ export function RecallResponseCard({
           Figma sets it to "Skip Question" on the hint rungs, where it is the
           screen's only skip — but the states that merely report a verdict have
           nothing to tap, and their stories assert exactly that. */}
-      {State === 'Reveal' ? null : onNextAction ? (
+      {/* WIRED OR ABSENT. THERE IS NO THIRD FORM.
+          This used to fall back to `<p className="knw-rrc__next">{next}</p>` —
+          the same words, in the same place, in the same type, with no handler.
+          The stylesheet says so itself: the two forms "are indistinguishable on
+          screen and differ only in what a screen reader and a keyboard get".
+
+          So `misheard` drew "Next question" exactly where `correct` draws a
+          working link, and it did nothing. The screen's own comment explains
+          why it passes no handler — "a skip here would trade a retry that costs
+          nothing for a recorded miss" — and the fallback quietly overrode that
+          intent. The ladder card did the same with "Reveal answer".
+
+          Omitting it is the rule this build keeps everywhere else: a control
+          that does nothing when tapped is worse than one that is not there. */}
+      {State === 'Reveal' || !onNextAction ? null : (
         <button
           type="button"
           className="knw-rrc__next knw-rrc__next--button"
@@ -364,8 +378,6 @@ export function RecallResponseCard({
         >
           {next}
         </button>
-      ) : (
-        <p className="knw-rrc__next">{next}</p>
       )}
     </div>
   );

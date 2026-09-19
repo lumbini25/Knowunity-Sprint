@@ -94,12 +94,25 @@ export const Default: Story = {
     await expect(ss.letterSpacing).toBe('-0.28px');
     await expect(ss.color).toBe('rgb(244, 242, 255)');
 
-    // The label is body/S-regular in the tertiary colour.
+    // The label is body/S-regular in text/SECONDARY, not the text/tertiary
+    // Figma binds. At 18px regular it needs 4.5:1, and tertiary measures
+    // 4.36:1 on the summary card it actually sits on — a miss by 0.14 that
+    // `npm run a11y` cannot see, because axe returns "incomplete" rather than
+    // a violation for text over the ring's SVG. Secondary is the next step up
+    // the same ramp at 7.26:1. See the CONTRAST NOTE in design-system.md.
     const ls = getComputedStyle(canvas.getByText('Recalled'));
     await expect(ls.fontSize).toBe('18px');
     await expect(ls.lineHeight).toBe('24px');
     await expect(ls.fontWeight).toBe('400');
-    await expect(ls.color).toBe('rgba(245, 243, 255, 0.48)');
+    await expect(ls.color).toBe('rgba(245, 243, 255, 0.68)');
+
+    // The track is the ring at rest: same geometry as the arc, painted at
+    // every value. Without it the ring IS the score, so a fully-missed
+    // session drew nothing at all — see the value=0 story.
+    const track = canvasElement.querySelector('.knw-percentage__track') as SVGCircleElement;
+    await expect(getComputedStyle(track).strokeWidth).toBe('8px');
+    await expect(getComputedStyle(track).stroke).toBe('rgba(255, 255, 255, 0.1)');
+    await expect(track.getAttribute('stroke-dasharray')).toBe(null);
 
     // The ring is the token diameter and thickness.
     const ring = canvasElement.querySelector('.knw-percentage__ring') as SVGElement;
@@ -145,6 +158,21 @@ export const Empty: Story = {
     // Nothing recalled draws no arc at all.
     const arc = canvasElement.querySelector('.knw-percentage__arc') as SVGCircleElement;
     await expect(arc.getAttribute('stroke-dasharray')).toBe('0 100');
+
+    // BUT THE RING IS STILL THERE, and this story is where that has to be
+    // proved. A zero-length arc renders nothing, so before the track existed
+    // this state was a score floating in an empty 154px frame — the one
+    // session that most needs the shape to hold was the one that lost it.
+    // Asserted on the same radius as the arc, because a track that drifted
+    // off-centre would read as a wobble rather than as an unfilled ring.
+    const track = canvasElement.querySelector('.knw-percentage__track') as SVGCircleElement;
+    await expect(track).toBeTruthy();
+    const ts = getComputedStyle(track);
+    await expect(ts.stroke).toBe('rgba(255, 255, 255, 0.1)');
+    await expect(ts.r).toBe(getComputedStyle(arc).r);
+    // 113, not the ring's 121: the stroke straddles the path, so the radius
+    // pulls in by half of it and the PAINTED ring is the token diameter.
+    await expect(Math.round(track.getBoundingClientRect().width)).toBe(113);
   },
 };
 

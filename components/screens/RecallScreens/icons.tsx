@@ -468,3 +468,40 @@ export function MicIcon() {
     </svg>
   );
 }
+
+/**
+ * The lesson screen's back control.
+ *
+ * MIRRORS `ChevronRightIcon` (`FolderCard/icons.tsx`) EXACTLY — same 7×12 box,
+ * same 1.6 stroke, same round caps, same path reflected across the vertical.
+ * One concept, one drawing: the folder card's chevron points into a folder and
+ * this one points back out of one, so they are the same glyph at two
+ * rotations rather than two chevrons.
+ *
+ * WHY IT EXISTS AT ALL. The lesson's back control was the literal text
+ * character `‹`. design-system.md already records that exact defect as closed
+ * once — "the recall exit was a text ✕ ... Never a text character where an icon
+ * belongs is now a rule in the build-screen skill" — and it came back on a
+ * different screen. A font glyph tracks the type binding rather than the icon
+ * set, so it drifts in weight beside every real SVG next to it.
+ */
+export function ChevronLeftIcon() {
+  return (
+    <svg
+      viewBox="0 0 7 12"
+      width="100%"
+      height="100%"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M 6 1 L 1 6 L 6 10.99"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

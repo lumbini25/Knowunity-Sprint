@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExplainEntryScreen } from '../../../components/screens/RecallScreens/RecallScreens';
 import { SESSION } from '../../../lib/recall/script';
+import { SESSION_FOLDER } from '../../../lib/recall/folders';
 
 /* The set is "generated" for a beat before it can be tapped. Mocked latency,
    like the judge's — a named constant with a comment saying so, not a motion
@@ -30,14 +31,18 @@ export default function Page() {
       generating={generating}
       /* The set is the script, so the card is not describing something the
          session will not deliver. */
-      setTitle={`World history foundations · ${SESSION.length} concepts`}
+      setTitle={`${SESSION_FOLDER.title} · ${SESSION.length} concepts`}
       /* THE CARD PICKS A FOLDER, IT DOES NOT START THE LADDER. The end-to-end
          prototype is explicit: `explain out ready -> choose folder screen ->
          detailed page -> idle`. This used to push `/recall/idle` directly,
          which skipped both — the student never chose what they were about to be
          tested on, and never got the last look at it that `sprint-context.md`
          calls "the difference between a test and an ambush". */
-      onStart={() => router.push('/entry/folders')}
+      /* Carries what the card offered, so the folder screen is headed with the
+         thing the student just agreed to rather than its own hardcoded title. */
+      onStart={() =>
+        router.push(`/entry/folders?topic=${encodeURIComponent(SESSION_FOLDER.title)}`)
+      }
       onBack={() => router.push('/entry')}
     />
   );

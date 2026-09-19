@@ -65,7 +65,12 @@ export default function Page() {
       progressText={`${session.termIndex + 1} of ${session.termCount}`}
       onSend={send}
       onTypeAnswer={goTo('text-fallback')}
-      onSkip={() => go(session.skip())}
+      /* Not offered on the turn reached from the reveal — the same gate, and
+         for the same reason, as `app/recall/text-fallback`. The reveal's two
+         paths both land on a turn, so leaving skip on either one puts back the
+         tap past the answer that screen says does not exist, and silently
+         rewrites a settled miss into a skip. The ✕ is still the way out. */
+      onSkip={session.rung === 'reveal' ? undefined : () => go(session.skip())}
       onExit={session.requestExit}
     />
   );

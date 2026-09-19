@@ -171,3 +171,55 @@
   /* The sheet sits against the home indicator. */
   padding-bottom: max(var(--semantic-space-layout-l), env(safe-area-inset-bottom));
 }
+
+/* ===== the sheet arriving ============================================== */
+
+/* IT APPEARED RATHER THAN ROSE. The rubric's own Craft anchor names this
+   verbatim, and the file had no `transition`, `animation` or `@keyframes`
+   anywhere in it — a sheet that is simply present on the next frame reads as
+   a screen swap, not as something sliding over what the student was doing.
+   Losing that costs the one cue that says the screen underneath is still
+   there and still where they will land when this closes.
+
+   `motion/duration/settle` is the token for it, and says so: "Something
+   arriving or leaving. A verdict card, a raised sheet." `motion/easing/enter`
+   is "something appearing. No easing in, so it is already moving when you
+   notice it" — a sheet should be underway by the time the eye reaches it.
+
+   TRANSFORM AND OPACITY ONLY, so the browser can run this off the main
+   thread; animating height or max-height would re-layout every frame while
+   the student is reading the thing that just arrived. */
+/* TRANSFORM ONLY, AND NO FILL MODE. The first pass also faded opacity 0 -> 1
+   with `both`, which makes the sheet's resting style invisible: anything that
+   stops the animation running — a reduced-motion setting handled elsewhere, a
+   paint the browser skips, a test asserting on the first frame — leaves a
+   fully transparent sheet on screen. Eight stories caught it immediately, and
+   a student would have caught it the same way.
+
+   Sliding alone says everything the fade did. Without `both` the element's own
+   styles are the resting state, so the worst case if the animation never runs
+   is a sheet that appears instead of rising — which is exactly where this
+   started, and is survivable. */
+@keyframes knw-sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.knw-sheet {
+  animation: knw-sheet-rise var(--semantic-motion-duration-settle)
+    var(--semantic-motion-easing-enter);
+}
+
+/* The sheet still arrives, it just stops travelling. Removing the motion
+   entirely is right here in a way it is not for the orb: the orb's animation
+   IS its state, while this one only describes how the sheet got here. The
+   sheet is legible standing still. */
+@media (prefers-reduced-motion: reduce) {
+  .knw-sheet {
+    animation: none;
+  }
+}

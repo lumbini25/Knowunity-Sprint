@@ -15,7 +15,7 @@ import { ComposeScreen } from '../../../components/screens/RecallScreens/RecallS
 
 /* What the student "types". Figma writes "World History/" with the caret; the
    set the session actually runs is world history, so the two agree. */
-const TOPIC = 'World history';
+const TOPIC = 'World War II';
 
 export default function Page() {
   const router = useRouter();

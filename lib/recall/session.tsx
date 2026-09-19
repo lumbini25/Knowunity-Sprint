@@ -70,6 +70,17 @@ export type Destination =
   | 'rating'
   | 'summary';
 
+/**
+ * How the student says they feel, asked once, before the score.
+ *
+ * A LEVEL, NOT THE WORDS ON THE BUTTON. The rating screen's three rows are UI
+ * copy and will be rewritten; what the session needs to remember is the
+ * position on the scale. `RATING_OPTIONS` is ordered low → medium → high for
+ * exactly this reason, so the row's index IS the level and the mapping cannot
+ * silently invert.
+ */
+export type Confidence = 'low' | 'medium' | 'high';
+
 /** What happened to one term, once it is behind the student. */
 export interface TermOutcome {
   termId: string;
@@ -139,6 +150,42 @@ export interface RecallSession {
    */
   micGranted: boolean;
   /**
+   * Whether the primer has been shown AND answered, either way.
+   *
+   * SEPARATE FROM `micGranted`, AND THE SEPARATION IS THE WHOLE POINT. One
+   * flag used to mean both "we have asked" and "they said yes", so a student
+   * who answered the primer with "Type instead" left it false — and
+   * `/recall/idle` gates the primer on it, so the primer came back every time
+   * they returned to a turn. Skipping a question lands on idle, which is why
+   * "Skip question" appeared to be wired to the permission screen: it was not,
+   * the turn underneath simply refused to render.
+   *
+   * Declining is an answer. The primer is a first-encounter screen, so it asks
+   * once and then gets out of the way; the text path stays available on every
+   * turn regardless, which is what makes declining safe.
+   */
+  micAsked: boolean;
+  /**
+   * The confidence self-report, or `null` while unanswered.
+   *
+   * IT WAS COLLECTED AND THROWN AWAY. The rating screen asked, the student
+   * answered, and nothing read it — the screen's own comment said so. That
+   * made the question a toll gate wearing a question's clothes.
+   *
+   * It earns its place by changing what the summary offers: a student who says
+   * they need practice gets their HINTED passes moved into the review list,
+   * because a term that only landed with help is exactly the one they are
+   * telling us they do not trust. The score says they passed; they say they
+   * are not sure; the review list believes them.
+   *
+   * PERSISTED, alongside the outcomes. Coming back to the summary later should
+   * show the same lists it showed then — and once the student practises again
+   * and answers differently, the lists move with them.
+   */
+  confidence: Confidence | null;
+  /** The rating screen's answer. `null` clears it — the question is optional. */
+  setConfidence: (next: Confidence | null) => void;
+  /**
    * Allow. Records the ask and lets the turn through.
    *
    * It does NOT claim the microphone works — this prototype captures no audio,
@@ -146,6 +193,13 @@ export interface RecallSession {
    * only that the student has been asked and said yes.
    */
   grantMic: () => void;
+  /**
+   * "Type instead". Records the ask WITHOUT claiming a grant.
+   *
+   * The student has answered the question the primer asked; they just answered
+   * no. Nothing else changes — every turn already carries a text fallback.
+   */
+  declineMic: () => void;
   /** ✕ on any turn. */
   requestExit: () => void;
   /** Stay — back to exactly the turn they were on, because it never left. */
@@ -225,9 +279,13 @@ interface Persisted {
    * how the feature opens.
    *
    * Real permission state lives with the OS and is never ours to remember;
-   * this only records that the ask has happened.
+   * this only records what the student answered.
    */
   micGranted: boolean;
+  /** Whether the primer has been answered at all. See `RecallSession`. */
+  micAsked: boolean;
+  /** The confidence self-report. See `RecallSession`. */
+  confidence: Confidence | null;
 }
 
 function read(): Persisted | null {
@@ -274,8 +332,10 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     takeIndex: 0,
     outcomes: [],
     micGranted: false,
+    micAsked: false,
+    confidence: null,
   });
-  const { termIndex, rung, takeIndex, outcomes, micGranted } = progress;
+  const { termIndex, rung, takeIndex, outcomes, micGranted, micAsked, confidence } = progress;
   const [verdict, setVerdict] = useState<DisplayedVerdict | null>(null);
   const [resolved, setResolved] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
@@ -308,12 +368,28 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
      most once per session and only when there is something to resume. */
   useEffect(() => {
     const saved = read();
+    if (!saved) return;
+
     /* Defaulted rather than spread blindly: a record written before
        `micGranted` existed has no such key, and `undefined` would read as
        "not asked" by luck rather than by decision. Saying so makes a
-       mid-session reload keep whatever was already answered. */
+       mid-session reload keep whatever was already answered.
+
+       `micAsked` falls back to the grant for the same reason: a record written
+       before it existed has only the grant, and a session that says the
+       student allowed is a session where they were plainly asked. Implying it
+       is better than replaying the primer at them mid-session. */
+    const restored = {
+      ...saved,
+      micGranted: saved.micGranted ?? false,
+      micAsked: saved.micAsked ?? saved.micGranted ?? false,
+      /* Absent in a record written before the rating was read by anything —
+         unanswered, which is exactly what `null` means. */
+      confidence: saved.confidence ?? null,
+    };
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (saved) setProgress({ ...saved, micGranted: saved.micGranted ?? false });
+    setProgress(restored);
   }, []);
 
   /* Skips the mount write, and only the mount write. */
@@ -630,7 +706,19 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
      the same sessionStorage record as the rung and the outcomes — one place
      that knows what this session has been through, not two. */
   const grantMic = useCallback(() => {
-    setProgress((prev) => (prev.micGranted ? prev : { ...prev, micGranted: true }));
+    setProgress((prev) =>
+      prev.micGranted && prev.micAsked ? prev : { ...prev, micGranted: true, micAsked: true },
+    );
+  }, []);
+
+  const setConfidence = useCallback((next: Confidence | null) => {
+    setProgress((prev) => (prev.confidence === next ? prev : { ...prev, confidence: next }));
+  }, []);
+
+  /* Asked and answered no. The grant stays false, which is the truth, and the
+     primer stops asking, which is the fix. */
+  const declineMic = useCallback(() => {
+    setProgress((prev) => (prev.micAsked ? prev : { ...prev, micAsked: true }));
   }, []);
 
   const requestExit = useCallback(() => setExitOpen(true), []);
@@ -670,7 +758,11 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       outcomes,
       exitOpen,
       micGranted,
+      micAsked,
+      confidence,
+      setConfidence,
       grantMic,
+      declineMic,
       requestExit,
       dismissExit,
       handOver,
@@ -689,7 +781,8 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     }),
     [
       term, termIndex, rung, rungScript, take, verdict, resolved, outcomes, exitOpen,
-      micGranted, grantMic, requestExit, dismissExit, handOver,
+      micGranted, micAsked, confidence, setConfidence, grantMic, declineMic,
+      requestExit, dismissExit, handOver,
       submit, answerByText, confirm, discard, contest, retryAfterSilence, skip, advance,
       saveAndLeave,
     ],

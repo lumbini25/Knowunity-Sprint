@@ -5,11 +5,30 @@
    records under Gaps: "Absolute-position offsets — no spatial offset tokens
    exist." Each is marked below. */
 
+/* VERTICAL PADDING ONLY, WHICH IS WHAT THE FILE SPECIFIES. The component's own
+   padding in Figma is top 16, bottom 16, left 0, right 0 — the space is for the
+   tab poking above the card and the strip below it, not a gutter. This carried
+   16 on all four sides, so the visible card lost 32px of width to a gutter the
+   component was never meant to apply.
+
+   It stacked with the screen's. `.knw-screen__middle` already pads 16 each
+   side, and `choose folder screen` (15647:11079) draws the card row at the full
+   390 with its own 16 — one gutter, applied once — giving a 358 card. Ours
+   applied both and rendered 326, which is the width `scorecard-02` recorded as
+   a prediction that measurement had disproven. It had not: the refuting
+   measurement took this element, the 358 wrapper, rather than the card inside
+   it.
+
+   THE TAB IS THE SECOND WITNESS. `.knw-folder__tab` sits at a raw `left: 33px`
+   lifted straight from Figma, where the variant has no horizontal padding — so
+   33 means 33 from the card's edge. With a 16 gutter here it was landing at 17,
+   and nothing looked broken enough to notice. */
 .knw-folder {
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  padding: var(--semantic-space-layout-l);
+  padding-block: var(--semantic-space-layout-l);
+  padding-inline: 0;
 }
 
 .knw-folder__card {
@@ -81,8 +100,42 @@
   border-radius: var(--semantic-radius-pill);
   background: var(--semantic-background-floating);
   color: var(--semantic-text-tertiary);
+}
+
+/* THE WHOLE CARD IS THE CONTROL. Laid over the card rather than wrapping it,
+   so the accessible name stays "Open World War II" instead of the card's every
+   word. Transparent at rest: it is a target, not a surface.
+
+   `inset: 0` against `.knw-folder__card`, which is already positioned for the
+   date and the tab. Last child of that card, so it paints above the band, the
+   strip and the date — anything painted after it would take the taps back. */
+.knw-folder__open {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--semantic-radius-card);
+  background: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Pressed washes the whole card, because the whole card is what was pressed.
+   Same ramp as `chips` and the quiz option — the inverse one, since this rests
+   on a card fill. */
+.knw-folder__open:active {
+  background: var(--semantic-interactive-pressed-inverse);
+}
+
+/* INSET, AND THAT IS NOT A STYLE CHOICE. `.knw-folder__card` clips to its
+   radius with `overflow: hidden`, so a ring drawn outside this button's edge
+   is cut off by its own parent and the card shows no focus at all. A negative
+   offset draws it just inside instead — the same call `.knw-recall__exit`
+   already makes for the same reason. */
+.knw-folder__open:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: calc(var(--semantic-space-layout-xxs) * -1);
 }
 
 .knw-folder__chevron-icon {
@@ -198,15 +251,20 @@
   background: linear-gradient(to right, var(--semantic-accent-magenta-bold), transparent);
 }
 
-.knw-folder--Gold .knw-folder__band,
-.knw-folder--Gold .knw-folder__tab {
-  background: var(--semantic-pro-bold);
+/* Green, not gold. The variant carried the name `Gold` while its band was
+   bound to the green variable, so this bound `pro/bold` and painted a folder
+   in the colour the system reserves for PRO. `accent/green/bold` is what the
+   file actually draws, and it sits beside blue and magenta as the third
+   decorative category accent — same role, same ramp, same shape of binding. */
+.knw-folder--Green .knw-folder__band,
+.knw-folder--Green .knw-folder__tab {
+  background: var(--semantic-accent-green-bold);
 }
 
-.knw-folder--Gold .knw-folder__date {
-  color: var(--semantic-pro-label-bold);
+.knw-folder--Green .knw-folder__date {
+  color: var(--semantic-accent-green-label-bold);
 }
 
-.knw-folder--Gold .knw-folder__strip {
-  background: linear-gradient(to right, var(--semantic-pro-bold), transparent);
+.knw-folder--Green .knw-folder__strip {
+  background: linear-gradient(to right, var(--semantic-accent-green-bold), transparent);
 }
