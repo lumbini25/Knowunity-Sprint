@@ -219,29 +219,42 @@ export interface ScriptedTerm {
 
 /**
  * Four terms, chosen to show recovery rather than only success:
- *   1  a clean pass, first attempt
- *   2  a pass after one hint            — Figma's worked example
- *   3  a low-confidence retry           — the misheard path
- *   4  a full miss through all four     — to the reveal, via nothing-heard
+ *   1  Turning points     a clean pass, first attempt
+ *   2  Appeasement        a pass after one hint   — Figma's worked example
+ *   3  Total war          a low-confidence retry  — the misheard path
+ *   4  The post-war order a full miss through all four, via nothing-heard
+ *
+ * WORLD WAR II, BECAUSE THAT IS THE FOLDER THE STUDENT CHOSE. The set used to
+ * teach method — primary sources, historiography — while the shelf offered
+ * periods, so whichever folder was opened, these four questions arrived. The
+ * content is now the folder's; the four PATHS above are unchanged, because
+ * they are the demo: every confidence, verdict and score below is the same
+ * number it was, so each screen in the loop is still reachable.
+ *
+ * THE FULL MISS IS THE POST-WAR ORDER, DELIBERATELY. Slot 4 needs a term the
+ * scripted student fails at through every rung, which means authoring four
+ * wrong answers about it. Doing that to the Holocaust — the other candidate in
+ * this folder — would be writing a student fumbling it for a demo, so the
+ * institutions got the slot instead.
  */
 export const SESSION: ScriptedTerm[] = [
   {
-    id: 'primary-source',
-    title: 'Primary sources',
+    id: 'turning-points',
+    title: 'Turning points',
     intro:
-      "Welcome to your study session on world history. Let's start with how historians handle evidence.",
+      "Welcome to your study session on World War II. Let's start with the moments the war swung on.",
     question: (
       <>
-        Could you explain what makes a source a <strong>primary source</strong>, and give an
-        example of one?
+        What were the major <strong>turning points</strong> of World War II, and why were they
+        significant?
       </>
     ),
     modelAnswer:
-      'A primary source is evidence created at the time of the event by someone connected to it — a letter, a photograph, a treaty, a diary. It has not been filtered through anyone else’s interpretation.',
+      'Stalingrad, Midway and D-Day are the three usually named. Each one ended an advance and started a retreat: Stalingrad stopped Germany in the east, Midway broke Japan’s naval initiative in the Pacific, and D-Day opened the western front Germany could no longer hold on two sides.',
     missingItems: [
-      'Firsthand connection to the event',
-      'Created at the time',
-      'Not filtered through interpretation',
+      'Names at least one turning point',
+      'Says which way the momentum shifted',
+      'Explains why that mattered to the outcome',
     ],
     rungs: [
       {
@@ -249,7 +262,7 @@ export const SESSION: ScriptedTerm[] = [
         takes: [
           {
             transcript:
-              '"A primary source is something made at the time by someone who was actually there — like a soldier’s diary from the war, rather than a textbook written about it later."',
+              '"Stalingrad and D-Day, mainly. Stalingrad is where the German advance east finally broke, and D-Day put an army back into western Europe so Germany was fighting both sides at once."',
             confidence: 0.94,
             verdict: 'Correct',
           },
@@ -261,20 +274,22 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 1',
           body: (
             <>
-              Think about the difference between a photograph of a protest and a news article
-              describing it a week later. What does the camera have that the writer does not?
+              A turning point is not just a big battle. It is the point after which one side stops
+              advancing and starts losing ground. Which battles changed the direction of travel?
             </>
           ),
         },
         takes: [
           {
-            transcript:
-              '"It\'s a source from the time, I think. Like an old book about the period."',
+            transcript: '"There were a lot of big battles. Stalingrad was one of the big ones."',
             confidence: 0.9,
             verdict: 'Partial',
             score: 55,
-            got: ['Created at the time'],
-            stillMissing: ['Firsthand connection to the event', 'Not filtered through interpretation'],
+            got: ['Names at least one turning point'],
+            stillMissing: [
+              'Says which way the momentum shifted',
+              'Explains why that mattered to the outcome',
+            ],
           },
         ],
       },
@@ -284,15 +299,16 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 2',
           body: (
             <>
-              The camera was <strong>there</strong>. Nobody stood between the event and the
-              record. That closeness is doing the work here.
+              Before Stalingrad, Germany was <strong>advancing</strong> east. After it, it was
+              retreating, and never advanced there again. That reversal is the thing being asked
+              about.
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"A primary source was made at the time by someone who was actually there — a photo, a letter, a diary. Nobody has interpreted it for you."',
+              '"Stalingrad reversed it — Germany was pushing east and after that it was falling back the whole way. Midway did the same to Japan in the Pacific."',
             confidence: 0.93,
             verdict: 'Correct',
           },
@@ -304,16 +320,16 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 3',
           body: (
             <>
-              You are being asked about two things at once: <strong>when</strong> the record was
-              made, and <strong>who</strong> made it. Both have to be true for a source to be
-              primary.
+              You are being asked two things: <strong>which</strong> moments turned the war, and{' '}
+              <strong>what</strong> they turned it from and to. Name one and say what changed
+              after it.
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"It has to be made at the time, and made by someone connected to the event. Both. A photograph of the protest, not an article about it."',
+              '"Stalingrad, Midway and D-Day. Each one ended an advance and began a retreat — that is what makes them turning points rather than just large battles."',
             confidence: 0.95,
             verdict: 'Correct',
           },
@@ -339,47 +355,43 @@ export const SESSION: ScriptedTerm[] = [
   },
 
   {
-    id: 'historical-thinking',
-    title: 'Historical thinking',
-    question: <>Explain what historical thinking means, in your own words.</>,
+    id: 'appeasement',
+    title: 'Appeasement',
+    question: (
+      <>
+        What was <strong>appeasement</strong>, and why did it fail?
+      </>
+    ),
     modelAnswer:
-      'Historical thinking is the process of critically analyzing evidence to understand the past, rather than just memorizing facts or dates. It involves placing events within their specific context, identifying potential biases, and evaluating multiple perspectives to build a reasoned interpretation.',
+      'Appeasement was the policy of conceding to Hitler’s demands in the hope that each concession would be the last — the Rhineland, Austria, then the Sudetenland at Munich in 1938. It failed because the demands were not the point: each one bought time and territory for the next, so conceding fed the thing it was meant to satisfy.',
     missingItems: [
-      'Firsthand connection to the event',
-      'Example of a primary source',
-      'Distinction from secondary sources',
+      'Concession to avoid war',
+      'Names Munich or the Sudetenland',
+      'Why conceding made war more likely',
     ],
     rungs: [
       {
         rung: 'attempt1',
         takes: [
+          /* A low-confidence take — "the app misheard me" is offered before the
+             verdict is allowed to stand. Contesting it hands back the clean
+             take below, and costs the student no rung. */
           {
-            transcript:
-              '"...context and... being critical of sources. Primary source is available in archives."',
+            transcript: '"It was when Britain kept a pease? with Hitler to avoid a war, I think."',
             confidence: 0.55,
             verdict: 'Partial',
             score: 65,
-            /* Figma's own breakdown on `partial` (15620:9496) — what the
-               answer credited, and what it still owes. */
-            got: ['Context and evidence-based thinking', 'Critical source evaluation'],
-            stillMissing: ['Building a reasoned interpretation from evidence'],
+            got: ['Concession to avoid war'],
+            stillMissing: ['Names Munich or the Sudetenland', 'Why conceding made war more likely'],
           },
-          /* The clean version of the same answer, handed back when the student
-             contests the one above. A contestable take MUST be followed by
-             another on the same rung — contesting advances the take without
-             advancing the rung, so a rung that ends on a contestable take
-             leaves the student with nothing to submit. Terms 3 and 4 pair
-             theirs the same way. */
           {
             transcript:
-              '"It\'s about context, and being critical of sources. A primary source is available in the archives."',
+              '"It was when Britain and France kept giving Hitler what he asked for to avoid another war."',
             confidence: 0.92,
             verdict: 'Partial',
             score: 65,
-            /* Figma's own breakdown on `partial` (15620:9496) — what the
-               answer credited, and what it still owes. */
-            got: ['Context and evidence-based thinking', 'Critical source evaluation'],
-            stillMissing: ['Building a reasoned interpretation from evidence'],
+            got: ['Concession to avoid war'],
+            stillMissing: ['Names Munich or the Sudetenland', 'Why conceding made war more likely'],
           },
         ],
       },
@@ -389,16 +401,15 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 1',
           body: (
             <>
-              You&rsquo;ve got the sequence idea. But historical thinking goes further than
-              ordering events &mdash; it&rsquo;s about <em>interrogating why</em> sources exist
-              and what biases they carry.
+              Chamberlain came back from a meeting in 1938 holding a piece of paper and promising
+              “peace for our time”. Which city, and what had just been handed over?
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"It’s not just knowing what happened — it’s asking who wrote the account, why they wrote it, and what they left out. You weigh the evidence in its context instead of taking it at face value."',
+              '"Munich — they let Hitler take the Sudetenland from Czechoslovakia to avoid a war, and it did not stop him, he took the rest of it anyway."',
             confidence: 0.91,
             verdict: 'Correct',
           },
@@ -410,15 +421,15 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 2',
           body: (
             <>
-              Think about the difference between describing what happened and questioning why a
-              source was written. Which one requires more critical thought?
+              Each concession was meant to be the <strong>last</strong> one. Think about what that
+              assumption got wrong about what Hitler wanted.
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"You look at where the source came from and who made it, and you weigh it up rather than taking it at face value."',
+              '"Every time they gave something up they thought it would be the end of it. It was not — it just bought him more room for the next demand."',
             confidence: 0.94,
             verdict: 'Correct',
           },
@@ -430,29 +441,20 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 3',
           body: (
             <>
-              Ask yourself: if two historians describe the same event differently, what would a
-              historical thinker do?
-              {'\n\n'}
-              They&rsquo;d ask <strong>who wrote it, why, and what they might have left out</strong>{' '}
-              &mdash; not just what happened.
+              Two halves: <strong>what</strong> was conceded, and <strong>why</strong> conceding
+              made the war more likely rather than less.
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"It is reading evidence in its context, checking who made it and why, and building an interpretation you can defend."',
+              '"Giving in to Hitler — the Rhineland, Austria, the Sudetenland at Munich — hoping each one was the last. It failed because it fed the demands instead of ending them."',
             confidence: 0.95,
             verdict: 'Correct',
           },
         ],
       },
-      /* THE SAY-IT-BACK. The ladder has run out and the term is already
-         recorded as missed, but the student reads the answer and says it — and
-         the prototype (Prototype page, `reveal --orb--> cancel option -->
-         correct-answer`) affirms that. It is judged Correct because they have
-         the answer in front of them; it does NOT re-settle the term, so the
-         summary still counts the miss. See `settleTake`. */
       {
         rung: 'reveal',
         takes: [
@@ -467,36 +469,34 @@ export const SESSION: ScriptedTerm[] = [
   },
 
   {
-    id: 'neolithic-revolution',
-    title: 'The Neolithic Revolution',
+    id: 'total-war',
+    title: 'Total war',
     question: (
       <>
-        Could you explain what the <strong>Neolithic Revolution</strong> was, and why it marked
-        such a turning point for early human societies?
+        What does <strong>total war</strong> mean, and how did World War II show it?
       </>
     ),
     modelAnswer:
-      'The Neolithic Revolution was the shift from hunting and gathering to settled farming. Growing food in one place produced a surplus, which allowed permanent settlements, larger populations, and — for the first time — people who did work other than finding food.',
+      'Total war is when a state turns its whole society over to the war — factories, food, labour and civilians included — and stops treating the home front as separate from the fighting. In World War II that meant rationing, conscripted industry, women in war work, and cities bombed precisely because production and morale had become military targets.',
     missingItems: [
-      'The shift from foraging to farming',
-      'Food surplus as the mechanism',
-      'Permanent settlement and specialised work',
+      'The whole economy is mobilised',
+      'Civilians are not outside it',
+      'An example: rationing, war industry or bombing',
     ],
     rungs: [
       {
         rung: 'attempt1',
         takes: [
-          /* Heard badly. The misheard control appears; contesting it costs
-             nothing and hands the same rung its clean take. */
+          /* Nothing usable came back. No rung is consumed; the student retries
+             into the clean take below. */
           {
-            transcript:
-              '"Neo... lithic settlement is when people... grew crowds and stopped moving around so much."',
+            transcript: '"Total war is when... the whole... uh... hm, sorry."',
             confidence: 0.38,
             verdict: 'Wrong',
           },
           {
             transcript:
-              '"The Neolithic Revolution is when people stopped foraging and started farming. Growing food in one place meant they could settle down, store a surplus, and support more people than a roaming band ever could."',
+              '"It is when the entire country is put to work on the war, not just the army — factories, rationing, everyone."',
             confidence: 0.93,
             verdict: 'Correct',
           },
@@ -508,21 +508,20 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 1',
           body: (
             <>
-              Picture a group that walks to its food every day, and a group that grows its food
-              where it stands. What becomes possible for the second group that was never possible
-              for the first?
+              Think about a family at home in 1942 — the food they could buy, the job the mother
+              took, the shelter in the garden. How much of that is the war?
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"They stopped moving around and started growing crops in one place."',
+              '"Everyone had rationing and people went to work in the factories for the war effort."',
             confidence: 0.91,
             verdict: 'Partial',
             score: 60,
-            got: ['Settling in one place', 'Farming rather than foraging'],
-            stillMissing: ['What a surplus made possible'],
+            got: ['An example: rationing, war industry or bombing'],
+            stillMissing: ['The whole economy is mobilised', 'Civilians are not outside it'],
           },
         ],
       },
@@ -532,16 +531,15 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 2',
           body: (
             <>
-              Staying put means you can store more than you eat today. A store of food is a store
-              of <strong>time</strong> &mdash; and time is what somebody needs before they can do
-              anything other than find the next meal.
+              If a factory making bomber parts is a military target, so is the street around it.
+              That is the line total war <strong>erases</strong>.
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"Staying in one place let them store a surplus, and a surplus bought time for people to do work that was not finding food."',
+              '"There stops being a difference between the front and home. Civilians are inside the war — that is why cities were bombed."',
             confidence: 0.93,
             verdict: 'Correct',
           },
@@ -553,26 +551,20 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 3',
           body: (
             <>
-              The missing idea is <strong>surplus</strong>. Name what a surplus let people build
-              that a day-to-day food supply never could.
+              Two things: the whole <strong>economy</strong> is turned over to the war, and
+              <strong> civilians</strong> are no longer outside it. Say both.
             </>
           ),
         },
         takes: [
           {
             transcript:
-              '"A surplus let people specialise — crafts, trade, writing, government — because not everyone had to spend the day finding food."',
+              '"The whole economy goes into the war and civilians are part of it rather than outside it — rationing, war factories, and bombing the cities that housed them."',
             confidence: 0.95,
             verdict: 'Correct',
           },
         ],
       },
-      /* THE SAY-IT-BACK. The ladder has run out and the term is already
-         recorded as missed, but the student reads the answer and says it — and
-         the prototype (Prototype page, `reveal --orb--> cancel option -->
-         correct-answer`) affirms that. It is judged Correct because they have
-         the answer in front of them; it does NOT re-settle the term, so the
-         summary still counts the miss. See `settleTake`. */
       {
         rung: 'reveal',
         takes: [
@@ -587,31 +579,30 @@ export const SESSION: ScriptedTerm[] = [
   },
 
   {
-    id: 'historiography',
-    title: 'Historiography',
+    id: 'post-war-order',
+    title: 'The post-war order',
     question: (
       <>
-        What does <strong>historiography</strong> study, and how is it different from studying
-        history itself?
+        What <strong>new order</strong> did the Allies build after 1945, and what was it meant to
+        prevent?
       </>
     ),
     modelAnswer:
-      'Historiography is the study of how history has been written — which questions each generation asked, which sources it trusted, and how its own moment shaped the account it produced. History studies the past; historiography studies the historians.',
+      'The United Nations, the Bretton Woods institutions and the division of Germany between the occupying powers. All of it was built against the memory of 1919: a settlement that punished without rebuilding, and left no standing forum to stop the next crisis. The post-war order tried to bind the victors together instead, though the Cold War split it within a few years.',
     missingItems: [
-      'The writing of history, not the events',
-      'How interpretations change over time',
-      'The historian’s own context as evidence',
+      'Names the UN or the occupation of Germany',
+      'Built to prevent a repeat of 1919',
+      'Rebuilding rather than punishing',
     ],
     rungs: [
       {
         rung: 'attempt1',
         takes: [
-          /* Nothing heard. Consumes no rung — an accidental mic tap must never
-             count as an attempt. */
+          /* Nothing was heard at all. Its own state, its own cause, and no rung
+             consumed — see `isSilent`. */
           { transcript: '', confidence: 0, verdict: 'Wrong' },
           {
-            transcript:
-              '"Historiography is... the study of history. Like, the proper academic version of it, with the sources and the footnotes."',
+            transcript: '"They made some treaties and Germany got split up I think."',
             confidence: 0.88,
             verdict: 'Wrong',
           },
@@ -623,15 +614,14 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 1',
           body: (
             <>
-              Two historians write about the same war, fifty years apart, and reach different
-              conclusions. Historiography is not interested in the war. What is it interested in?
+              After the First World War the settlement punished Germany and then left everyone to
+              it. What did the Allies build in 1945 that 1919 had no version of?
             </>
           ),
         },
         takes: [
           {
-            transcript:
-              '"It’s about the differences between the two accounts, I think. Comparing what they each said happened."',
+            transcript: '"Was it the League of Nations? Or something like that anyway."',
             confidence: 0.9,
             verdict: 'Wrong',
           },
@@ -643,15 +633,14 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 2',
           body: (
             <>
-              Closer &mdash; but it is not the accounts being compared so much as the{' '}
-              <strong>writers</strong>. Why did each of them ask the questions they asked?
+              It still exists, it sits in New York, and the point of it was that the powers would
+              have to keep <strong>talking</strong> rather than only arming.
             </>
           ),
         },
         takes: [
           {
-            transcript:
-              '"So it’s looking at whether the historians were biased, and whether their sources were any good."',
+            transcript: '"Something in America... I cannot remember what it was called."',
             confidence: 0.92,
             verdict: 'Wrong',
           },
@@ -663,33 +652,25 @@ export const SESSION: ScriptedTerm[] = [
           label: 'Hint 3',
           body: (
             <>
-              The missing idea is that the historian&rsquo;s own moment is itself{' '}
-              <strong>evidence</strong>. Historiography studies the writing of history, not the
-              events &mdash; the historians, not the past.
+              The <strong>United Nations</strong>. Now the second half: what did 1919 do that 1945
+              deliberately did not?
             </>
           ),
         },
         takes: [
           {
-            transcript:
-              '"It’s about checking the historians’ work for mistakes and seeing which account got it right."',
+            transcript: '"The United Nations. I am not sure about the rest of it."',
             confidence: 0.94,
             verdict: 'Wrong',
           },
         ],
       },
-      /* THE SAY-IT-BACK. The ladder has run out and the term is already
-         recorded as missed, but the student reads the answer and says it — and
-         the prototype (Prototype page, `reveal --orb--> cancel option -->
-         correct-answer`) affirms that. It is judged Correct because they have
-         the answer in front of them; it does NOT re-settle the term, so the
-         summary still counts the miss. See `settleTake`. */
       {
         rung: 'reveal',
         takes: [
           {
             transcript:
-              '"It was... the study of how history gets written? Something about the historians themselves."',
+              '"The UN, and Germany occupied rather than just fined — because 1919 punished and walked away."',
             confidence: 0.96,
             verdict: 'Wrong',
           },

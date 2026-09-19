@@ -25,6 +25,8 @@ import {
   PermissionDeniedScreen,
   MisheardScreen,
   ReRecordScreen,
+  QuizScreen,
+  SummarizeScreen,
 } from './RecallScreens';
 
 const DESCRIPTION = `Five states from \`reference/Voice_UX.md\`'s **"States to design"** checklist that had no React counterpart. Four are "Must"; one is "If time".
@@ -302,13 +304,71 @@ export const ExplainEntryGenerating: Story = {
 export const Folders: Story = {
   name: 'Entry 4 · Choose a folder',
   render: () => <FoldersScreen onOpen={fn()} />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { name: 'World History Foundations' })).toBeVisible();
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole('heading', { name: 'Your folders' })).toBeVisible();
     await expect(canvas.getByText('What have you studied so far?')).toBeVisible();
     // The other way in: something already studied, rather than a topic typed
     // into the chat. Both paths end at a set of concepts and the orb.
     await expect(canvas.getByText('World War II')).toBeVisible();
     await expect(canvas.getByText('1939 – 1945')).toBeVisible();
+
+    /* EACH CARD DESCRIBES ITSELF. None of the three passed `description`, so
+       all three fell through to `folderCard`'s own default — World War II's —
+       and the Cold War card told the student about the Holocaust. Asserted as
+       three distinct strings so a shared default cannot come back. */
+    await expect(canvas.getByText(/Containment, the arms race/)).toBeVisible();
+    await expect(canvas.getByText(/road to the Voting Rights Act/)).toBeVisible();
+    await expect(canvas.getByText(/Turning points, appeasement, total war/)).toBeVisible();
+
+    /* The leading control leaves the screen, so it is a close and says so. It
+       drew a hamburger labelled "Menu" and then navigated away. */
+    await expect(canvas.queryByRole('button', { name: 'Menu' })).toBeNull();
+
+    /* ONE GUTTER, APPLIED ONCE. `choose folder screen` (15647:11079) draws the
+       card row at the full 390 with its own 16 each side, and `folderCard`'s
+       component padding is 16 top and bottom with NOTHING on the sides — so
+       the visible card is 358. The build applied the screen's gutter and the
+       component's, and rendered 326.
+
+       Asserted here rather than in the component's own story because this is
+       where the two gutters met: the component alone has no scaffold to stack
+       with, so it cannot catch this on its own. */
+    const cardEl = canvasElement.querySelector('.knw-folder__card') as HTMLElement;
+    await expect(Math.round(cardEl.getBoundingClientRect().width)).toBe(358);
+
+    /* The second witness. The tab's `left: 33px` is lifted straight from
+       Figma, where the variant has no horizontal padding — so 33 is measured
+       from the card's edge. Under the extra gutter it sat at 17, which is the
+       kind of wrong that never looks wrong. */
+    const tabEl = canvasElement.querySelector('.knw-folder__tab') as HTMLElement;
+    await expect(
+      Math.round(tabEl.getBoundingClientRect().left - cardEl.getBoundingClientRect().left),
+    ).toBe(33);
+  },
+};
+
+export const FoldersEmpty: Story = {
+  name: 'Entry 4b · Choose a folder — nothing studied yet',
+  render: () => <FoldersScreen folders={[]} onCompose={fn()} onBack={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    /* THE STATE THAT COULD NOT BE REACHED. The list was a module constant, so
+       zero folders was not something the screen could be asked for — not a
+       state that was cut, a state with no way to express it. It is a prop now,
+       and this is the state. */
+    await expect(canvas.getByText('Nothing here yet')).toBeVisible();
+    await expect(canvas.getByText(/this shelf fills up/)).toBeVisible();
+
+    // No list, and no empty list either — the cards are simply not there.
+    await expect(canvasElement.querySelector('.knw-folders__list')).toBeNull();
+    await expect(canvasElement.querySelectorAll('.knw-folder')).toHaveLength(0);
+
+    // A way out, not just a sentence.
+    await expect(canvas.getByRole('button', { name: 'Make your first set' })).toBeVisible();
+
+    // Knowie is at screen level and alone, never inside a card.
+    const mascot = canvasElement.querySelector('.knw-mascot') as HTMLElement;
+    await expect(mascot).toBeTruthy();
+    await expect(mascot.closest('.knw-folder')).toBeNull();
   },
 };
 
@@ -466,9 +526,50 @@ export const AnswerSentConfirmed: Story = {
   },
 };
 
+export const TextFallbackTyping: Story = {
+  name: '6a · Text fallback — typing',
+  render: () => <TextFallbackScreen state="Typing" onUseVoice={fn()} onSkip={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    // The answer is going in, so it is in the composer and not yet a message.
+    await expect(canvasElement.querySelector('.knw-recall__answer')).toBeNull();
+    await expect(canvasElement.querySelector('.knw-chat--typing')).toBeTruthy();
+
+    // NOTHING TO SEND YET. Send appears on the next beat, when there is a
+    // finished answer to send — offering it now would be offering to submit
+    // half a sentence.
+    await expect(canvas.queryByRole('button', { name: 'Send' })).toBeNull();
+
+    // The keyboard is up, which is the whole premise of the screen.
+    await expect(canvasElement.querySelector('.knw-recall__keyboard')).toBeTruthy();
+    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
+  },
+};
+
+export const TextFallbackReady: Story = {
+  name: '6b · Text fallback — ready to send',
+  render: () => <TextFallbackScreen state="Ready" onSend={fn()} onUseVoice={fn()} onSkip={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    // The whole answer is in the box and Send is live.
+    await expect(canvas.getByRole('button', { name: 'Send' })).toBeVisible();
+    await expect(canvas.getByText(/The main causes of World War II/)).toBeVisible();
+
+    /* STILL NOT A MESSAGE. It is in the composer, not the thread — drawing it
+       in both at once said the student had said something they had not
+       finished saying. */
+    await expect(canvasElement.querySelector('.knw-recall__answer')).toBeNull();
+  },
+};
+
 export const TextFallback: Story = {
-  name: '6 · Text fallback turn',
-  render: () => <TextFallbackScreen onSend={fn()} onUseVoice={fn()} onSkip={fn()} />,
+  name: '6c · Text fallback — sent',
+  /* THE TURN HAS THREE BEATS. `Sent` is the one Figma's `text fallback` frame
+     draws: the answer has left the composer and become the student's message,
+     and the composer has reset to a placeholder. The build used to draw only
+     this screen's middle beat — a finished answer sitting in the box — so
+     there was no picture of the answer going in, and none of it having gone. */
+  render: () => (
+    <TextFallbackScreen state="Sent" onSend={fn()} onUseVoice={fn()} onSkip={fn()} />
+  ),
   play: async ({ canvas, canvasElement }) => {
     // Knowie's turn is plain text with the mascot beneath it — NO surface.
     // Only the student's turn gets a bubble, and that asymmetry is what makes
@@ -770,10 +871,23 @@ export const EscapesAlwaysPresent: Story = {
 
 export const Idle: Story = {
   name: '9 · Idle',
-  render: () => <IdleScreen onRecord={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
+  /* The intro is passed, not defaulted. It belongs to the FIRST turn — only
+     term 1 authors one — and it used to be a default parameter, which meant
+     every later turn borrowed it: skipping to the last question welcomed the
+     student to a session they were three questions into. */
+  render: () => (
+    <IdleScreen
+      intro="Welcome to your study session on world history. Let's start with how historians handle evidence."
+      onRecord={fn()}
+      onSkip={fn()}
+      onTypeAnswer={fn()}
+      onExit={fn()}
+    />
+  ),
   play: async ({ canvas, canvasElement }) => {
     // The resting state: the question is up and the orb is waiting.
     await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
+    await expect(canvas.getByText(/Welcome to your study session/)).toBeVisible();
 
     // Idle is the ONLY recall turn that asks the question in the bubble, with
     // Knowie tucked behind it. Everything downstream restates it flat.
@@ -808,6 +922,29 @@ export const Idle: Story = {
     await expect(Math.round(skipBtn.getBoundingClientRect().right))
       .toBe(Math.round(skip.getBoundingClientRect().right));
     await expect(getComputedStyle(skipBtn).fontSize).toBe('12px');
+  },
+};
+
+export const IdleLaterTurn: Story = {
+  name: '9b · Idle — a later turn, no welcome',
+  /* What every turn after the first looks like, and what the skip loop lands
+     on three times out of four. No `intro`, so none is drawn — the question
+     alone, which is the whole content of a turn in progress. */
+  render: () => <IdleScreen onRecord={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
+
+    /* THE GREETING IS NOT REPEATED. It was a default parameter, so a turn that
+       passed no intro — which is terms 2, 3 and 4 — got the welcome anyway.
+       Asserted as absence, because that is the bug: something appearing where
+       nothing was passed. */
+    await expect(canvas.queryByText(/Welcome to your study session/)).toBeNull();
+    await expect(canvasElement.querySelector('.knw-recall__intro')).toBeNull();
+
+    // The question still is.
+    await expect(canvasElement.querySelector('.knw-recall__prompt')).toBeTruthy();
+    // And a way past it, which is what the skip loop needs.
+    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
   },
 };
 
@@ -1067,7 +1204,7 @@ export const CorrectFeedback: Story = {
   render: () => <CorrectFeedbackScreen onNextQuestion={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The model answer, to read against what the student actually said.
-    await expect(canvas.getByText(/critically analyzing evidence/)).toBeVisible();
+    await expect(canvas.getByText(/Stalingrad, Midway and D-Day/)).toBeVisible();
     await expect(canvas.queryByText('Try it yourself after reading')).toBeNull();
 
     // IT IS NOT THE REVEAL, though they share the card. Reveal is where a term
@@ -1124,8 +1261,20 @@ export const SessionRating: Story = {
     // looks the same but only answers at one end is the kind of thing a student
     // blames themselves for. Clicking the LABEL selects.
     await userEvent.click(canvas.getByText('Somewhat less confident'));
-    await expect(boxes[2]).toHaveAttribute('aria-checked', 'true');
+    await expect(boxes[1]).toHaveAttribute('aria-checked', 'true');
     await expect(boxes[0]).toHaveAttribute('aria-checked', 'false');
+
+    /* THE ROWS ARE A SCALE, SO THEY ARE IN ORDER. They used to run low, high,
+       medium — three statements rather than three positions — while the
+       comment above the array claimed "least confident first". A student who
+       knows they are in the middle should be able to reach for the middle row
+       without reading all three. Asserted by index, because that is the only
+       thing that broke. */
+    await expect(boxes.map((b) => b.closest('li')!.textContent)).toEqual([
+      'I need to practice',
+      'Somewhat less confident',
+      'I am pretty confident for the most part',
+    ]);
 
     // One focus stop per row, though: the <li> takes no tabindex and no role.
     const rows = canvasElement.querySelectorAll('.knw-rating__option');
@@ -1136,8 +1285,8 @@ export const SessionRating: Story = {
 
     // ANSWERING IS OPTIONAL, so there is a way back to having not answered,
     // and Continue never waits on a choice.
-    await userEvent.click(boxes[2]);
-    await expect(boxes[2]).toHaveAttribute('aria-checked', 'false');
+    await userEvent.click(boxes[1]);
+    await expect(boxes[1]).toHaveAttribute('aria-checked', 'false');
     await expect(canvas.getByRole('button', { name: 'Continue' })).toBeEnabled();
   },
 };
@@ -1271,7 +1420,7 @@ export const Reveal: Story = {
     // left to contest — and shows the model answer instead.
     await expect(canvasElement.querySelector('.knw-transcript')).toBeNull();
     await expect(canvas.queryByRole('button', { name: 'App misheard me' })).toBeNull();
-    await expect(canvas.getByText(/critically analyzing evidence/)).toBeVisible();
+    await expect(canvas.getByText(/United Nations, the Bretton Woods/)).toBeVisible();
     await expect(canvas.queryByText('Try it yourself after reading')).toBeNull();
 
     // THE WAY ON IS TO ANSWER. There is no "next question" here: a student who
@@ -1335,6 +1484,74 @@ export const Summary: Story = {
   },
 };
 
+export const SummaryWantsPractice: Story = {
+  name: '16b · Summary — "I need to practice"',
+  /* The self-report doing something. Same four outcomes as the story above;
+     the only difference is what the student said about themselves one screen
+     back, and the screen takes their word for it. */
+  render: () => (
+    <SummaryScreen
+      confidence="low"
+      terms={[
+        { title: 'Turning points', passedAt: 'attempt1', skipped: false },
+        { title: 'Appeasement', passedAt: 'hint1', skipped: false },
+        { title: 'Total war', passedAt: null, skipped: true },
+        { title: 'The post-war order', passedAt: null, skipped: false },
+      ]}
+      onRevise={fn()}
+      onTryAgain={fn()}
+    />
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const groups = [...canvasElement.querySelectorAll('.knw-summary__group')];
+    const items = (i: number) =>
+      [...new Set([...groups[i].querySelectorAll('li')].map((li) => li.textContent!.trim()))];
+
+    /* THE HINTED PASS MOVES. "Appeasement" passed — on a hint — so every other
+       reading of this session files it under strong. The student has just said
+       they need practice, and a term that only landed with help is exactly the
+       one they mean. */
+    await expect(items(0)).toEqual(['Turning points']);
+    await expect(items(1)).toEqual(['Total war', 'The post-war order', 'Appeasement']);
+
+    // And revising is the offer that leads.
+    const revise = canvas.getByRole('button', { name: 'Revise now' });
+    await expect(revise.className).toContain('knw-button--Primary');
+  },
+};
+
+export const SummaryFeelsConfident: Story = {
+  name: '16c · Summary — "pretty confident"',
+  render: () => (
+    <SummaryScreen
+      confidence="high"
+      terms={[
+        { title: 'Turning points', passedAt: 'attempt1', skipped: false },
+        { title: 'Appeasement', passedAt: 'hint1', skipped: false },
+        { title: 'Total war', passedAt: null, skipped: true },
+        { title: 'The post-war order', passedAt: null, skipped: false },
+      ]}
+      onRevise={fn()}
+      onTryAgain={fn()}
+    />
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const groups = [...canvasElement.querySelectorAll('.knw-summary__group')];
+    const items = (i: number) =>
+      [...new Set([...groups[i].querySelectorAll('li')].map((li) => li.textContent!.trim()))];
+
+    // The hinted pass stays where the score put it.
+    await expect(items(0)).toEqual(['Turning points', 'Appeasement']);
+    await expect(items(1)).toEqual(['Total war', 'The post-war order']);
+
+    /* ANOTHER GO IS THE OFFER. Both ways out are still here — only which one
+       is filled changes, so a confident student is never denied revision. */
+    await expect(canvas.getByRole('button', { name: 'Try again' }).className)
+      .toContain('knw-button--Primary');
+    await expect(canvas.getByRole('button', { name: 'Revise now' })).toBeVisible();
+  },
+};
+
 export const Exit: Story = {
   name: '8 · Exit sheet',
   render: () => <ExitScreen onKeepGoing={fn()} onLeave={fn()} />,
@@ -1375,7 +1592,7 @@ export const Lesson: Story = {
   name: 'Lesson — where "Revise now" lands',
   render: () => <LessonScreen onExplainOutLoud={fn()} onBack={fn()} />,
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('heading', { name: 'Primary sources' })).toBeVisible();
+    await expect(canvas.getByRole('heading', { name: 'Turning points' })).toBeVisible();
 
     // The three stats, as a <dl> — a set of label/value pairs is what that
     // element is for, and it pairs them for a screen reader too.
@@ -1397,6 +1614,144 @@ export const Lesson: Story = {
     await expect(getComputedStyle(eol).backgroundColor).toBe('rgb(10, 22, 53)');
 
     // The title and the body describe the same thing — they used to disagree.
-    await expect(canvas.getByText(/A primary source is evidence/)).toBeVisible();
+    await expect(canvas.getByText(/Stalingrad, Midway and D-Day/)).toBeVisible();
+
+    /* KNOWIE IS NOT IN THE CARD. It sat inside `.knw-lesson__eol`, which
+       design-system.md's Never list forbids outright — the same violation the
+       Explain out loud card was carrying. It is a child of the screen's own
+       column now. */
+    await expect(eol.querySelector('.knw-mascot')).toBeNull();
+    await expect(canvasElement.querySelector('.knw-lesson__mascot .knw-mascot')).toBeTruthy();
+  },
+};
+
+export const LessonNoSet: Story = {
+  name: 'Lesson — a folder with no speaking set',
+  /* The Cold War and Civil Rights folders have reading but no scripted
+     session, so no practice card is drawn — it would start World War II's
+     questions under their heading. */
+  render: () => (
+    <LessonScreen
+      title="The Cold War"
+      conceptCount="22 concepts"
+      body="Forty years in which the two strongest states on earth never fought each other directly."
+      onBrowseFolders={fn()}
+      onBack={fn()}
+    />
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole('heading', { name: 'The Cold War' })).toBeVisible();
+
+    // No card, and no dead card either — it is simply not there.
+    await expect(canvasElement.querySelector('.knw-lesson__eol')).toBeNull();
+
+    /* A WAY ON, NOT JUST A WAY BACK. Without this the screen ended at its own
+       last paragraph, and the only forward motion was the ‹ in the corner. */
+    await expect(canvas.getByText(/No speaking set for this folder yet/)).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Choose another folder' })).toBeVisible();
+
+    // And no mascot waiting for a set that is not there.
+    await expect(canvasElement.querySelector('.knw-lesson__mascot')).toBeNull();
+  },
+};
+
+/* ===== the rail's other two features, one screen each ===== */
+
+export const Summarize: Story = {
+  name: 'Entry 6 · Summarize — one answer',
+  render: () => <SummarizeScreen onBack={fn()} onHistory={fn()} onFeedback={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByText("What's mitosis?")).toBeVisible();
+
+    // The key term is called out of the answer, not buried in it.
+    const callout = canvasElement.querySelector('.knw-keyterm') as HTMLElement;
+    await expect(callout).toBeTruthy();
+    await expect(canvas.getByText('Key term')).toBeVisible();
+    await expect(callout.textContent).toContain('tiny building block');
+
+    /* ACCENT GREEN, NOT FEEDBACK GREEN — a key term is a category marker, not
+       a verdict, and the two ramps' own descriptions forbid swapping them.
+
+       WHAT THIS ASSERTION CAN AND CANNOT PROVE: `accent/green/*` and
+       `feedback/success/*` resolve to the SAME primitives — green/500 and
+       green/900 — so a computed colour cannot tell the two apart. This pins
+       the value; only the stylesheet records the role. If the ramps ever
+       diverge, this is the line that will catch the swap. */
+    await expect(getComputedStyle(callout).borderTopColor).toBe('rgb(0, 195, 134)');
+    await expect(getComputedStyle(callout).backgroundColor).toBe('rgb(10, 46, 34)');
+
+    // Knowie is at screen level, never inside the callout.
+    await expect(callout.querySelector('.knw-mascot')).toBeNull();
+
+    // Nothing is listening, so the composer draws no microphone.
+    await expect(canvas.queryByRole('button', { name: 'Record voice' })).toBeNull();
+  },
+};
+
+export const Quiz: Story = {
+  name: 'Entry 5 · Quiz — the question',
+  render: () => <QuizScreen onAnswer={fn()} onExit={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByText(/copies its whole playbook/)).toBeVisible();
+
+    // Both answers are live, and neither carries a verdict yet.
+    const options = [...canvasElement.querySelectorAll('.knw-quiz__option')] as HTMLButtonElement[];
+    await expect(options).toHaveLength(2);
+    for (const o of options) {
+      await expect(o.disabled).toBe(false);
+      await expect(o.dataset.state).toBe('Resting');
+    }
+
+    // The options clear the touch floor on their own height, so unlike the
+    // chip they need no transparent hit area behind them.
+    for (const o of options) {
+      await expect(o.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    }
+
+    // No result until there is an answer.
+    await expect(canvasElement.querySelector('.knw-quiz__result')).toBeNull();
+  },
+};
+
+export const QuizAnswered: Story = {
+  name: 'Entry 5b · Quiz — answered',
+  render: () => <QuizScreen chosen={0} onContinue={fn()} onWhy={fn()} onFeedback={fn()} onExit={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    const options = [...canvasElement.querySelectorAll('.knw-quiz__option')] as HTMLButtonElement[];
+
+    // Locked, so a second tap cannot change a verdict already given.
+    for (const o of options) await expect(o.disabled).toBe(true);
+
+    /* The right answer is marked, and the stylesheet binds the FEEDBACK ramp
+       here — the opposite call from the key term's decorative green, because
+       right and wrong is exactly what feedback/* is for. As above, the two
+       ramps share their primitives, so this pins the value rather than the
+       role. */
+    await expect(options[0].dataset.state).toBe('Correct');
+    await expect(getComputedStyle(options[0]).backgroundColor).toBe('rgb(10, 46, 34)');
+
+    // The verdict is the system's own chip, relabelled — not a second tick.
+    await expect(canvas.getByText('Nice!')).toBeVisible();
+
+    // And a way on.
+    await expect(canvas.getByRole('button', { name: 'Continue' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Why?' })).toBeVisible();
+  },
+};
+
+export const QuizAnsweredWrong: Story = {
+  name: 'Entry 5c · Quiz — answered wrong',
+  render: () => <QuizScreen chosen={1} onContinue={fn()} onWhy={fn()} onExit={fn()} />,
+  play: async ({ canvas, canvasElement }) => {
+    const options = [...canvasElement.querySelectorAll('.knw-quiz__option')] as HTMLButtonElement[];
+
+    /* A WRONG ANSWER STILL REVEALS THE RIGHT ONE. Figma only draws the correct
+       case, so this is a decision rather than a reading: the one screen that
+       teaches would teach nothing if it marked the miss and left the student
+       guessing which was right. */
+    await expect(options[1].dataset.state).toBe('Wrong');
+    await expect(options[0].dataset.state).toBe('Correct');
+    await expect(canvas.getByText('Not quite')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Continue' })).toBeVisible();
   },
 };

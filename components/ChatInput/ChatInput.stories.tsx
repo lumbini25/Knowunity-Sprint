@@ -50,7 +50,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Inactive: Story = {
   name: 'Status=Inactive',
-  args: { status: 'Inactive', onLeadingPress: fn() },
+  /* `onTrailingPress` is what draws the microphone now: unwired, the
+     control is not rendered at all, the same rule the leading button and the
+     field already followed. A story that asserts a mic has to wire one. */
+  args: { status: 'Inactive', onLeadingPress: fn(), onTrailingPress: fn() },
   play: async ({ canvas, canvasElement }) => {
     // Empty, placeholder visible, microphone offered.
     await expect(canvas.getByText('Ask anything...')).toBeVisible();
@@ -141,7 +144,7 @@ export const Recording: Story = {
  */
 export const KeyboardRaised: Story = {
   name: 'Status=Typing, keyboard raised',
-  args: { status: 'Typing', onLeadingPress: fn() },
+  args: { status: 'Typing', onLeadingPress: fn(), onTrailingPress: fn() },
   globals: { keyboard: 'raised' },
   // A keyboard-raised check needs the whole screen, not a centred box.
   parameters: { layout: 'fullscreen' },

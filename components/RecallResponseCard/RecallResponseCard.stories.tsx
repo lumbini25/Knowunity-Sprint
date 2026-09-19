@@ -121,10 +121,19 @@ type Story = StoryObj<typeof meta>;
 
 export const IncorrectWithMissing: Story = {
   name: 'State=Wrong, showMissingSection=True',
-  args: { State: 'Wrong', showMissingSection: true, onPrimaryAction: fn(), onSecondaryAction: fn() },
+  /* `onNextAction` is wired, because the card draws that control only when
+     something is listening to it. It used to fall back to a `<p>` carrying the
+     same words in the same place — see the story below. */
+  args: {
+    State: 'Wrong',
+    showMissingSection: true,
+    onPrimaryAction: fn(),
+    onSecondaryAction: fn(),
+    onNextAction: fn(),
+  },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText(/Not quite/)).toBeVisible();
-    await expect(canvas.getByText('Next question')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Next question' })).toBeVisible();
     await expect(canvas.getByText('WHAT WAS MISSING')).toBeVisible();
 
     // Proves the token stylesheet reached the card: surface fill, 24px corners,
@@ -168,11 +177,17 @@ export const IncorrectWithMissing: Story = {
 
 export const Partial: Story = {
   name: 'State=Partial',
-  args: { State: 'Partial', showMissingSection: false, onPrimaryAction: fn(), onSecondaryAction: fn() },
+  args: {
+    State: 'Partial',
+    showMissingSection: false,
+    onPrimaryAction: fn(),
+    onSecondaryAction: fn(),
+    onNextAction: fn(),
+  },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText(/Almost there/)).toBeVisible();
     // Partial offers the reveal instead of moving on.
-    await expect(canvas.getByText('Reveal answer')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Reveal answer' })).toBeVisible();
 
     // Partial is an outlined pill, not a filled one: no fill and a 2px violet
     // stroke. The label sits a step lighter than the stroke — the contrast pass
@@ -225,6 +240,28 @@ export const Partial: Story = {
 
     // The actions stay.
     await expect(canvas.getByRole('button', { name: 'Retry' })).toBeVisible();
+  },
+};
+
+export const NoNextAction: Story = {
+  name: 'onNextAction unset — no next control',
+  args: { State: 'Misheard', onPrimaryAction: fn(), onSecondaryAction: fn() },
+  play: async ({ canvas, canvasElement }) => {
+    /* THE GHOST THIS REPLACES. Unwired, the card used to render
+       `<p className="knw-rrc__next">Next question</p>` — the same words, in the
+       same place, in the same type as the working link on Correct and Wrong,
+       with no handler behind it. The stylesheet said so itself: the two forms
+       "are indistinguishable on screen and differ only in what a screen reader
+       and a keyboard get."
+
+       `misheard` passes no handler ON PURPOSE — its own comment explains that
+       a skip there "would trade a retry that costs nothing for a recorded
+       miss" — and the fallback quietly overrode that intent. */
+    await expect(canvasElement.querySelector('.knw-rrc__next')).toBeNull();
+    await expect(canvas.queryByText('Next question')).toBeNull();
+
+    // The controls that ARE wired are untouched.
+    await expect(canvas.getByRole('button', { name: 'App misheard me' })).toBeVisible();
   },
 };
 

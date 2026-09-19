@@ -3,6 +3,10 @@
 
    Every value is a semantic token. */
 
+/* 93x16 BEFORE THIS. The label and its glyph are the whole control — Figma
+   gives it no surface — so the row grows to the touch floor rather than the
+   text growing with it. `size/tapTarget/min`'s own description asks for
+   exactly this. It is full width already, so only the height was short. */
 .knw-typeanswer {
   display: inline-flex;
   align-items: center;
@@ -10,6 +14,7 @@
   /* Figma: gap Space/200. */
   gap: var(--semantic-space-layout-s);
   width: 100%;
+  min-height: var(--semantic-size-tap-target-min);
   padding: 0;
   border: none;
   background: none;

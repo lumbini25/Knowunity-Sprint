@@ -59,6 +59,15 @@
   padding-inline: var(--semantic-space-layout-l);
 }
 
+/* No bottom slot, so the body IS the bottom of the screen and the inset lands
+   here instead. `max()` rather than an addition: on a device with no home
+   indicator the token's own padding still applies, and on one with an
+   indicator the reserve replaces it rather than stacking on top. Same shape as
+   `.knw-screen__bottom` below, which is the rule this mirrors. */
+.knw-screen__middle--to-edge {
+  padding-bottom: max(var(--semantic-space-layout-s), env(safe-area-inset-bottom));
+}
+
 /*
  * Figma SLOT: the primary action. Pinned to the bottom of the safe area, because
  * design-system.md puts CTAs low "so thumbs reach them without shifting grip".

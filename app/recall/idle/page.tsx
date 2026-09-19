@@ -37,7 +37,16 @@ export default function Page() {
      way through should start the ask again rather than resume it mid-sentence. */
   const [sheetUp, setSheetUp] = useState(false);
 
-  if (!session.micGranted) {
+  /* ASKED, NOT GRANTED. This gated on `micGranted`, which meant a student who
+     answered the primer with "Type instead" was asked again on every turn they
+     came back to — and since skipping a question lands here, "Skip question"
+     looked like it was wired to the permission screen. It was not: it went
+     exactly where Figma's skip goes, `idle`, and idle then refused to draw the
+     turn and drew the primer over it instead.
+
+     The primer is a first-encounter screen. It asks once, and declining counts
+     as an answer. */
+  if (!session.micAsked) {
     return (
       <PermissionPrimerScreen
         onStart={() => setSheetUp(true)}
@@ -48,8 +57,14 @@ export default function Page() {
            navigation, because this is already the right route. */
         onAllow={session.grantMic}
         /* The opt-out is never a dead end: the whole ladder is playable by
-           typing, which is the text fallback's reason for existing. */
-        onUseText={goTo('text-fallback')}
+           typing, which is the text fallback's reason for existing. It records
+           the ask on the way out, so coming back to a turn — by skipping, or by
+           finishing one — lands on the question rather than on this screen
+           again. */
+        onUseText={() => {
+          session.declineMic();
+          go('text-fallback');
+        }}
       />
     );
   }

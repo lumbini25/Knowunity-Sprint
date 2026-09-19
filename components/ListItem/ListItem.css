@@ -77,14 +77,13 @@
 /* Checkbox State=Default: a solid disc, fill and stroke both the same colour,
    with the tick in text/primary.
 
-   TOKEN NOTE. Figma binds fill and stroke to `highlight/indicator`. The
-   semantic layer carries that exact value (violet/highlight, #9d85ff) under one
-   name only — `highlight/border`, documented as the edge of the active tab — so
-   that is what this takes. A `highlight/indicator` alias is requested in
-   design-system.md's Gaps; the value is right, the name is one role narrow. */
+   GAP CLOSED. Figma binds fill and stroke to `highlight/indicator`, and the
+   semantic layer carried that value only as `highlight/border` — the edge of
+   the active tab, a stroke role doing a surface's job. The alias exists now
+   and both properties take it. */
 .knw-listitem--Strong .knw-listitem__box {
-  border-color: var(--semantic-highlight-border);
-  background: var(--semantic-highlight-border);
+  border-color: var(--semantic-highlight-indicator);
+  background: var(--semantic-highlight-indicator);
 }
 
 .knw-listitem--Strong .knw-listitem__icon {

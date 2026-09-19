@@ -15,6 +15,8 @@ const SCREENS = [
   { href: '/entry/compose', name: 'Compose a set', state: 'Entry 2' },
   { href: '/entry/ready', name: 'Explain out loud — ready', state: 'Entry 3' },
   { href: '/entry/folders', name: 'Choose a folder', state: 'Entry 4' },
+  { href: '/entry/quiz', name: 'Quiz — one question', state: 'Entry 5' },
+  { href: '/entry/summarize', name: 'Summarize — one answer', state: 'Entry 6' },
   { href: '/recall/idle', name: 'Idle', state: 'State 9' },
   { href: '/recall/recording', name: 'Listening', state: 'State 10' },
   { href: '/recall/answer-sent', name: 'The take', state: 'State 10b' },

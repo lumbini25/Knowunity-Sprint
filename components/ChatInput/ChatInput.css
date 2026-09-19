@@ -176,6 +176,8 @@
 
 /* Microphone and loading sit bare on the field at 24px. */
 .knw-chat__trailing-icon {
+  /* Positioned for the hit area below. */
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -188,6 +190,19 @@
   color: var(--semantic-background-contrast);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Drawn at `size/icon/L` (24), which is an icon size and not a target size —
+   the glyph keeps it, the tap does not. `size/tapTarget/min` behind it, the
+   same treatment the chip and the folder chevron take. */
+.knw-chat__trailing-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, var(--semantic-size-tap-target-min));
+  height: max(100%, var(--semantic-size-tap-target-min));
 }
 
 .knw-chat--loading .knw-chat__trailing-icon {

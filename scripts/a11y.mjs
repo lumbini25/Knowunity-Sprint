@@ -42,6 +42,8 @@ const ROUTES = [
   '/entry/compose',
   '/entry/ready',
   '/entry/folders',
+  '/entry/quiz',
+  '/entry/summarize',
   '/recall/idle',
   '/recall/recording',
   '/recall/answer-sent',

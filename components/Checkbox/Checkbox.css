@@ -37,6 +37,22 @@
   border-style: solid;
   border-width: var(--semantic-stroke-strong);
   border-radius: var(--semantic-radius-pill);
+  /* THE ONE INTERACTION THIS COMPONENT HAS, AND IT HAD NO SECOND BEAT.
+     Selecting was an instant colour swap: the disc was empty, then it was
+     violet, with nothing in between to say the tap landed.
+
+     `motion/duration/instant` is the token for precisely this — its own
+     description reads "A state flipping under the student's finger. Press
+     feedback, a chip selecting" — and `motion/easing/standard` is "the curve
+     for anything the student caused". `voiceFab` already binds this scale;
+     this is the same scale finally reaching the control that needed it most.
+
+     Named properties rather than `all`, so a future layout change cannot
+     accidentally animate a size. Checkbox is shared, so every consumer —
+     the rating rows, listItem's Strong tick — gains the beat. */
+  transition:
+    background-color var(--semantic-motion-duration-instant) var(--semantic-motion-easing-standard),
+    border-color var(--semantic-motion-duration-instant) var(--semantic-motion-easing-standard);
   /* Unselected boxes are an outline only. */
   background: none;
 }
@@ -72,12 +88,14 @@
    unnoticed on their own and not close enough to match beside each other, which
    is how it surfaced: `listItem` draws the same disc from the same node.
 
-   TOKEN NOTE. The semantic layer carries that value under one name only,
-   `highlight/border`, documented as the edge of the active tab. A
-   `highlight/indicator` alias is requested in design-system.md's Gaps. */
+   GAP CLOSED. This took `highlight/border` — the same value under the STROKE
+   role's name, "the edge of the active tab" — because that was the only name
+   the semantic layer carried. Disclosing the swap recorded the decision; it
+   did not make a stroke token correct as a surface. `highlight/indicator`
+   now exists for exactly this, and Figma binds both fill and stroke to it. */
 .knw-checkbox--Selected.knw-checkbox--Default .knw-checkbox__box {
-  border-color: var(--semantic-highlight-border);
-  background: var(--semantic-highlight-border);
+  border-color: var(--semantic-highlight-indicator);
+  background: var(--semantic-highlight-indicator);
 }
 
 .knw-checkbox--Selected.knw-checkbox--Error .knw-checkbox__box {

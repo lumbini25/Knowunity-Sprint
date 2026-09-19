@@ -59,6 +59,22 @@ export interface ChipsProps extends Omit<HTMLAttributes<HTMLElement>, 'color'> {
   onRightIconPress?: () => void;
   /** Accessible name for the trailing control. Required when it is pressable. */
   rightIconLabel?: string;
+  /**
+   * Whether this chip is a toggle, and therefore reports `aria-pressed`.
+   *
+   * IT IS NOT THE SAME QUESTION AS `onPress`. Every pressable chip used to
+   * report `aria-pressed` on the reasoning that "a pressable chip is a
+   * toggle" — but Home's "Explain out loud" chip presses to *leave the
+   * screen*, and a screen reader announced it as "toggle button, not pressed"
+   * for a control that navigates. That tells a student the tap will switch
+   * something on and leave them where they are, which is the opposite of what
+   * it does.
+   *
+   * So the two are separated: `onPress` makes the chip a button, `toggle`
+   * makes that button a toggle. A filter chip sets it; a chip that navigates
+   * does not, and announces as a plain button.
+   */
+  toggle?: boolean;
 }
 
 export function Chips({
@@ -73,6 +89,7 @@ export function Chips({
   onPress,
   onRightIconPress,
   rightIconLabel,
+  toggle = false,
   ...rest
 }: ChipsProps) {
   const className = [
@@ -111,14 +128,15 @@ export function Chips({
     </>
   );
 
-  // A pressable chip is a toggle, so it reports its own pressed state.
+  /* `aria-pressed` only when the chip actually toggles — see `toggle`. A
+     navigational chip is a plain button, and announces as one. */
   if (onPress) {
     return (
       <button
         type="button"
         className={className}
         data-active={active === 'True'}
-        aria-pressed={active === 'True'}
+        aria-pressed={toggle ? active === 'True' : undefined}
         onClick={onPress}
         {...rest}
       >

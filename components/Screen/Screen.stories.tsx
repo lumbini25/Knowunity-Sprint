@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
 import { BottomSheet } from '../BottomSheet/BottomSheet';
 import { Button } from '../Button/Button';
 import { ChatInput } from '../ChatInput/ChatInput';
@@ -82,7 +82,9 @@ export const ChatInputInBottomSlot: Story = {
     size: 'iPhone 13',
     topNavigation: <Chips size="S" color="Primary" active="False" Text="Coach me" />,
     middleContent: <p style={{ margin: 0 }}>Ask Knowie anything about this topic.</p>,
-    bottomContent: <ChatInput status="Inactive" />,
+    /* Wired, because the story asserts the microphone. `chatInput` draws
+       the trailing control only when something is listening to it. */
+    bottomContent: <ChatInput status="Inactive" onTrailingPress={fn()} />,
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Record voice' })).toBeVisible();

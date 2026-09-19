@@ -477,6 +477,7 @@
   --semantic-effect-blur-glow: var(--primitive-effect-blur-glow);
 
   --semantic-highlight-border: var(--primitive-color-violet-highlight);
+  --semantic-highlight-indicator: var(--primitive-color-violet-highlight);
 
   --semantic-motion-duration-instant: var(--primitive-duration-100);
   --semantic-motion-duration-quick: var(--primitive-duration-200);

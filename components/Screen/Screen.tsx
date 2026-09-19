@@ -66,7 +66,24 @@ export function Screen({
       {middleContent ? (
         // The body is the part that scrolls, so it has to be keyboard-reachable
         // on its own.
-        <div className="knw-screen__middle" tabIndex={0}>
+        <div
+          className={`knw-screen__middle${
+            /* THE SAFE AREA CANNOT DEPEND ON A SLOT BEING FILLED. The bottom
+               inset lived only on `.knw-screen__bottom`, and that element is
+               not rendered when nothing fills it — so a screen without a
+               bottom slot had no bottom inset at all, and the last thing on it
+               sat under the home indicator. `/entry/folders` is such a screen,
+               and CLAUDE.md's "every screen applies safe-area insets top and
+               bottom" is a hard rule, not a default.
+
+               Flagged here rather than in CSS because the condition is which
+               slots mounted, which only this component knows. A `:has()`
+               selector would work today and break the moment a scrim or sheet
+               renders after the body. */
+            showBottomNavSlot && bottomContent ? '' : ' knw-screen__middle--to-edge'
+          }`}
+          tabIndex={0}
+        >
           {middleContent}
         </div>
       ) : null}

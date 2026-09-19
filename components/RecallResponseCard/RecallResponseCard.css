@@ -302,10 +302,19 @@
   padding-block: var(--semantic-space-layout-s);
 }
 
+/* 157x34 BEFORE THIS, on "App misheard me" and "That's what I said" — the two
+   controls `reference/Voice_UX.md` principle 4 is built around, and the only
+   way a student disputes a transcript. Unlike the bare-text controls elsewhere,
+   this one HAS a surface, so the pill itself grows to the floor rather than
+   hiding a larger target behind it. */
 .knw-rrc__action {
   flex: 1 1 0;
   min-width: 0;
   box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--semantic-size-tap-target-min);
   padding-block: var(--semantic-space-layout-s);
   padding-inline: var(--semantic-space-layout-m);
   border: var(--semantic-stroke-default) solid;
