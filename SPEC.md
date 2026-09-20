@@ -331,7 +331,9 @@ Must be unmistakable. Follows `student talking` (`16219:12449`, superseding `156
 | `0 < confidence < 0.6` | `/recall/misheard` | The words are not trustworthy. Reading them back as captured would ask the student to confirm something they never really said. |
 | `confidence === 0` | `/recall/no-audio` | Nothing arrived. Its own cause, its own screen. |
 
-**Neither failure branch consumes the rung.** A transcription failure is never the student's fault — the same rule `submit()` already enforced, now applied at the moment it becomes knowable. The scripted session exercises all three: term 1 opens at `0.38` (*"Neo… lithic settlement… grew **crowds**"*), term 2 at `0.55`, term 3 silent, and term 0 clean at `0.94`.
+**Neither failure branch consumes the rung.** A transcription failure is never the student's fault — the same rule `submit()` already enforced, now applied at the moment it becomes knowable.
+
+**The scripted session no longer opens a turn on a capture failure.** It used to: term 1 led with `0.38`, term 2 with `0.55` and term 3 with a silent take, so three of the four turns began by telling the student the app had not heard them. On term 2 the detour did not even change the outcome — the take behind it carried the same `Partial`, the same 65, and the same `got`/`stillMissing`, differing only in wording and confidence. Walked end to end that reads as a prototype that cannot hear, not as one that handles failure well. Every attempt-1 take is now above `CONFIDENCE_THRESHOLD`, so the normal flow shows verdicts. `misheard`, `no-audio` and `re-record` keep their routes, their dev-index entries and their Storybook stories, which is where the state list is audited from — and `handOver`'s branching is untouched, so a take below the threshold still routes exactly as before.
 
 > **This reverses an earlier decision, deliberately.** This section used to read *"push-to-talk with explicit send only — auto-endpointing fails in background noise, and that failure is the most common voice-input problem there is."* That reasoning is sound for a shipping product and does not apply here: nothing listens, the take is scripted, and there is no endpointing to fail. What the old behaviour cost was legibility — **the orb's movement is a claim that sound is arriving**, and holding that claim until the student hunts for a control contradicts it. When the app builds real capture, the objection comes back with it and this should return to explicit send.
 >
@@ -703,9 +705,11 @@ Every turn: orb → listening → orb → the take (transcript, Continue / Retry
 | Term | What it should do |
 |---|---|
 | 1 | Passes first attempt. **Badge "Correct", no hint** — a pass has no next rung. Ladder lights nothing. |
-| 2 | Opens on a 0.55-confidence take → **misheard**. Contest it; the rung does **not** move. Re-answer → "Almost there", **ladder on Hint 1, hint inside the card**. Answer again → Correct, still Hint 1. |
-| 3 | Same contest path, then Correct at attempt 1. |
-| 4 | Opens on a silent take → **nothing heard**, rung intact. Then four misses: Hint 1 and Hint 2 **inside the card**, Hint 3 **promoted into its own panel below it**, then **reveal** — model answer, "Try it yourself after reading", no transcript, say-it-back offered. |
+| 2 | **"Almost there"** at attempt 1 — the partial verdict, **ladder on Hint 1, hint inside the card**. Answer again → Correct, still Hint 1. |
+| 3 | Correct at attempt 1. |
+| 4 | **"Almost there"** at attempt 1, and the credit **moves** as the student climbs: 35 at attempt 1, 60 at Hint 1 as one item crosses from missing to got. Then Hint 2 **inside the card**, Hint 3 **promoted into its own panel below it**, then **reveal** — model answer, no transcript, say-it-back offered. |
+
+**The failure states are not on this walk, by design.** `misheard`, `no-audio` and `re-record` open from the dev index or their own URLs, and each has its own Storybook story. Walking them here meant three of four turns opening on "we didn't hear you", which demonstrates the wrong thing about a voice product.
 
 Then the escapes, which matter more than the happy path:
 

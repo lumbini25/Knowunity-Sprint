@@ -373,17 +373,19 @@ export const SESSION: ScriptedTerm[] = [
       {
         rung: 'attempt1',
         takes: [
-          /* A low-confidence take — "the app misheard me" is offered before the
-             verdict is allowed to stand. Contesting it hands back the clean
-             take below, and costs the student no rung. */
-          {
-            transcript: '"It was when Britain kept a pease? with Hitler to avoid a war, I think."',
-            confidence: 0.55,
-            verdict: 'Partial',
-            score: 65,
-            got: ['Concession to avoid war'],
-            stillMissing: ['Names Munich or the Sudetenland', 'Why conceding made war more likely'],
-          },
+          /* THE MISHEARD DETOUR USED TO OPEN THIS TURN, and it was the wrong
+             place for it. A take at 0.55 sits under `CONFIDENCE_THRESHOLD`, so
+             `handOver` routed the student to "Didn't catch that" before the
+             verdict was allowed to stand — on the second turn of the scripted
+             session, with nothing wrong with what they said. The take behind it
+             carried the SAME verdict, score, `got` and `stillMissing`: the only
+             difference was the transcript's wording and its confidence, so the
+             detour cost a screen and changed nothing about the outcome.
+
+             A transcription failure is a low-STT state. It belongs on the turn
+             where the audio was genuinely bad, not on the main line of a
+             scripted demo — and it stays reachable on its own route and in its
+             own stories, which is where the state list is audited from. */
           {
             transcript:
               '"It was when Britain and France kept giving Hitler what he asked for to avoid another war."',
@@ -487,13 +489,12 @@ export const SESSION: ScriptedTerm[] = [
       {
         rung: 'attempt1',
         takes: [
-          /* Nothing usable came back. No rung is consumed; the student retries
-             into the clean take below. */
-          {
-            transcript: '"Total war is when... the whole... uh... hm, sorry."',
-            confidence: 0.38,
-            verdict: 'Wrong',
-          },
+          /* A 0.38 take opened this turn and sent the student to "Didn't catch
+             that" — the same detour `appeasement` carried, on the only other
+             turn that had one. Two of four turns in the scripted session began
+             by telling the student the app had failed to hear them, which
+             reads as a broken prototype rather than as a handled failure. Off
+             the main line for the same reason; the state keeps its route. */
           {
             transcript:
               '"It is when the entire country is put to work on the war, not just the army — factories, rationing, everyone."',
@@ -598,9 +599,12 @@ export const SESSION: ScriptedTerm[] = [
       {
         rung: 'attempt1',
         takes: [
-          /* Nothing was heard at all. Its own state, its own cause, and no rung
-             consumed — see `isSilent`. */
-          { transcript: '', confidence: 0, verdict: 'Wrong' },
+          /* A SILENT TAKE OPENED THIS TURN, sending the student to "Nothing
+             heard" before they had been heard at all. Same call as the two
+             misheard detours above and made at the same time: a capture
+             failure is a capture failure, and the scripted normal flow should
+             not manufacture one. `isSilent` and the `no-audio` route are
+             unchanged and still reached by their own story and URL. */
           /* PARTIAL, NOT WRONG — the student named one of the three things.
              See the ladder note on this term: credit is shown while they climb
              and withheld only at the last rung. */
