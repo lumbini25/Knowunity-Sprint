@@ -317,7 +317,7 @@ The resting state of every term, and the loop's spine.
 
 ### 10 · Listening — `/recall/recording`
 
-Must be unmistakable. Follows `student talking` (`15620:9125`) and `student not talking` (`15707:18513`).
+Must be unmistakable. Follows `student talking` (`16219:12449`, superseding `15620:9125`) and `student not talking` (`15707:18513`).
 
 **States** — `waveformCard state="Talking"` while sound is arriving, `state="Idle"` while paused. That is the only difference between Figma's two frames, and it is the whole screen's job. The orb is `state="Recording"` in **both**, so the waveform carries the change and `voiceFab` is untouched.
 
@@ -337,9 +337,9 @@ Must be unmistakable. Follows `student talking` (`15620:9125`) and `student not 
 >
 > Both constants live in `lib/recall/script.tsx` beside `JUDGE_LATENCY_MS`: mocked latency, not design motion, and not a token — there is nothing in `tokens/tokens.json` they could come from.
 
-**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL, tucked 37.5% behind the waveform exactly as it tucks behind the question bubble), `WaveformCard`, `VoiceFab` (state=Recording, captioned **"Listening"**), `TypeAnswer`, `RecallSkip`.
+**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL, tucked 37.5% behind the waveform exactly as it tucks behind the question bubble), `WaveformCard`, `QuestionBubble` (no intro), `VoiceFab` (state=Recording, captioned **"Listening"**), `TypeAnswer`, `RecallSkip`.
 
-**No question bubble** — neither frame has one. The question belongs to idle; this screen's job is status.
+**The question stays on screen, restated under the waveform.** This reverses the earlier decision recorded here — "no question bubble, the question belongs to idle" — which the updated frame no longer draws. A student giving a long spoken answer can lose sight of what was asked; Voice_UX principle 1 (status is the most important job) still holds, and restating rather than re-asking is what keeps both true at once. Same surface `QuestionBubble` draws on idle and answer-sent, minus the intro line.
 
 | The student can | Which leads to |
 |---|---|

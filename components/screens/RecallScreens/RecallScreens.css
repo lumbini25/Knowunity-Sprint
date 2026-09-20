@@ -237,8 +237,12 @@ span.knw-recall__exit {
   color: var(--semantic-text-primary);
 }
 
-/* Figma insets the question 20px below the intro. */
-.knw-recall__question {
+/* Figma insets the question 20px below the intro — only when an intro is
+   actually there. `QuestionBubble` renders bare on attempts 2-4 and now on
+   the listening screen too, and the inset is the intro's gap, not the
+   question's own: applied unconditionally it left a dangling 20px at the top
+   of the bubble with nothing above it to separate from. */
+.knw-recall__intro + .knw-recall__question {
   padding-block-start: var(--semantic-space-layout-xl);
 }
 
@@ -349,7 +353,13 @@ span.knw-recall__exit {
   font-size: var(--semantic-type-scale-headline-s-font-size);
   line-height: var(--semantic-type-scale-headline-s-line-height);
   letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
-  color: var(--semantic-interactive-primary);
+  /* text/primary, not interactive/primary. The two resolve to the same hex
+     today by coincidence — different primitive chains that happen to land on
+     the same value — so this rendered correctly while binding the wrong
+     role. A heading is text, not a control fill; interactive/primary moving
+     independently (a brand-colour change, say) would have taken this label's
+     colour with it for no reason connected to the label at all. */
+  color: var(--semantic-text-primary);
   text-align: center;
 }
 
@@ -649,7 +659,16 @@ span.knw-recall__exit {
    space beneath — almost certainly an unfinished frame rather than an intent.
    They are pinned to the bottom slot here, because that is where the app
    screenshots put every CTA and what design-system.md asks for: "CTAs low so
-   thumbs reach them without shifting grip". */
+   thumbs reach them without shifting grip".
+
+   THIS COMMENT WAS FALSE FOR A WHILE, and the rule above is why it is true
+   again. An earlier build moved the choice back into the middle column to
+   follow the frame, leaving this block claiming a pinning that no longer
+   existed and a second comment 20 lines down describing the opposite. Two
+   comments, one screen, contradicting each other, with the JSX settling it
+   silently. The buttons now live in `Screen`'s `bottomContent`, so there is
+   nothing left here to describe: the wrapper this rule styles holds the
+   mascot and the headline only. */
 .knw-recall--rerecord {
   align-items: center;
   gap: var(--semantic-space-layout-2-xl);
@@ -667,14 +686,6 @@ span.knw-recall__exit {
   letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
   color: var(--semantic-text-primary);
   text-align: center;
-}
-
-/* The re-record choice sits under the mascot block rather than in the bottom
-   slot. Figma places it at y351 and leaves the space beneath empty; an earlier
-   build pinned it low on thumb-zone grounds, which overrode the file. */
-.knw-recall__rerecord-actions {
-  width: 100%;
-  padding-block: var(--semantic-space-layout-l);
 }
 
 /* A CTA IS 358 ON EVERY SCREEN, INCLUDING A RECALL TURN.

@@ -601,10 +601,16 @@ export const SESSION: ScriptedTerm[] = [
           /* Nothing was heard at all. Its own state, its own cause, and no rung
              consumed — see `isSilent`. */
           { transcript: '', confidence: 0, verdict: 'Wrong' },
+          /* PARTIAL, NOT WRONG — the student named one of the three things.
+             See the ladder note on this term: credit is shown while they climb
+             and withheld only at the last rung. */
           {
-            transcript: '"They made some treaties and Germany got split up I think."',
+            transcript: '"They split Germany up between the Allies afterwards, I think."',
             confidence: 0.88,
-            verdict: 'Wrong',
+            verdict: 'Partial',
+            score: 35,
+            got: ['Names the occupation of Germany'],
+            stillMissing: ['Names the United Nations', 'Why it was built — the memory of 1919'],
           },
         ],
       },
@@ -620,10 +626,18 @@ export const SESSION: ScriptedTerm[] = [
           ),
         },
         takes: [
+          /* The second Partial, and it MOVES: one item crosses from missing to
+             got and the score follows it, 35 -> 60. A ladder whose feedback
+             never changes teaches the student that answering again is
+             pointless. */
           {
-            transcript: '"Was it the League of Nations? Or something like that anyway."',
+            transcript:
+              '"Germany was occupied by the Allies, and they set up the United Nations so the powers had to keep talking."',
             confidence: 0.9,
-            verdict: 'Wrong',
+            verdict: 'Partial',
+            score: 60,
+            got: ['Names the occupation of Germany', 'Names the United Nations'],
+            stillMissing: ['Why it was built — the memory of 1919'],
           },
         ],
       },
@@ -639,8 +653,14 @@ export const SESSION: ScriptedTerm[] = [
           ),
         },
         takes: [
+          /* THE LAST RUNG OF THE LADDER, AND THE ONLY "NOT QUITE" IN IT.
+             This take is the one the Result screen draws at `rung: 'hint3'` —
+             see the note on `rungs` above for why the verdict shown is always
+             the PREVIOUS rung's. The student names the thing and stops there,
+             which restates the prompt rather than answering it, so there is
+             nothing left to give partial credit for. */
           {
-            transcript: '"Something in America... I cannot remember what it was called."',
+            transcript: '"The United Nations. That is the thing they built."',
             confidence: 0.92,
             verdict: 'Wrong',
           },
@@ -659,7 +679,8 @@ export const SESSION: ScriptedTerm[] = [
         },
         takes: [
           {
-            transcript: '"The United Nations. I am not sure about the rest of it."',
+            transcript:
+              '"The UN, so there was somewhere to argue instead of fight. I do not know what was different from the time before."',
             confidence: 0.94,
             verdict: 'Wrong',
           },

@@ -247,6 +247,33 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 40x40 BY ITS OWN SPEC, AND UNDER THE 44 FLOOR BECAUSE OF IT. The comment
+   above is right that Figma draws a 40 pill; what it did not account for is
+   that the pill IS the whole control, so the drawn size was also the tap size.
+   And this is the one control on the take screen that costs the student
+   something — it forfeits the term — sitting beside Retry, which costs
+   nothing.
+
+   The pill stays 40, because that is what the file draws and the orb's spacing
+   is measured from it. The target grows behind it instead, which is what
+   `size/tapTarget/min`'s own description asks for: "Controls shorter than this
+   keep it as a transparent hit area."
+
+   48, NOT 44. The gate is 44 and the system's answer to it is a 48 token —
+   there is no 44 in the size scale, and the only 44px primitives are a score
+   badge and two font steps, none of which is a control size. Binding one of
+   those would be the same role-mismatch this build keeps finding. 48 clears
+   the gate with four pixels to spare. */
+.knw-fab__discard::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, var(--semantic-size-tap-target-min));
+  height: max(100%, var(--semantic-size-tap-target-min));
+}
+
 .knw-fab__discard:focus-visible {
   outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
   outline-offset: var(--semantic-space-layout-xxs);

@@ -3,8 +3,11 @@
 /* The second beat of the permission primer: the sheet that actually asks. Same
    component as the primer route, with the sheet raised.
 
-   `useRouter` rather than `useRecallNav` — see the primer route: this happens
-   before the session exists. "Allow" is where the loop actually begins. */
+   SCAFFOLDING, LIKE ITS SIBLING ROUTE — see `/recall/permission-primer`. The
+   loop's real ask happens inline at `/recall/idle`, whose "Allow" calls
+   `session.grantMic()`. This standalone beat has no session to grant against,
+   so its own "Allow" only navigates; wiring a grant here would be recording
+   consent for a session this route never touches. */
 
 import { useRouter } from 'next/navigation';
 import { PermissionPrimerScreen } from '../../../components/screens/RecallScreens/RecallScreens';

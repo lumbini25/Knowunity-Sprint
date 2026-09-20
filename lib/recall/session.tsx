@@ -286,6 +286,26 @@ interface Persisted {
   micAsked: boolean;
   /** The confidence self-report. See `RecallSession`. */
   confidence: Confidence | null;
+  /**
+   * The verdict currently on screen.
+   *
+   * IT USED TO BE DELIBERATELY EXCLUDED, on the reasoning that "what is on
+   * screen should not survive a reload, only where the student had got to".
+   * That holds for an answer mid-flight; it does not hold for a verdict that
+   * has already been delivered, because by then the verdict IS where the
+   * student got to.
+   *
+   * Excluding it had a cost the reasoning did not account for: reloading on
+   * `/recall/result` restored the rung but not the verdict, so the card fell
+   * through to `RecallResponseCard`'s own default transcript and showed the
+   * student words they never said, under a real badge, with every control
+   * still working. A fixture standing in for live state — the same defect
+   * class as the summary's demo terms and idle's welcome line.
+   *
+   * `typed` stays out, and for the original reason: it describes a submission
+   * in flight, not a result the student has been shown.
+   */
+  verdict: DisplayedVerdict | null;
 }
 
 function read(): Persisted | null {
@@ -334,6 +354,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     micGranted: false,
     micAsked: false,
     confidence: null,
+    verdict: null,
   });
   const { termIndex, rung, takeIndex, outcomes, micGranted, micAsked, confidence } = progress;
   const [verdict, setVerdict] = useState<DisplayedVerdict | null>(null);
@@ -386,10 +407,16 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       /* Absent in a record written before the rating was read by anything —
          unanswered, which is exactly what `null` means. */
       confidence: saved.confidence ?? null,
+      verdict: saved.verdict ?? null,
     };
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setProgress(restored);
+    /* The verdict is held as its own state rather than inside `progress`,
+       because every path that clears it (`discard`, `contest`, `advance`,
+       `skip`) clears only it. Persisting it means restoring it here too. */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVerdict(restored.verdict ?? null);
   }, []);
 
   /* Skips the mount write, and only the mount write. */
@@ -415,8 +442,12 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       mounted.current = true;
       return;
     }
-    write(progress);
-  }, [progress]);
+    /* The verdict rides along rather than living in `progress`, because the
+       paths that clear it clear only it. Writing both together keeps one
+       record: restoring a rung without the verdict that produced it is what
+       let a default transcript stand in for the student's own words. */
+    write({ ...progress, verdict });
+  }, [progress, verdict]);
 
   const term = SESSION[Math.min(termIndex, SESSION.length - 1)];
   const rungScript = getRung(term, rung);

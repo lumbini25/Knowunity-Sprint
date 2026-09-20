@@ -104,6 +104,7 @@ Push-to-talk only, no voice output, no real STT or AI judge. Prototype ships to 
 - Language switching within a session
 - Mic hardware-busy error handling (noted as known gap)
 - A third pass, or any recovery beyond the second (noted as a deliberate stopping point)
+- A live trigger for mic-denied — this prototype never calls a real permission API, so there is no genuine "OS denied the mic" event for the session to route from. `/recall/permission-primer`, `/recall/permission-sheet` and `/recall/permission-denied` stay real, built screens, reachable by URL and in Storybook, but are deliberately absent from `Destination` — scaffolding for the states, not live turns. The primer a student actually taps through is the inline one at `/recall/idle`.
 
 ---
 

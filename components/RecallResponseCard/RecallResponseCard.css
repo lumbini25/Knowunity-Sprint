@@ -425,6 +425,8 @@
    are indistinguishable on screen and differ only in what a screen reader and
    a keyboard get. */
 .knw-rrc__next--button {
+  /* Positioned for the hit area below. */
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
@@ -432,6 +434,29 @@
   background: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* 350x16 BEFORE THIS — full card width, one line tall. It is the card's own
+   skip on every hint rung, and on this control a mis-tap is not free: it calls
+   `session.skip()`, which records a miss and puts the term on the revise list.
+   A 16px-tall target for the one control that costs the student something.
+
+   The text stays where Figma puts it — bare, right-aligned, no surface — and
+   the target grows behind it, which is what `size/tapTarget/min`'s own
+   description asks for: "Controls shorter than this keep it as a transparent
+   hit area." Full width, because that is the line the student is aiming at.
+
+   NOT the same rule as `.knw-rrc__action`, which took a `min-height` instead:
+   those two are pills with a surface, so their box IS the target and growing
+   it is honest. This one has no surface to grow. */
+.knw-rrc__next--button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  height: max(100%, var(--semantic-size-tap-target-min));
 }
 
 .knw-rrc__next--button:focus-visible {
@@ -554,4 +579,45 @@
   display: flex;
   flex-direction: column;
   gap: var(--semantic-space-layout-m);
+}
+
+/* ===== the verdict arriving ============================================= */
+
+/* IT APPEARED AT FULL OPACITY THE INSTANT THE ROUTE MOUNTED. The badge, the
+   score, the breakdown and the hint all simply existed on the next frame —
+   the judge's answer is the most consequential thing this loop shows a
+   student, and it landed with no beat at all.
+
+   `motion/duration/settle` is the token, and names this case: "Something
+   arriving or leaving. A verdict card, a raised sheet." `motion/easing/enter`
+   is "something appearing. No easing in, so it is already moving when you
+   notice it."
+
+   TRANSFORM ONLY — NO OPACITY, AND NO FILL MODE. The first version of the
+   bottom sheet's entrance faded 0 -> 1 with `both`, which makes the element's
+   RESTING style invisible: anything that stops the animation running leaves a
+   transparent card on screen. Eight stories caught it there. A short rise says
+   the same thing and degrades to "appears instead of rises", which is exactly
+   where this started and is survivable. */
+@keyframes knw-rrc-arrive {
+  from {
+    transform: translateY(var(--semantic-space-layout-m));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.knw-rrc {
+  animation: knw-rrc-arrive var(--semantic-motion-duration-settle)
+    var(--semantic-motion-easing-enter);
+}
+
+/* The verdict still arrives, it just stops travelling. Unlike the orb, whose
+   animation IS its state, this one only describes how the card got here — so
+   removing it costs the student nothing they need. */
+@media (prefers-reduced-motion: reduce) {
+  .knw-rrc {
+    animation: none;
+  }
 }

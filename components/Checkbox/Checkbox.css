@@ -105,3 +105,40 @@
 .knw-checkbox--Selected.knw-checkbox--Disabled .knw-checkbox__box {
   background: var(--semantic-interactive-disabled);
 }
+
+/* ===== the two states it had none of ===== */
+
+/* NO FOCUS RING AND NO PRESS, on the only control two whole screens have.
+   Every other interactive thing in this build answers the keyboard visibly —
+   `voiceFab`'s stage, the header's ✕, `typeAnswerComponent` — and this one
+   took a tab stop and showed nothing for it, so a student navigating the
+   rating screen by keyboard could not see which row they were on.
+
+   The ring goes on the BOX, not on the 48px button around it. The button is a
+   transparent tap target and a ring drawn at its edge floats unattached to
+   anything visible; on the disc it reads as the control being focused. Same
+   three properties `.knw-fab__stage:focus-visible` uses. */
+.knw-checkbox:focus-visible {
+  outline: none;
+}
+
+.knw-checkbox:focus-visible .knw-checkbox__box {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xs);
+}
+
+/* A HALO, NOT A TINT. `button` and `chips` both press by laying a translucent
+   wash over their own fill, and that does not transfer here: an unselected box
+   is an empty outline, so a wash inside it reads as a weak version of being
+   selected — press feedback that imitates the state it is about to produce.
+
+   The halo sits outside the disc instead, so both selections press the same
+   way and neither borrows the other's meaning. `interactive/pressed` rather
+   than `pressed-inverse`: the rows sit on `background/page`, and the inverse
+   token is the dark wash for light or card fills — invisible here.
+
+   It resolves as the disc briefly gaining a ring rather than changing colour,
+   which is the one press affordance that still reads at 24px. */
+.knw-checkbox:not(:disabled):active .knw-checkbox__box {
+  box-shadow: 0 0 0 var(--semantic-space-layout-xs) var(--semantic-interactive-pressed);
+}

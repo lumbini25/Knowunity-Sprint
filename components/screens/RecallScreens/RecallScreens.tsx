@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { useEffect, useId, useState } from 'react';
 import Image from 'next/image';
 import { Screen } from '../../Screen/Screen';
 import { VoiceFab } from '../../VoiceFab/VoiceFab';
@@ -1518,23 +1518,12 @@ export function AnswerSentScreen({
             <TranscriptSection transcript={transcript} />
           </div>
 
-          {/* Horizontal, and it clears buttonGroup's own DON'T — the pair is
-              not being treated as equals. Continue is Primary and carries the
-              rung; Retry is Secondary and costs nothing. */}
-          {!sent && (
-            <ButtonGroup variant="Horizontal" size="M">
-              <Button variant="Primary" size="M" CTA="Continue" onClick={handleSend} />
-              <Button variant="Secondary" size="M" CTA="Retry" onClick={onRetry} />
-            </ButtonGroup>
-          )}
-
           <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
           <div className="knw-recall__fab">
             {/* THE ORB IS STATUS HERE, NOT A CONTROL. Figma captions it
                 "Answer sent" on both beats and puts the decisions in the
-                buttons above — which is what makes the trash, Retry and
-                Continue three different things rather than three ways to
-                leave. */}
+                buttons — which is what makes the trash, Retry and Continue
+                three different things rather than three ways to leave. */}
             {/* THE TRASH ASKS FIRST. `bottom sheet for delete control`
                 (16073:26275) puts a confirmation between the pill and the
                 discard, which is what a destructive control with no undo
@@ -1545,8 +1534,35 @@ export function AnswerSentScreen({
               showDiscard={!sent}
               onDiscard={() => setDiscardRaised(true)}
             />
-            <RecallEscapes {...escapes} />
           </div>
+        </div>
+      }
+      bottomContent={
+        /* THE DECISIONS MOVED BELOW THE ORB, and that is the one real cost of
+           putting CTAs low on this screen. Figma draws Continue and Retry
+           directly under the transcript, which reads well — but it also puts
+           the primary action at y316 of an 844 viewport, the highest CTA in
+           the build, with 110px of dead space under the orb.
+
+           The orb is the thing that can move without losing anything, because
+           here it is status and not a control: it says "answer sent" and
+           takes no tap. So status keeps the middle of the column and the two
+           decisions take the thumb zone, with the text path trailing them as
+           it trails every other CTA in the build.
+
+           Beat 2 has no decisions left — the take is gone to the judge — so
+           the slot carries the text path alone rather than an empty group. */
+        <div className="knw-recall__fab">
+          {/* Horizontal, and it clears buttonGroup's own DON'T — the pair is
+              not being treated as equals. Continue is Primary and carries the
+              rung; Retry is Secondary and costs nothing. */}
+          {!sent && (
+            <ButtonGroup variant="Horizontal" size="M">
+              <Button variant="Primary" size="M" CTA="Continue" onClick={handleSend} />
+              <Button variant="Secondary" size="M" CTA="Retry" onClick={onRetry} />
+            </ButtonGroup>
+          )}
+          <RecallEscapes {...escapes} />
         </div>
       }
       showBottomSheetBackground={discardSheetOpen}
@@ -1982,7 +1998,17 @@ const SETTINGS_PATH = ['Settings', 'Privacy and Security', 'Microphone', 'Knowun
  * rather than absent. `showLabel=false` here: the headline under it says it.
  *
  * The Settings trail is four `chips` at `size=XS`, `color=Primary`,
- * `active=True` — a path, not four actions, which is why they are not buttons.
+ * `active=False` — a path, not four actions, which is why they are not
+ * buttons.
+ *
+ * ACTIVE=FALSE, NOT FIGMA'S ACTIVE=TRUE. The node draws them filled, which is
+ * the treatment `Chips` reserves for a pressed toggle or a selected state —
+ * exactly the affordance these are not. A filled, on-brand pill with no
+ * `onPress` reads as four working buttons that turn out to do nothing, which
+ * is the same "looks tappable, isn't" failure the build avoids everywhere
+ * else a control has no handler. `active=False` is `Chips`' own resting,
+ * label-only fill — the state it already renders for every other non-toggled
+ * chip in the library — so the trail reads as a breadcrumb instead.
  *
  * TOKEN NOTE: `state=Deny`'s description in Figma is still Idle's, word for
  * word ("Mic is ready… Label: 'Tap to answer'"). The nodes were followed.
@@ -2025,11 +2051,13 @@ export function PermissionDeniedScreen({
               <ol className="knw-recall__path">
                 {SETTINGS_PATH.map((step) => (
                   <li key={step}>
-                    {/* Figma sets both icon slots off — the chip is a label. */}
+                    {/* Figma sets both icon slots off — the chip is a label.
+                        `active=False`, not Figma's True — see the doc comment
+                        above: this is a breadcrumb, not four dead buttons. */}
                     <Chips
                       size="XS"
                       color="Primary"
-                      active="True"
+                      active="False"
                       Text={step}
                       showLeftIcon={false}
                       showRightIcon={false}
@@ -2078,7 +2106,7 @@ export function PermissionDeniedScreen({
                       <Chips
                         size="XS"
                         color="Primary"
-                        active="True"
+                        active="False"
                         Text={step}
                         showLeftIcon={false}
                         showRightIcon={false}
@@ -2210,8 +2238,13 @@ export interface ReRecordScreenProps extends Pick<RecallEscapesProps, 'onTypeAns
   prompt?: string;
   /** Take another go at the term. */
   onContinue?: () => void;
-  /** Move on without re-answering. */
-  onNextQuestion?: () => void;
+  /**
+   * Give the term up. It calls the same `session.skip()` every other skip in
+   * the loop calls, so it records a miss and puts the term on the revise
+   * list — which is why it is no longer named `onNextQuestion`. See the
+   * component's note on the label.
+   */
+  onSkip?: () => void;
   onExit?: () => void;
 }
 
@@ -2223,11 +2256,26 @@ export interface ReRecordScreenProps extends Pick<RecallEscapesProps, 'onTypeAns
  * transcript, no card, no verdict — because the dispute is already settled and
  * the only thing left is the choice.
  *
- * TWO DEPARTURES FROM THE FILE, both spacing:
+ * THE SECOND CHOICE NAMES ITS COST. It read "Next question", which sounds
+ * like paging forward and is not: it calls `session.skip()`, the same
+ * function the loop's own Skip control calls, so the term is recorded as a
+ * miss and lands on the revise list. On the one screen whose whole premise is
+ * that a transcription failure was "never the student's fault", a control
+ * that quietly charges them for it is the wrong control. It is "Skip
+ * question" now — the same words the loop uses for the same action
+ * everywhere else, because one action should not have two names.
+ *
+ * THREE DEPARTURES FROM THE FILE, all spacing or placement:
  *   - The mascot-to-headline gap is 37, which is off the scale (the steps
  *     either side are 32 and 48). `layout/2XL` is used.
  *   - `Frame 2147207702` pads the button block by 16 block, which is what the
  *     actions wrapper here reproduces.
+ *   - **The choice is pinned to the bottom slot, where Figma floats it at
+ *     y351 over 365px of empty frame.** design-system.md asks for "CTAs low so
+ *     thumbs reach them without shifting grip", and an audit of every built
+ *     route found this screen among only three whose primary action sat in the
+ *     top half of the viewport. The file's own placement reads as an
+ *     unfinished frame rather than an intent; the system's rule wins.
  *
  * One node inside this screen (`I15816:23651;4794:5832;15816:23969`) is a
  * broken instance reference — present in the tree, resolving to nothing, and
@@ -2238,7 +2286,7 @@ export interface ReRecordScreenProps extends Pick<RecallEscapesProps, 'onTypeAns
 export function ReRecordScreen({
   prompt = 'Sometimes it can happen. Do you want to try?',
   onContinue,
-  onNextQuestion,
+  onSkip,
   onExit,
   ...escapes
 }: ReRecordScreenProps) {
@@ -2253,23 +2301,26 @@ export function ReRecordScreen({
             <Knowie pose="excited" />
           </MascotSlot>
           <h2 className="knw-recall__rerecord-prompt">{prompt}</h2>
+        </div>
+      }
+      bottomContent={
+        /* The same block every screen whose CTA is pinned low now uses: the
+           choice, then the text path under it. `.knw-recall__fab` is the
+           wrapper that carries the fab-block-to-link gap, so the distance
+           from the buttons to "Type your answer" is the one value it is on
+           every other screen rather than the bottom slot's own 4. */
+        <div className="knw-recall__fab">
+          {/* Size M — the one button size the build uses, on every screen. */}
+          <ButtonGroup variant="Vertical" size="M">
+            <Button variant="Primary" size="M" CTA="Continue" onClick={onContinue} />
+            <Button variant="Secondary" size="M" CTA="Skip question" onClick={onSkip} />
+          </ButtonGroup>
 
-          {/* The choice sits directly under the block, not pinned to the
-              bottom of the screen. Figma places it at y351 with the space
-              below left empty, and that is followed here. */}
-          <div className="knw-recall__rerecord-actions">
-            {/* Size M — the one button size the build uses, on every screen. */}
-            <ButtonGroup variant="Vertical" size="M">
-              <Button variant="Primary" size="M" CTA="Continue" onClick={onContinue} />
-              <Button variant="Secondary" size="M" CTA="Next question" onClick={onNextQuestion} />
-            </ButtonGroup>
-          </div>
-
-          {/* The text path. Figma's frame offers only Continue and Next
-              question, but CLAUDE.md makes a text fallback non-negotiable on
-              every recall screen and this is one — a student contesting a
-              transcript may well be contesting it because speaking is not
-              working for them right now. */}
+          {/* The text path. Figma's frame offers only the two buttons, but
+              CLAUDE.md makes a text fallback non-negotiable on every recall
+              screen and this is one — a student contesting a transcript may
+              well be contesting it because speaking is not working for them
+              right now. */}
           <RecallEscapes {...escapes} />
         </div>
       }
@@ -2376,6 +2427,9 @@ export interface ListeningScreenProps extends RecallEscapesProps {
   talking?: boolean;
   /** Bar heights. Any positive scale; they are normalised to their own peak. */
   amplitudes?: readonly number[];
+  /** The question, restated under the waveform. A node, so the key term is
+      bold where the app bolds it. */
+  prompt?: ReactNode;
   progress?: number;
   progressText?: string;
   /** Stop and hand the take over. */
@@ -2384,15 +2438,21 @@ export interface ListeningScreenProps extends RecallEscapesProps {
 }
 
 /**
- * Follows `student talking` (15620:9125) and `student not talking`
- * (15707:18513). The two frames are identical but for the waveform's state,
- * which is the whole point: the screen has to show that sound is arriving.
+ * Follows `student talking` (16219:12449) and `student not talking`, its
+ * unchanged sibling. The two frames are identical but for the waveform's
+ * state, which carries the screen's primary job: showing that sound is
+ * arriving.
  *
- * NO QUESTION BUBBLE, AND THAT IS DELIBERATE — neither frame has one. The
- * question belongs to idle, the moment before; this screen's job is status,
- * and Voice_UX principle 1 says that job is the most important one in voice
- * UI. The mascot stays, tucked 37.5% behind the waveform exactly as it tucks
- * behind the bubble.
+ * THE QUESTION NOW STAYS ON SCREEN — a reversal of this screen's earlier
+ * design, where neither Figma frame drew one and the reasoning was that the
+ * question belongs to idle, the moment before. The current frame draws it
+ * under the waveform card, in the same surface QuestionBubble already renders
+ * for idle and answer-sent, minus the intro line: Voice_UX principle 1 (status
+ * is the most important job) still holds, but losing sight of what was asked
+ * while giving a long spoken answer is its own way to strand a student, and
+ * the updated design answers that by restating rather than re-asking. The
+ * mascot stays tucked 37.5% behind the waveform, as it does behind the bubble
+ * everywhere else.
  *
  * NO CANCEL. Nothing is recorded yet to throw away — the discard lives on the
  * take screen, one beat later, where a take exists. `voiceFab` enforces this
@@ -2412,6 +2472,12 @@ export interface ListeningScreenProps extends RecallEscapesProps {
 export function ListeningScreen({
   talking = true,
   amplitudes,
+  prompt = (
+    <>
+      What were the major <strong>turning points</strong> of World War II, and why were they
+      significant?
+    </>
+  ),
   progress = 0,
   progressText = '1 of 4',
   onSend,
@@ -2437,6 +2503,9 @@ export function ListeningScreen({
           <div className="knw-recall__prompt">
             <WaveformCard state={talking ? 'Talking' : 'Idle'} amplitudes={amplitudes} />
           </div>
+          {/* Restated, not re-asked: the same bubble idle draws, without the
+              intro line Knowie already delivered a turn ago. */}
+          <QuestionBubble question={prompt} />
           <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
           <div className="knw-recall__fab">
             <VoiceFab state="Recording" label="Listening" onPress={onSend} />
@@ -2758,16 +2827,24 @@ export function NoAudioScreen({
             caption="This one doesn’t count — have another go."
             headingLevel={2}
           />
-          <div className="knw-recall__fab">
-            {/* A group of one, so the CTA fills its column like every other
-                primary in the build. A bare Button hugs its label — this came
-                out 91 wide beside 358s everywhere else. */}
-            {/* Size M — the one button size the build uses, on every screen. */}
-            <ButtonGroup variant="Vertical" size="M">
-              <Button variant="Primary" size="M" CTA="Try again" onClick={onRetry} />
-            </ButtonGroup>
-            <RecallEscapes {...escapes} />
-          </div>
+        </div>
+      }
+      bottomContent={
+        /* PINNED LOW, where this sat mid-screen at y335. There is no orb on
+           this screen to hold the bottom of the column, so "Try again" simply
+           stopped wherever the content above it ended — which put the one
+           control on a dead-end screen in the top half of the viewport,
+           against design-system.md's "CTAs low so thumbs reach them". The
+           whole block moves, so the button-to-link gap is unchanged. */
+        <div className="knw-recall__fab">
+          {/* A group of one, so the CTA fills its column like every other
+              primary in the build. A bare Button hugs its label — this came
+              out 91 wide beside 358s everywhere else. */}
+          {/* Size M — the one button size the build uses, on every screen. */}
+          <ButtonGroup variant="Vertical" size="M">
+            <Button variant="Primary" size="M" CTA="Try again" onClick={onRetry} />
+          </ButtonGroup>
+          <RecallEscapes {...escapes} />
         </div>
       }
     />
@@ -3338,6 +3415,7 @@ export function SessionRatingScreen({
 }: SessionRatingScreenProps) {
   const [picked, setPicked] = useState<RatingOption | null>(null);
   const value = valueProp !== undefined ? valueProp : picked;
+  const titleId = useId();
 
   const choose = (option: RatingOption) => {
     /* Tapping the chosen row again clears it — the question is optional, so
@@ -3345,6 +3423,39 @@ export function SessionRatingScreen({
     const next = value === option ? null : option;
     setPicked(next);
     onChange?.(next);
+  };
+
+  /* ARROWS MOVE, SPACE CHOOSES — a deliberate departure from the APG radio
+     pattern, which checks each option as the arrow lands on it.
+
+     That auto-select assumes answering is mandatory, and here it is not: the
+     screen's own rule is that Continue is always live and nothing is
+     required. With APG's behaviour a keyboard student could not read the
+     three options without having answered by the time they reached the third,
+     and the only way back to "I would rather not say" would be to find the
+     one they accidentally chose and press it again. Focus and selection stay
+     separate, so arrowing through the list commits to nothing.
+
+     Everything else the pattern asks for is here: one tab stop for the group,
+     wrapping arrows, and both axes accepted because a vertical list read
+     horizontally is still the same list. */
+  const onOptionKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
+    const forward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
+    const back = event.key === 'ArrowUp' || event.key === 'ArrowLeft';
+    if (!forward && !back) return;
+
+    const radios = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]'),
+    );
+    const here = radios.indexOf(document.activeElement as HTMLButtonElement);
+    if (here === -1) return;
+
+    /* Preventing the default only once the key is known to be one this group
+       handles, and only once focus is actually inside it — otherwise this
+       swallows the page scroll on a screen that has nothing to do with the
+       rating. */
+    event.preventDefault();
+    radios[(here + (forward ? 1 : -1) + radios.length) % radios.length]?.focus();
   };
 
   return (
@@ -3363,7 +3474,9 @@ export function SessionRatingScreen({
             </MascotSlot>
 
             <div className="knw-rating__ask">
-              <h1 className="knw-rating__title">How confident are you now?</h1>
+              <h1 className="knw-rating__title" id={titleId}>
+                How confident are you now?
+              </h1>
 
               <div className="knw-rating__topics">
                 <h2 className="knw-rating__topics-label">Topics covered</h2>
@@ -3376,8 +3489,25 @@ export function SessionRatingScreen({
             </div>
           </div>
 
-          <ul className="knw-rating__options">
-            {RATING_OPTIONS.map((option) => (
+          {/* A RADIO GROUP, BECAUSE THAT IS THE QUESTION BEING ASKED. The
+              three options are mutually exclusive readings of one feeling and
+              `choose()` has always enforced that — but enforcing it only in
+              the handler left the accessibility tree describing three
+              independent checkboxes, so a student on a screen reader was told
+              they could pick all three of "I need to practice", "Somewhat
+              less confident" and "I am pretty confident". The behaviour was
+              single-select and the announcement was not.
+
+              The group is named by the question itself rather than a second
+              label written for screen readers alone — there is already a
+              heading on screen saying exactly what this is for. */}
+          <ul
+            className="knw-rating__options"
+            role="radiogroup"
+            aria-labelledby={titleId}
+            onKeyDown={onOptionKeyDown}
+          >
+            {RATING_OPTIONS.map((option, index) => (
               /* THE WHOLE ROW IS THE TARGET, not just the 24px disc at the end
                  of it. Every list row in the app — the study plan, the folder
                  list, the summary's own topics — takes a tap anywhere along it,
@@ -3392,6 +3522,15 @@ export function SessionRatingScreen({
               <li
                 key={option}
                 className="knw-rating__option"
+                /* PRESENTATIONAL, because the list stopped being a list the
+                   moment the <ul> became the radio group. A radiogroup owns
+                   radios, so these rows are layout around them — and left
+                   as real listitems they are orphans: axe fails the screen
+                   with "<li> elements must be contained in a <ul> or <ol>",
+                   since their parent now answers to `radiogroup` instead.
+                   The markup stays a list for the CSS and the DOM; only the
+                   announcement changes. */
+                role="presentation"
                 onClick={() => choose(option)}
               >
                 <p className="knw-rating__option-label" aria-hidden="true">
@@ -3399,8 +3538,15 @@ export function SessionRatingScreen({
                 </p>
                 <Checkbox
                   label={option}
+                  role="radio"
                   Selection={value === option ? 'Selected' : 'Unselected'}
                   State="Default"
+                  /* ONE TAB STOP FOR THE GROUP, not three. A radio group is a
+                     single control from the keyboard's point of view: Tab
+                     reaches it, arrows move inside it, Tab leaves it. With no
+                     answer yet the first option holds the stop, which is what
+                     the pattern asks for when nothing is selected. */
+                  tabIndex={(value === null ? index === 0 : value === option) ? 0 : -1}
                   /* The row already handles the tap; letting the box handle it
                      too would toggle twice and land back where it started. */
                   onToggle={undefined}
