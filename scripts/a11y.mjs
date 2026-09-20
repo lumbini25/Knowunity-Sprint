@@ -118,10 +118,26 @@ async function main() {
        would audit the verdict screen twice and never audit this one, so the
        audit has to happen inside the beat — hence no settle wait here. */
     await page.addScriptTag({ content: AXE_SOURCE });
+    /* WCAG 2.2 IS IN THE LIST, AND IT WAS NOT. The tags stopped at 2.1, so
+       `target-size` — 2.5.8, a 2.2 rule — could not be reported by this
+       harness at all. It still printed "0 violations" on every route while
+       controls shipped under the floor on nine screens, which is the exact
+       shape CLAUDE.md's Verification section warns about: a check that
+       reassures about a defect it cannot express.
+
+       THIS IS A FLOOR, NOT THE RULE. axe's `target-size` fails at 24×24 —
+       WCAG's minimum — where this project's own rule is
+       `size/tapTarget/min` (48) at the RENDERED size. So a 32×32 control
+       passes here and still breaks CLAUDE.md. Green on this line means "no
+       control is beneath the web's floor", not "every control is big
+       enough". Measure when it matters. */
     const results = await page.evaluate(async () => {
       // @ts-expect-error — axe is injected above, not imported.
       return await window.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        runOnly: {
+          type: 'tag',
+          values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'],
+        },
       });
     });
 

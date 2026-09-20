@@ -817,6 +817,15 @@ Built against Figma: `student talking` / `student not talking` (listening), `can
 
 The route names were kept because `lib/recall/session.tsx` already declared them and churning a state machine for a label buys nothing. The **caption** follows Figma — the orb on the listening screen says "Listening", not `voiceFab`'s own "Tap to send" default. SPEC.md row 14 used to say "Comparison at `/recall/comparison`", a third name for the reveal; it now says `reveal` like the other two.
 
+### Two X marks, and they are not the same control
+
+`CloseIcon` (a thin stroked X, `RecallScreens/icons.tsx`) and `XCloseIcon` (a filled, mitred X, `BottomSheet/icons.tsx`) both render on screens in this loop, and a scorecard flagged that as drift — "two different SVG drawings of 'dismiss'". Traced fully, they are not drawing the same thing:
+
+- `CloseIcon` is `RecallHeader`'s exit, `aria-label="Leave session"` — it ends the whole recall turn and is the only glyph that ever does, consistent on every recall screen that carries one.
+- `XCloseIcon` is what closes something narrower and local: any `BottomSheet` (a raised sheet over the screen behind it, which stays exactly where it was), `TextField`'s clear, `ChatInput`'s cancel-recording.
+
+Leaving a session and dismissing an overlay you can reopen are different weights of action, and reader already gets a proportional cue: the header control is *smaller* stakes visually but *larger* in consequence, where the sheet's dismiss is the reverse — a bigger glyph for a fully reversible tap. Unifying them on one glyph, as the finding proposed, would erase that distinction rather than fix an inconsistency. Kept as two, deliberately, after tracing every call site of both.
+
 ### What the result screen does NOT inherit from a recall turn
 
 Two rules that hold everywhere else are deliberately off here, because none of the four `hint ladder` frames has them:
@@ -824,7 +833,7 @@ Two rules that hold everywhere else are deliberately off here, because none of t
 - **No mascot, so no 37.5% tuck.** Idle asks the question with Knowie behind it; the result screen *restates* the question in a plain 64-high bar so the student can answer without scrolling back. Knowie reporting is not Knowie asking.
 - **No question bubble.** Same reason. `.knw-recall__askbar` is the flat restatement, at `body/S` on `background/surface` at `radius/input`.
 
-The listening screen keeps the tuck — the waveform is the panel Knowie leans over — but drops the question bubble, which neither frame draws.
+The listening screen keeps the tuck — the waveform is the panel Knowie leans over — and, unlike the result screen, keeps the question bubble too: the updated `student talking` frame (`16219:12449`) draws it under the waveform, full `QuestionBubble` with no intro, not the result screen's flat askbar. Knowie is still on screen here, asking, so the bubble is the right surface rather than the plain restatement a mascot-less screen uses.
 
 ### The hint ladder escalates in shape, not only in words
 

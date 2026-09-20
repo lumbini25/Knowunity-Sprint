@@ -1,9 +1,10 @@
 /* Consistency audit.
  *
  * `npm run a11y` answers "is this screen usable". This answers a different
- * question: "is this screen the SAME as the others". It walks every route at
- * 390x844 dark and reports three classes of drift that no test catches and the
- * eye catches only by accident:
+ * question: "is this screen the SAME as the others". It walks every DESIGNED
+ * route at 390x844 dark — see `ROUTES` for the one deliberate omission and why
+ * — and reports three classes of drift that no test catches and the eye
+ * catches only by accident:
  *
  *   1. OFF-SCALE values   — a size, space or radius that is not a token step.
  *                           These are always bugs: a literal crept in, or a
@@ -21,8 +22,23 @@ import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000';
 
+/* EVERY DESIGNED ROUTE, AND ONE DELIBERATE OMISSION.
+ *
+ * `/entry/quiz` and `/entry/summarize` were missing with no reason recorded —
+ * two designed screens, each with its own stories, that no consistency run had
+ * ever measured. They are in now.
+ *
+ * `/` stays out ON PURPOSE, and this is the difference from `a11y`'s list
+ * rather than drift between them: the dev index is scaffolding, and
+ * `app/page.tsx` says so itself — "no mascot, no scaffold and no chrome that
+ * would imply it is part of the product". It has no gutter to compare and its
+ * type belongs to no screen, so auditing it would add rows to the type table
+ * for a page no student ever opens. `a11y` audits it because a page a
+ * developer opens still has to be operable; this does not, because it is not
+ * a designed screen. Two lists, two questions, one recorded reason. */
 const ROUTES = [
   '/entry', '/entry/compose', '/entry/ready', '/entry/folders',
+  '/entry/quiz', '/entry/summarize',
   '/recall/idle', '/recall/recording', '/recall/answer-sent', '/recall/processing',
   '/recall/result', '/recall/correct', '/recall/correct-feedback', '/recall/reveal',
   '/recall/wrong', '/recall/comparison', '/recall/rating', '/recall/summary',

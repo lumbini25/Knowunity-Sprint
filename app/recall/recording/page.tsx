@@ -61,6 +61,7 @@ export default function Page() {
   return (
     <ListeningScreen
       talking={talking}
+      prompt={session.term.question}
       progress={(session.termIndex / session.termCount) * 100}
       progressText={`${session.termIndex + 1} of ${session.termCount}`}
       onSend={send}

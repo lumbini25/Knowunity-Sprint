@@ -787,6 +787,17 @@ export const Misheard: Story = {
     // for a recorded miss.
     await expect(canvas.queryByRole('button', { name: 'Skip question' })).toBeNull();
 
+    /* MEASURE AFTER THE CARD HAS LANDED. `.knw-rrc` now rises on mount — the
+       verdict is the most consequential thing this loop shows and it used to
+       appear with no beat at all — so every `getBoundingClientRect` below runs
+       mid-flight unless it waits. The card is translated down by
+       `space/layout/M` at frame 0, which reads as a 12px error in the tuck
+       measurement and nothing else.
+
+       Waiting on the element's own animations rather than a fixed timeout, so
+       this stays correct if the duration token changes. */
+    await Promise.all(card.getAnimations({ subtree: true }).map((a) => a.finished));
+
     // The card clears the slot gutter and re-applies the recall gutter, so its
     // surface is 350 — what `recall-partial` and `recall-correct` both draw,
     // not the scaffold's 358.
@@ -807,7 +818,11 @@ export const Misheard: Story = {
 
 export const ReRecord: Story = {
   name: '11b · Re-record offer',
-  render: () => <ReRecordScreen onContinue={fn()} onNextQuestion={fn()} onExit={fn()} />,
+  /* `onSkip`, not `onNextQuestion`. The handler calls `session.skip()` — a
+     recorded miss on the revise list — so a name and a label that both said
+     "next question" described paging forward while the call cost the student
+     the term. Renamed at the component; this call site follows it. */
+  render: () => <ReRecordScreen onContinue={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
     // The second beat: the dispute is settled, only the choice is left. No
     // transcript, no card, no verdict.
@@ -829,15 +844,31 @@ export const ReRecord: Story = {
     await expect(canvasElement.querySelector('.knw-recall__mascot')).toBeNull();
     await expect(canvasElement.querySelector('.knw-mascot')).toBeTruthy();
 
-    // buttonGroup Vertical: the two choices sit flush and equal-weight, and
-    // they sit under the mascot block rather than pinned to the bottom slot —
-    // which is where Figma places them.
+    /* buttonGroup Vertical: the two choices sit flush and equal-weight, and
+       they are PINNED TO THE BOTTOM SLOT — the reverse of what this story used
+       to assert. Figma floats them at y351 over 365px of empty frame, which an
+       audit of every built route showed left this among only three screens
+       whose primary action sat in the top half of the viewport, against
+       design-system.md's "CTAs low so thumbs reach them". */
     await expect(canvasElement.querySelector('.knw-buttongroup--Vertical')).toBeTruthy();
-    await expect(canvasElement.querySelector('.knw-screen__bottom')).toBeNull();
+    const bottom = canvasElement.querySelector('.knw-screen__bottom') as HTMLElement;
+    await expect(bottom).toBeTruthy();
+    await expect(bottom.querySelector('.knw-buttongroup')).toBeTruthy();
+
+    /* THE SECOND CHOICE NAMES ITS COST. It read "Next question", which sounds
+       like paging forward, while calling `session.skip()` — a recorded miss on
+       the revise list. On the screen whose whole premise is that a bad
+       transcript was never the student's fault, that is the one control that
+       has to say what it charges. Same words the loop uses for the same action
+       everywhere else. */
     const cont = canvas.getByRole('button', { name: 'Continue' });
-    const next = canvas.getByRole('button', { name: 'Next question' });
-    await expect(Math.round(next.getBoundingClientRect().top - cont.getBoundingClientRect().bottom))
+    const skip = canvas.getByRole('button', { name: 'Skip question' });
+    await expect(canvas.queryByRole('button', { name: 'Next question' })).toBeNull();
+    await expect(Math.round(skip.getBoundingClientRect().top - cont.getBoundingClientRect().bottom))
       .toBe(0);
+
+    // And the text path still trails the choice, as it does on every screen.
+    await expect(bottom.querySelector('.knw-typeanswer')).toBeTruthy();
   },
 };
 
@@ -960,9 +991,11 @@ export const ListeningTalking: Story = {
     // The waveform says sound is arriving. This is the whole screen.
     await expect(canvas.getByLabelText('Recording your answer')).toBeVisible();
 
-    // NO QUESTION BUBBLE. Neither Figma frame has one — the question belongs
-    // to idle, and this screen's job is status.
-    await expect(canvasElement.querySelector('.knw-recall__bubble')).toBeNull();
+    // THE QUESTION STAYS ON SCREEN — the updated Figma frame (16219:12449)
+    // restates it under the waveform, without the intro line idle carries.
+    await expect(canvasElement.querySelector('.knw-recall__bubble')).toBeTruthy();
+    await expect(canvasElement.querySelector('.knw-recall__intro')).toBeNull();
+    await expect(canvas.getByText(/turning points/)).toBeVisible();
 
     // NO DISCARD. Nothing is recorded yet to throw away; voiceFab enforces it.
     await expect(canvas.queryByRole('button', { name: 'Discard and re-record' })).toBeNull();
@@ -1069,6 +1102,43 @@ export const ResultHint1: Story = {
   },
 };
 
+export const ResultHint2: Story = {
+  name: '13a · Result — hint 2, the middle rung',
+  /* THE ONE RUNG WITH NO STORY. Only hint1 and hint3 were covered, so the
+     middle of the ladder — the rung a student is most likely to actually see,
+     since it needs only one miss to reach — had no test surface at all. It
+     rendered correctly; nothing would have told us if it stopped. */
+  render: () => (
+    <ResultScreen rung="hint2" verdict="Partial" onRecord={fn()} onNextAction={fn()} />
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    // Still inside the card. Promotion happens at hint3 and nowhere earlier.
+    const card = canvasElement.querySelector('.knw-rrc__card') as HTMLElement;
+    await expect(card.querySelector('.knw-rrc__hint')).toBeTruthy();
+    await expect(canvasElement.querySelector('.knw-recall__hint-panel')).toBeNull();
+
+    /* PARTIAL AT HINT2 IS REACHABLE, and is what the ladder now shows while
+       the student climbs — `post-war-order`'s attempt1 and hint1 takes both
+       score Partial, so this is the second of them. The card leads with the
+       score ring rather than a bare verdict badge, which is the whole point of
+       showing partial credit: a number that moved. */
+    /* `.knw-rrc__score-ring`, NOT `.knw-percentage`. The card draws its own
+       ring; `Percentage` is the standalone component the summary uses. Two
+       different elements for the same idea, which is worth knowing before
+       asserting on either. */
+    await expect(canvasElement.querySelector('.knw-rrc__score-ring')).toBeTruthy();
+    await expect(canvasElement.querySelector('.knw-rrc__score-text')?.textContent).toBe('65%');
+
+    // The ladder knows which rung it is on.
+    const ladder = canvasElement.querySelector('.knw-ladder') as HTMLElement;
+    await expect(ladder.getAttribute('aria-label')).toContain('2');
+
+    // Same controls as every other ladder rung: a skip, and the orb.
+    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
+  },
+};
+
 export const ResultHint3: Story = {
   name: '13b · Result — the hint promoted out of the card',
   render: () => (
@@ -1113,6 +1183,16 @@ export const ResultHint3: Story = {
     const panel = canvasElement.querySelector('.knw-recall__hint-panel') as HTMLElement;
     await expect(panel).toBeTruthy();
     await expect(canvasElement.querySelector('.knw-rrc__hint')).toBeNull();
+
+    /* MEASURE AFTER THE CARD HAS LANDED — the same wait `Misheard` carries.
+       This comparison is the one most exposed to the rise: `.knw-rrc` is
+       transformed and the panel below it is not, and a transform moves the
+       box without moving the layout. So mid-flight the card's bottom is 12px
+       lower while the panel has not moved at all, and "the panel sits below
+       the card" measures false for a screen where it plainly does. */
+    await Promise.all(
+      canvasElement.getAnimations({ subtree: true }).map((a) => a.finished),
+    );
 
     // The panel sits BELOW the card, not inside it.
     const card = canvasElement.querySelector('.knw-rrc') as HTMLElement;
@@ -1173,6 +1253,16 @@ export const Correct: Story = {
     // and not with the label.
     const slot = canvasElement.querySelector('.knw-mascot') as HTMLElement;
     await expect(slot.classList.contains('knw-mascot--2XL')).toBe(true);
+
+    /* MEASURE AFTER THE CARD HAS LANDED — the same wait `Misheard` carries,
+       and for the same reason: `.knw-rrc` rises on mount, so every box read
+       before it settles is 12px low. This assertion passed on timing luck
+       rather than on the wait, which is worse than failing — the tuck it
+       guards is a real invariant and the story would have started failing on
+       a slower machine for a reason that has nothing to do with the tuck. */
+    await Promise.all(
+      canvasElement.getAnimations({ subtree: true }).map((a) => a.finished),
+    );
 
     const mascotBox = slot.getBoundingClientRect();
     const card = canvasElement.querySelector('.knw-rrc__card') as HTMLElement;
@@ -1245,13 +1335,21 @@ export const SessionRating: Story = {
     await expect(canvasElement.querySelectorAll('.knw-rating__topic-list li')).toHaveLength(3);
     await expect(canvas.getByText('World War II').tagName).toBe('LI');
 
-    // SINGLE CHOICE, though Figma draws checkboxes. The three options are
-    // mutually exclusive readings of one feeling, and the frame shows exactly
-    // one filled. There is no radio in this system, so the box is a Checkbox
-    // and the behaviour is made single-select.
-    const boxes = canvas.getAllByRole('checkbox');
+    // SINGLE CHOICE, AND NOW ANNOUNCED AS ONE. Figma draws checkboxes and the
+    // behaviour has always been single-select, but the accessibility tree used
+    // to describe three independent toggles — so a screen reader said "pick
+    // any" about a question that takes one answer. `Checkbox` has a documented
+    // radio mode; the list is the group, named by the question.
+    const group = canvas.getByRole('radiogroup');
+    await expect(group).toHaveAccessibleName('How confident are you now?');
+    await expect(canvas.queryAllByRole('checkbox')).toHaveLength(0);
+    const boxes = canvas.getAllByRole('radio');
     await expect(boxes).toHaveLength(3);
     for (const b of boxes) await expect(b).toHaveAttribute('aria-checked', 'false');
+
+    // ONE TAB STOP FOR THE GROUP, not three: unanswered, the first row holds
+    // it, and arrows move within the group from there.
+    await expect(boxes.map((b) => b.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
 
     await userEvent.click(boxes[0]);
     await expect(boxes[0]).toHaveAttribute('aria-checked', 'true');
@@ -1276,17 +1374,75 @@ export const SessionRating: Story = {
       'I am pretty confident for the most part',
     ]);
 
-    // One focus stop per row, though: the <li> takes no tabindex and no role.
+    /* The row is a tap target and nothing more: no tabindex, so the keyboard
+       gets one stop per option rather than two, and `role=presentation`,
+       because the <ul> around it is the radio group now — a real listitem
+       inside a radiogroup is an orphan, and axe fails the screen for it. */
     const rows = canvasElement.querySelectorAll('.knw-rating__option');
     for (const row of rows) {
       await expect(row.hasAttribute('tabindex')).toBe(false);
-      await expect(row.hasAttribute('role')).toBe(false);
+      await expect(row.getAttribute('role')).toBe('presentation');
     }
 
     // ANSWERING IS OPTIONAL, so there is a way back to having not answered,
     // and Continue never waits on a choice.
     await userEvent.click(boxes[1]);
     await expect(boxes[1]).toHaveAttribute('aria-checked', 'false');
+    await expect(canvas.getByRole('button', { name: 'Continue' })).toBeEnabled();
+
+    // ARROWS MOVE, THEY DO NOT CHOOSE — the one deliberate departure from the
+    // APG radio pattern, and the reason is the rule directly above: a student
+    // reading the three options with the keyboard would otherwise have
+    // answered the question by the time they reached the third.
+    boxes[0].focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect(boxes[1]).toHaveFocus();
+    await expect(boxes[1]).toHaveAttribute('aria-checked', 'false');
+
+    // And they wrap, so the group has no dead end at either end.
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    await expect(boxes[0]).toHaveFocus();
+  },
+};
+
+/**
+ * THE SELECTED TREATMENT, which no story pinned until now.
+ *
+ * `SessionRating` above only ever renders unanswered and reaches the filled
+ * state through `userEvent` inside its own `play` — which means the composed
+ * Selected row was never checkable side by side with Unselected in the
+ * library's own verification surface, and a synthetic click leaves a
+ * `:focus-visible` ring that a real tap would not, so what the story showed
+ * was not what a student sees. This pins the state instead of performing it.
+ */
+export const SessionRatingChosen: Story = {
+  name: '15b · Session rating — answered',
+  render: () => (
+    <SessionRatingScreen value="I need to practice" onContinue={fn()} onChange={fn()} />
+  ),
+  play: async ({ canvas }) => {
+    const boxes = canvas.getAllByRole('radio');
+    await expect(boxes[0]).toHaveAttribute('aria-checked', 'true');
+    await expect(boxes[1]).toHaveAttribute('aria-checked', 'false');
+    await expect(boxes[2]).toHaveAttribute('aria-checked', 'false');
+
+    // THE CHOSEN ROW IS FILLED AND THE OTHERS ARE OUTLINES — the difference
+    // this story exists to make visible. Asserted as "the fill is a colour"
+    // rather than as a hex, so it survives a token moving.
+    const fill = (b: HTMLElement) =>
+      getComputedStyle(b.querySelector('.knw-checkbox__box') as HTMLElement).backgroundColor;
+    await expect(boxes[0].className).toContain('knw-checkbox--Selected');
+    await expect(fill(boxes[0])).not.toBe('rgba(0, 0, 0, 0)');
+    await expect(fill(boxes[1])).toBe('rgba(0, 0, 0, 0)');
+    // And it carries the checkmark, so the state does not rest on colour alone.
+    await expect(boxes[0].querySelector('.knw-checkbox__mark')).toBeTruthy();
+    await expect(boxes[1].querySelector('.knw-checkbox__mark')).toBeNull();
+
+    // THE TAB STOP FOLLOWS THE ANSWER. Once something is chosen it is the
+    // chosen row that holds the group's single stop, not the first row.
+    await expect(boxes.map((b) => b.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+
+    // Still optional, still live.
     await expect(canvas.getByRole('button', { name: 'Continue' })).toBeEnabled();
   },
 };

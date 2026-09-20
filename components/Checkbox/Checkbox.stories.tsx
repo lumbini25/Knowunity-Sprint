@@ -131,3 +131,35 @@ export const SelectedDisabled: Story = {
     await expect(canvasElement.querySelector('.knw-checkbox__mark')).not.toBeNull();
   },
 };
+
+/**
+ * SINGLE-SELECT MODE, and the reason it is a prop rather than a new component.
+ *
+ * `design-system.md`'s Gaps list asks for exactly this: "Request radio /
+ * radioGroup, **or a documented single-select mode on Checkbox**". The session
+ * rating screen draws three of these for one mutually-exclusive question —
+ * Figma's own frame shows exactly one filled — and enforcing that only in the
+ * click handler left a screen reader announcing three independent toggles, so
+ * a student using one was told they could pick all three.
+ *
+ * Nothing about the box changes. `role` swaps what it is announced as, and
+ * `aria-checked` carries both roles unaltered. The caller owns the rest of the
+ * pattern: the surrounding `role="radiogroup"`, one tab stop for the group,
+ * and arrow keys between the options.
+ */
+export const RadioMode: Story = {
+  name: 'role=radio (single-select)',
+  args: { Selection: 'Selected', State: 'Default', role: 'radio' },
+  play: async ({ canvas, canvasElement }) => {
+    // Announced as a radio, not a checkbox.
+    await expect(canvas.queryByRole('checkbox')).toBeNull();
+    const radio = canvas.getByRole('radio', { name: 'Accept terms' });
+    await expect(radio).toHaveAttribute('aria-checked', 'true');
+
+    // And it is the SAME control: the filled violet disc and its checkmark are
+    // untouched, which is the point — only the announcement differs.
+    const inner = canvasElement.querySelector('.knw-checkbox__box') as HTMLElement;
+    await expect(getComputedStyle(inner).backgroundColor).toBe('rgb(157, 133, 255)');
+    await expect(canvasElement.querySelector('.knw-checkbox__mark')).not.toBeNull();
+  },
+};
