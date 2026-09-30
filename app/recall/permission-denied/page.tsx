@@ -4,36 +4,40 @@
    decorative: one goes forward without a microphone, the other says how to get
    one back.
 
-   SCAFFOLDING, NOT A LIVE STATE — a decision, not an oversight. Nothing in
-   this mocked prototype calls a real permission API, so there is no genuine
-   "the OS denied the mic" event anywhere in the session to route from; the
-   loop has no way to arrive here honestly. The screen stays built, real, and
-   reachable by URL and Storybook so the design exists and is auditable — see
-   sprint-context.md, "Not building" — but it is not in `Destination`, and
-   `onMicEnabled` below only navigates rather than granting anything, for the
-   same reason `/recall/permission-sheet` does: there is no session here to
-   grant against. */
+   A LIVE STATE NOW, NOT SCAFFOLDING. This route used to be reachable only by
+   URL, because nothing in the prototype asked the browser for the mic — there
+   was no real "no" to route from. The primer's Allow now fires the browser's
+   own prompt (`lib/recall/mic.ts`), and blocking it lands here.
 
-import { useRouter } from 'next/navigation';
+   "I'VE TURNED IT ON" ASKS AGAIN. A browser, like iOS, only prompts once: once
+   the student blocks the mic, asking again answers "denied" without showing
+   anything, until they change it in settings. So the button checks — if the
+   mic is on now, the turn opens; if it is still off, the sheet says so instead
+   of the tap quietly doing nothing. */
+
+import { useState } from 'react';
 import { PermissionDeniedScreen } from '../../../components/screens/RecallScreens/RecallScreens';
+import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
+import { askForMic } from '../../../lib/recall/mic';
 
 export default function Page() {
-  const router = useRouter();
+  const session = useRecallSession();
+  const { go, goTo } = useRecallNav();
+  const [stillBlocked, setStillBlocked] = useState(false);
 
   return (
     <PermissionDeniedScreen
-      onUseText={() => router.push('/recall/text-fallback')}
-      /* "Enable microphone" cannot open iOS Settings from a web prototype, and
-         for once that is not only a prototype limit: even in the real app the
-         switch lives in Settings, so the button's honest job is to say where
-         and then take the student back. The screen raises the sheet itself;
-         this route only says where "I've turned it on" lands.
-
-         That closes a real hole rather than a fake one. Before this, the denied
-         screen had NO path back to voice at all — a student who went and
-         enabled the mic came back to a screen whose only button was "Type
-         instead". */
-      onMicEnabled={() => router.push('/recall/idle')}
+      onUseText={goTo('text-fallback')}
+      onMicEnabled={async () => {
+        const answer = await askForMic();
+        if (answer === 'denied') {
+          setStillBlocked(true);
+          return;
+        }
+        session.grantMic();
+        go('idle');
+      }}
+      stillBlocked={stillBlocked}
     />
   );
 }

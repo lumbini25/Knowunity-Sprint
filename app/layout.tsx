@@ -3,6 +3,8 @@ import localFont from 'next/font/local';
 import './globals.css';
 // Authored, and loaded after the generated tokens so the width pin wins.
 import './fonts.css';
+// Authored: the 390 phone frame a desktop reviewer sees. Inert on a phone.
+import './device.css';
 
 /**
  * Greed VF — the UI typeface, self-hosted.
@@ -99,7 +101,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   // that declares it.
   return (
     <html lang="en" className={greed.variable}>
-      <body>{children}</body>
+      <body>
+        {/* The phone frame. Plain wrappers on a phone; a centred 390×844
+            device on a desktop window — see app/device.css. */}
+        <div className="knw-stage">
+          <div className="knw-device">{children}</div>
+        </div>
+      </body>
     </html>
   );
 }

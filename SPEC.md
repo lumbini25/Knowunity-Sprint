@@ -2,7 +2,7 @@
 
 Voice-based active recall for Knowunity: the student speaks a term out loud, Knowie replies in text, and a four-round hint ladder carries them from a cold attempt to either a clean explanation or a side-by-side comparison with the model answer.
 
-Nothing here is real — no speech-to-text, no audio capture, no model call. The recall runs off a fixed script so every state is reachable on a known path and the demo runs identically twice.
+Nothing here is real — no speech-to-text, no audio capture, no model call — except the browser's microphone permission prompt, which the primer fires so a student can genuinely allow or block the mic. The stream is stopped the instant it arrives. The recall runs off a fixed script so every state is reachable on a known path and the demo runs identically twice.
 
 ---
 

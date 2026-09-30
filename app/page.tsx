@@ -37,7 +37,7 @@ const SCREENS = [
   { href: '/recall/text-fallback', name: 'Text fallback turn', state: 'State 6' },
   { href: '/recall/permission-primer', name: 'Mic permission primer (scaffolding — live version is inline at Idle)', state: 'State 7' },
   { href: '/recall/permission-sheet', name: 'Mic permission sheet (scaffolding)', state: 'State 7b' },
-  { href: '/recall/permission-denied', name: 'Permission denied (scaffolding — no live trigger)', state: 'State 8' },
+  { href: '/recall/permission-denied', name: 'Permission denied (live — block the mic at the prompt)', state: 'State 8' },
 ] as const;
 
 export default function Home() {

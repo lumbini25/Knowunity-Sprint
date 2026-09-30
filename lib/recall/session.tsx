@@ -63,6 +63,10 @@ export type Destination =
      the last rung lands here. */
   | 'reveal'
   | 'text-fallback'
+  /* The student blocked the microphone at the browser's prompt. Reached only
+     from the primer's Allow, and only when the answer was no — see
+     `lib/recall/mic.ts`. */
+  | 'permission-denied'
   /* The concept, read again before another attempt. */
   | 'lesson'
   | 'exit'
@@ -849,6 +853,7 @@ const ROUTES: Record<Destination, string> = {
   'correct-feedback': '/recall/correct-feedback',
   reveal: '/recall/reveal',
   'text-fallback': '/recall/text-fallback',
+  'permission-denied': '/recall/permission-denied',
   lesson: '/recall/lesson',
   exit: '/recall/exit',
   rating: '/recall/rating',

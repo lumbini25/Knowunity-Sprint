@@ -1,0 +1,62 @@
+/* The review frame — authored, not generated, like fonts.css beside it.
+
+   WHY THIS EXISTS. The prototype is 390px iOS only, but it is reviewed in a
+   desktop browser, where nothing stopped `.knw-screen` taking the whole
+   window: every screen stretched to 1280, and the drawn iOS keyboard on the
+   text fallback — a 390-wide image — came out squashed edge to edge. So on a
+   wide window the app renders inside a phone-sized frame, and on a phone
+   nothing here applies at all.
+
+   THIS IS NOT A BREAKPOINT IN THE DESIGN. The app's own layout is identical on
+   both sides of the query; only the surround changes. It is the one media
+   query in the build, and CLAUDE.md's 390-only rule names it.
+
+   THE THREE LITERALS ARE DEVICE CHROME, NOT DESIGN VALUES — the same standing
+   the 342px keyboard reserve has. 390 × 844 is the iPhone 13 frame every
+   Figma screen is drawn in (`scaffold`, size=iPhone 13), and 768 is where a
+   window stops being plausibly a phone. None of them sizes anything inside the
+   app, so there is no token for them to come from. Every value that does
+   paint — the border, its weight, the corner, the spacing — is a token. */
+
+@media (min-width: 768px) {
+  .knw-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-block: var(--semantic-space-layout-2-xl);
+  }
+
+  .knw-device {
+    position: relative;
+    /* Content-box, so the SCREEN is 390 and the hairline sits outside it.
+       Tailwind's preflight makes everything border-box, which put the border
+       inside the 390 and rendered every screen at 388. */
+    box-sizing: content-box;
+    width: 390px;
+    /* The phone's height, unless the window is shorter — then the frame gives
+       way and the screen's own middle slot scrolls, which is what it does on a
+       short phone too. */
+    height: min(844px, calc(100vh - var(--semantic-space-layout-2-xl) * 2));
+    border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+    border-radius: var(--semantic-radius-sheet);
+    background: var(--semantic-background-page);
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* THE FRAME IS THE VIEWPORT. The exit sheet is `position: fixed; inset: 0`
+       so it can sit over any turn — which, on a desktop window, meant over the
+       entire window, outside the phone. Layout containment makes this element
+       the containing block for fixed descendants, so "the viewport" means the
+       phone again, for the exit sheet and anything fixed added later. */
+    contain: layout;
+  }
+
+  /* `.knw-screen` is `height: 100vh` so a phone gets exactly one screen. In
+     the frame, one screen is the frame. Scoped here rather than changing the
+     scaffold, because Storybook renders `.knw-screen` with no frame around it
+     and still needs the viewport height. */
+  .knw-device .knw-screen {
+    height: 100%;
+  }
+}

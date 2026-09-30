@@ -21,12 +21,13 @@
    turn", whichever half of it is currently on screen — the same reasoning
    `exitOpen` uses for the exit sheet. */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   IdleScreen,
   PermissionPrimerScreen,
 } from '../../../components/screens/RecallScreens/RecallScreens';
 import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
+import { askForMic } from '../../../lib/recall/mic';
 
 export default function Page() {
   const session = useRecallSession();
@@ -36,6 +37,9 @@ export default function Page() {
      screen matters for exactly as long as the primer does, and a reload part
      way through should start the ask again rather than resume it mid-sentence. */
   const [sheetUp, setSheetUp] = useState(false);
+  /* Whether the browser's prompt is currently open. A ref, not state: nothing
+     on screen changes while it is up — the browser draws its own dialog. */
+  const asking = useRef(false);
 
   /* ASKED, NOT GRANTED. This gated on `micGranted`, which meant a student who
      answered the primer with "Type instead" was asked again on every turn they
@@ -53,9 +57,27 @@ export default function Page() {
         showSheet={sheetUp}
         /* No dismiss. Figma's sheet has no ✕, and both answers to the question
            are on the sheet: Allow, or type instead. */
-        /* Allow records the ask and falls through to the turn below — no
-           navigation, because this is already the right route. */
-        onAllow={session.grantMic}
+        /* ALLOW FIRES THE REAL PROMPT NOW. It used to record a grant and fall
+           straight through to the turn, so the primer prepared the student for
+           a dialog that never came and "denied" could not happen. The
+           student's own answer decides: allowed falls through to the turn
+           below (this is already the right route); blocked records the ask and
+           goes to the denied screen, which is where the design sends a no.
+
+           One question at a time — a second tap while the browser is still
+           asking would stack a second request behind the first. */
+        onAllow={async () => {
+          if (asking.current) return;
+          asking.current = true;
+          const answer = await askForMic();
+          asking.current = false;
+          if (answer === 'denied') {
+            session.declineMic();
+            go('permission-denied');
+            return;
+          }
+          session.grantMic();
+        }}
         /* The opt-out is never a dead end: the whole ladder is playable by
            typing, which is the text fallback's reason for existing. It records
            the ask on the way out, so coming back to a turn — by skipping, or by

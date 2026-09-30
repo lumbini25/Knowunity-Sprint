@@ -18,6 +18,7 @@ Push-to-talk only, no voice output, no real STT or AI judge. Prototype ships to 
 - The topic breakdown before the loop exists to offer a last look before being tested, because a student sent from a quiz straight into recall may not yet understand the concept well enough to explain it, and that difference is the one between a test and an ambush
 - The student picks session length (3-5 terms) on the suggestion screen, because committing to a size they can finish is a completion lever, and the indicator has to handle the range anyway
 - The mic permission primer appears before the OS dialog fires, because a cold OS prompt is denied far more often
+- The primer's Allow fires the browser's real microphone prompt, and the stream is stopped the instant it arrives — nothing is recorded. It is the one real API in the prototype, because a primer that leads to no dialog prepares the student for nothing, and "denied" cannot be demonstrated unless a student can actually deny. Blocking lands on `/recall/permission-denied`; a machine with no microphone is treated as allowed, so the mocked turn stays walkable
 - The primer never returns once permission is granted, because it did its job and re-showing it puts friction in front of the student already activated
 - A student who denied permission opens straight into a text session, with a single quiet mic re-enable affordance, because iOS cannot be re-prompted and greeting them with the denied wall every visit is how a feature gets abandoned
 
@@ -104,7 +105,7 @@ Push-to-talk only, no voice output, no real STT or AI judge. Prototype ships to 
 - Language switching within a session
 - Mic hardware-busy error handling (noted as known gap)
 - A third pass, or any recovery beyond the second (noted as a deliberate stopping point)
-- A live trigger for mic-denied — this prototype never calls a real permission API, so there is no genuine "OS denied the mic" event for the session to route from. `/recall/permission-primer`, `/recall/permission-sheet` and `/recall/permission-denied` stay real, built screens, reachable by URL and in Storybook, but are deliberately absent from `Destination` — scaffolding for the states, not live turns. The primer a student actually taps through is the inline one at `/recall/idle`.
+- Standalone permission routes as live turns — `/recall/permission-primer` and `/recall/permission-sheet` stay scaffolding, reachable by URL and in Storybook. The primer a student actually taps through is the inline one at `/recall/idle`.
 
 ---
 

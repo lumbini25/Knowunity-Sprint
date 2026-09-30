@@ -1978,6 +1978,12 @@ export interface PermissionDeniedScreenProps {
   onDismissSheet?: () => void;
   /** The student has turned the mic on and is coming back to voice. */
   onMicEnabled?: () => void;
+  /**
+   * "I've turned it on" was tapped and the mic is still blocked. The sheet's
+   * own caption says so, in place of the instructions — so the tap is answered
+   * rather than doing nothing, with no new component to carry the answer.
+   */
+  stillBlocked?: boolean;
 }
 
 /** The Settings path, as chips — the trail Figma spells out on the second card. */
@@ -2019,6 +2025,7 @@ export function PermissionDeniedScreen({
   showSheet: showSheetProp,
   onDismissSheet,
   onMicEnabled,
+  stillBlocked = false,
 }: PermissionDeniedScreenProps) {
   const [raised, setRaised] = useState(false);
   const showSheet = showSheetProp ?? raised;
@@ -2091,7 +2098,11 @@ export function PermissionDeniedScreen({
         showSheet ? (
           <BottomSheet
             height="M"
-            descriptor="iOS only asks once, so the switch lives in Settings now. Here's the path — come back when you've flipped it."
+            descriptor={
+              stillBlocked
+                ? "The mic is still off. Flip the switch in Settings, then tap I've turned it on again."
+                : "iOS only asks once, so the switch lives in Settings now. Here's the path — come back when you've flipped it."
+            }
             onDismiss={onDismissSheet ? onDismissSheet : () => setRaised(false)}
             dismissLabel="Close"
             middleSection={

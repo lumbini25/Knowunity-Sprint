@@ -6,13 +6,13 @@ Mocked voice-based active recall for Knowunity: a 390px dark-mode iOS web app, d
 
 ## Hard rules
 
-- 390px, dark mode, iOS only. No light mode, no desktop, no breakpoints.
+- 390px, dark mode, iOS only. No light mode, no desktop, no breakpoints. The one media query in the build is `app/device.css`: on a window 768px or wider the app renders inside a 390×844 phone frame, so a desktop reviewer sees the phone rather than a stretched page. It changes the surround, never the app's layout — below 768px it does nothing.
 - Every colour, size, spacing, radius and type value comes from `tokens/tokens.json`. If a value is missing, stop and ask.
 - Build from the components in `design-system.md`. If nothing fits, stop and ask before making one.
 - Components consume the semantic layer only.
 - `app/globals.css` and `build/css/tokens.css` are both generated. Change `tokens/tokens.json`, then run `npm run tokens:css` and `npm run tokens`.
 - The UI font is Greed VF, loaded via `next/font/local` in the root layout. Never treat it as an installed system font.
-- The recall is mocked: no speech-to-text, no audio capture, no model calls.
+- The recall is mocked: no speech-to-text, no audio capture, no model calls. The one real browser API is the microphone permission prompt the primer's Allow fires (`lib/recall/mic.ts`) — the stream is stopped the instant it arrives and nothing is recorded.
 - Knowie replies in text. Knowie never speaks.
 - Sentence case on every label, button, heading and message. Proper nouns only: Knowie, Knowunity, PRO.
 - Every screen uses the scaffold in `design-system.md` and applies safe-area insets top and bottom.
@@ -69,6 +69,7 @@ A prop existing is not permission to use it — read what the docs say about *wh
 | `app/` | Building a screen. Read `AGENTS.md` first — this is not the Next.js you know. |
 | `app/globals.css` | To look up a generated custom-property name. Generated output, never an input. |
 | `app/layout.tsx` | Setting viewport, fonts or metadata. Still carries create-next-app defaults. |
+| `app/device.css` | Changing how the prototype looks in a desktop browser. Authored, not generated: the 390×844 phone frame, inert below 768px. |
 | `app/page.tsx` | Building the entry screen. Still the create-next-app template — replace it, don't extend it. |
 | `scripts/generate-globals-css.py` | When `npm run tokens:css` fails. It exits non-zero on any broken reference. |
 | `scripts/consistency.mjs` | After any type, spacing or icon change. `npm run consistency` walks every route and prints the type combinations actually rendered, off-scale values and per-screen gutters. It proves the build agrees with itself — Figma is what proves it agrees with the design, so check both. |
