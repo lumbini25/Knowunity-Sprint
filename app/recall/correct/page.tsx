@@ -19,7 +19,9 @@ export default function Page() {
 
   return (
     <CorrectScreen
-      transcript={shown?.transcript}
+      /* Knowie's answer, inside the card — the redesign swapped the
+         student's transcript for it. */
+      answer={session.term.modelAnswer}
       /* The score the judge gave, not a flat 100: passing on hint 3 is still a
          pass, and the card should not claim it was unaided.
 

@@ -27,7 +27,7 @@ Easiest first. Fourteen of the seventeen exist as routes today and the scripted 
 | E1 | Home — the front door | `/entry` | **Built** |
 | E2 | Compose a set | `/entry/compose` | **Built** |
 | E3 | Explain out loud — ready | `/entry/ready` | **Built** |
-| E4 | Choose a folder | `/entry/folders` | **Built** |
+| E4 | Lesson — the last look | `/recall/lesson` | **Built** |
 | 1 | Mic permission primer | `/recall/permission-primer` | Built |
 | 2 | Mic permission sheet | `/recall/permission-sheet` | Built |
 | 3 | Permission denied | `/recall/permission-denied` | Built |
@@ -38,21 +38,21 @@ Easiest first. Fourteen of the seventeen exist as routes today and the scripted 
 | 8 | Exit sheet | `/recall/exit` | **Built** |
 | 9 | Idle | `/recall/idle` | **Built** |
 | 10 | Listening | `/recall/recording` | **Built** |
-| 11 | Nothing heard | `/recall/no-audio` | **Built** |
+| 11 | Didn't catch that | `/recall/no-audio` | **Built** |
 | 12 | Processing | `/recall/processing` | **Built** |
 | 13 | Partial — the hint ladder | `/recall/result` | **Built** |
 | 13a | Correct — the pass | `/recall/correct` | **Built** |
 | 13b | Correct — Knowie's answer | `/recall/correct-feedback` | **Built** |
 | 14 | Reveal — the ladder runs out | `/recall/reveal` | **Built** |
 | 14a | Wrong — after the reveal | `/recall/wrong` | **Built** |
-| 14b | Comparison — both answers | `/recall/comparison` | **Built** |
+| 14b | Term detail | `/recall/comparison` | **Built** |
 | 15 | Session rating | `/recall/rating` | **Built** |
 | 16 | Summary | `/recall/summary` | **Built** |
 | 17 | Second pass | `/recall/second-pass` | Not built |
 
 **The loop is wired and walkable.** `app/recall/layout.tsx` holds `RecallSessionProvider`; every route reads the session and turns its destinations into navigation, while the screens stay pure so each one still renders in Storybook without a provider.
 
-**The loop has a front door, and it closes — two ways.** `/entry` → a topic → a set → the ladder → the summary, and from there either **"Revise now" → `/entry/folders`** (the shelf: pick different material) or **"Try again" → `/entry`** (the chat: pick a different feature, or the same one on a new topic). Until the entry screens existed every screen assumed a session was already running and `/recall/idle` opened on term 1 of a script nothing had chosen.
+**The loop has a front door, and it closes — two ways.** `/entry` → a topic → the ladder → the summary, and from there either **"Revise now" → `/recall/lesson`** (that concept, again) or **"Try again" → `/entry`** (the front door: another topic, or another feature). Until the entry screens existed every screen assumed a session was already running and `/recall/idle` opened on term 1 of a script nothing had chosen.
 
 "Try again" used to push `/entry/ready`, which restarts the same feature on the same material — a narrower thing than the words promise. From the front door the whole rail is in reach.
 
@@ -62,67 +62,83 @@ Easiest first. Fourteen of the seventeen exist as routes today and the scripted 
 
 ## The entry path
 
-Four screens, from `entrypoint AI Chat`. They are how a student picks what to practise.
+Four screens, from the `Entrypoint iteration` section (prototype start `16307:8816`). They are how a student picks what to practise. **Two ways in**: a topic row straight into the session, or the chat chip through Knowie building a set.
 
-### E1 · Home — `/entry` — `Entrypoint 1` (`15618:8632`)
+```
+entry ─┬─▶ a topic row ───────────────────────────────────────────▶ idle (on that term)
+       └─▶ Explain out loud chip ─▶ compose ─▶ ready (composing ▸ ready ▸ settled) ─▶ lesson ─▶ idle (term 1)
+```
 
-The app bar, Knowie, a greeting at `headline/L`, a scrolling feature rail over the composer, and the bottom nav. **One feature is live.** Tapping **Explain out loud** goes to `/entry/compose`; the recent-folder chip goes to `/entry/folders`.
+**The folder screen is gone.** The redesign drops it from the flow, and the design owner chose to delete the route rather than leave it unlinked. Figma's `iPhone 13 & 14 - 2` (16321:18181), a Knowunity onboarding screen wired between the ready card and the lesson, is **skipped** by the same decision: an onboarding screen mid-flow interrupts a student who has just asked to practise.
 
-**Composition, following `entrypoint` (`15896:16263`):**
+### E1 · Home — `/entry` — `entrypoint` (`16307:8816`)
 
-| Band | What |
-| --- | --- |
-| App bar | Menu · the PRO lockup + "Upgrade" · XP with its bolt · streak with its **flame** · history (`clock-rewind`). Same `ChatHeader` as E2–E4. |
-| Middle | `mascotSlot` 2XL with `standby`, and the greeting. |
-| Rail | Five chips, each with its **own two-tone glyph and its own accent** — Scan violet, Explain out loud blue, Quiz magenta, Summarize green, Chemistry prep coral. Scrolls; no chip is drawn active. |
-| Composer | `chatInput`, status `Inactive`. |
-| Bottom nav | Knowie · Search · Goals · Leaderboard · the avatar. Only the current tab is real. |
+The app bar, Knowie at 3XL, the greeting *"Evening, Harry. Ready to test what stuck?"* at `headline/L`, then *"Here's what you covered this week. Pick one and explain it out loud"* over a list of **`topicRow`s**. Below, pinned: the feature rail (Quiz · Summarize · Explain out loud · Scan), the composer, the bottom nav.
 
-**Type on this screen, and the one thing that is deliberately not Figma's:**
+**The rows are the session's four terms, not Figma's four labels.** The file lists the Holocaust, D-Day, the Pacific and the atomic bombs; a row has to lead to a question the loop can ask, so the build lists turning points, appeasement, total war and the post-war order, each tagged Event or Concept from `ScriptedTerm.kind`. Design owner's call.
 
-| Element | Value | Note |
-| --- | --- | --- |
-| Greeting | `headline/L` — 33/36 Bold, in a **358-wide** box | Figma sets it 32/32.7 in **Greed Condensed Heavy**; the build stays on the Standard headline step by decision. The width is what matters — at 358 it breaks where Figma breaks, *"Evening study session," / "Harry?"*. It carried `max-width: 80%` (286) and broke a word early. |
-| App-bar figures | `headline/S` — 21/24 Bold | Figma sets 21.8/21.8 Condensed Heavy. Same decision. |
-| Rail chip labels | `body/S-bold` — 15/20 | Figma's detached rail frames draw 18/24; the `chips` component set itself tops out at M = 15. The component wins. |
+**A row carries which term.** Tapping one calls `startSessionAt(index)` — a fresh session record written to sessionStorage, outcomes cleared, the microphone answer kept — and pushes `/recall/idle`, which opens on that term. It is written to storage rather than called on the provider because `/entry` sits outside `app/recall/`; see the function's comment for the race that rules out the other way.
 
-**Drawn is not the same as wired.** Three rail features, four nav tabs and both app-bar controls have no destination in this prototype. They are **drawn**, because they are the app's chrome and the screen does not read as the front door without them, and they are **not focusable**, because a control in the tab order that does nothing is worse for a keyboard or screen-reader user than for anyone else. The glyph renders either way; it is a `<button>` only when a handler exists.
+| The student can | Which leads to |
+|---|---|
+| Tap a topic row | `/recall/idle`, on that term, fresh session |
+| Tap **Explain out loud** | `/entry/compose` |
+| Tap **Quiz** / **Summarize** | `/entry/quiz` / `/entry/summarize` |
+
+Scan, the nav tabs, the app-bar controls and the composer's + and mic have no destination in this prototype, so they are drawn and not pressable — a control in the tab order that does nothing is worse than none.
 
 ### E2 · Compose a set — `/entry/compose` — `selecting explain feature` + `choosing chip`
 
-**Two Figma frames, one screen.** They differ only by what is in the field, so `value` is the difference. The feature chip stays attached to the composer until the student removes it — that is what makes the next message a practice set rather than a question. Typing is mocked like the speech: `chatInput` is presentational and has no `onChange`, so the field arrives carrying the topic and **Send** moves the student on to `/entry/ready`.
+**Two Figma frames, one screen.** They differ only by what is in the field, so `value` is the difference. The feature chip stays attached to the composer until the student removes it. Typing is mocked like the speech: a tap fills the field, and **Send** moves the student on to `/entry/ready`.
 
-### E3 · Explain out loud — ready — `/entry/ready` — `explain out ready` (`15619:8880`)
+### E3 · Explain out loud — ready — `/entry/ready` — `AI chat explain out loud` (`16307:8815`) + `explain out ready` (`16307:8573` ▸ `16307:11255`)
 
-The screen that starts a session, and **the summary's "Try again" destination**. The card is the button: Figma draws no CTA inside it, so the whole 314×104 surface is the affordance. It is drawn but not tappable for a short `generating` beat — mocked latency like the judge's, a named constant rather than a motion token.
+**Three Figma frames, one screen with a `phase`.**
 
-**Tapping it goes to the folder picker, not into the ladder.** The end-to-end prototype is explicit — `explain out ready → choose folder screen → detailed page → idle` — and this used to push `/recall/idle` directly, skipping both. The student never chose what they were about to be tested on, and never got the last look at it that `sprint-context.md` calls *"the difference between a test and an ambush."*
+| Phase | Frame | What changes |
+|---|---|---|
+| `composing` | 16307:8815 | Knowie (XL) beside "Composing", the plan, the card still "Generating". 1.2s — mocked latency; Figma leaves this frame on a click, and there is nothing for the student to click. |
+| `ready` | 16307:8573 | PRO Smart Answer chip, "Nice pick…", the card "World War II foundations", the Helpful / Unhelpful row. 0.8s — Figma's own timeout. |
+| `settled` | 16307:11255 | "Here you go. Explain each idea out loud, in your own words." The card takes a tap only here, as Figma wires it. |
 
-### E4 · Choose a folder — `/entry/folders` — `choose folder screen` (`15647:11079`)
+Each new line rises in on `motion/duration/settle`. The thumbs answer the tap with a pressed chip. **No mascot in the card** — Figma draws one there on all three frames, and design-system.md's Never list forbids it.
 
-The other way in: something already studied rather than a topic typed into the chat. Opening a folder goes to `/recall/lesson`, whose "Explain out loud" starts the session. Both paths end at a set of concepts and the orb.
+**Tapping the card opens the lesson** (`/recall/lesson?from=ready`). It is also **the summary's "Try again" destination** via `/entry`.
+
+### E4 · Lesson — `/recall/lesson` — `Lesson details accordion closed` (`16311:15771`)
+
+The set's last look before the session, and where "Revise now" lands after one. The violet header ("1939 – 1945", "World War II"), three `statTile`s, one **`lessonAccordion`** per term opening on its reading, and a Primary **"Explain out loud"** at size L, pinned low.
+
+| Reached from | Sections | "Explain out loud" | Back |
+|---|---|---|---|
+| The ready card | all closed | `session.startAt(0)` — a fresh session on term 1 | `/entry/ready` |
+| The summary's "Revise now" | the term being retried opens | `/recall/idle` at that term | `/recall/summary` |
+
+Figma's lesson draws no back control; the chevron stays, because every screen keeps a way out.
 
 ---
 
 ## Typography — one step per role
 
-Every screen draws from this table and nothing else. **13 combinations are in use across the 26 routes; these are all of them.** If a screen needs a value that is not here, it is a gap to raise, not a value to write.
+Every screen draws from this table and nothing else. **13 combinations are in use across the 27 routes `npm run consistency` walks; these are all of them** (checked against its output after the summary iteration, with the report seeded so the summary actually renders). If a screen needs a value that is not here, it is a gap to raise, not a value to write.
 
 | Step | Size / weight / leading | Used for |
 |---|---|---|
 | `headline/XL` | 44 / Bold / 44 | The exit sheet's plea, and nothing else |
-| `headline/L` | 33 / Bold / 36 | The home greeting, the permission primer's headline |
-| `headline/M` | 28 / Bold / 32 | Screen titles — summary, rating, lesson, comparison |
-| `headline/S` | 21 / Bold / 24 | Section headings, and every `Button` at size L |
+| `headline/L` | 33 / Bold / 36 | The home greeting, the permission primer's headline, the summary's claim |
+| `headline/M` | 28 / Bold / 32 | Screen titles — rating, lesson, "Didn't catch that" |
+| `headline/S` | 21 / Bold / 24 | Section headings, the term detail's question, and every `Button` at size L |
 | `headline/XS-bold` | **18 / SemiBold / 20** | Card titles and short labels |
+| `headline/XS-regular` | 18 / Regular / 20 | The home screen's prompt over the topic list |
 | `body/M-regular` | 18 / Regular / 24 | Running text — questions, answers, model answers |
+| `body/M-bold` | 18 / SemiBold / 24 | `termRow` titles on the summary, and `<strong>` inside `body/M` running text |
 | `body/S-bold` | 15 / SemiBold / 20 | Group labels, list labels, `Button` at size M |
 | `body/S-regular` | 15 / Regular / 20 | Body copy inside cards, list rows |
 | `caption/M-bold` | 12 / SemiBold / 16 | Eyebrows, card headers, the skip control |
 | `caption/M-regular` | 12 / Regular / 16 | Transcripts, topic lines, captions |
 | `caption/S-bold` | 9 / SemiBold / 12 | "WHAT YOU SAID", "WHAT WAS MISSING" and the other in-card labels |
 
-**The scale has two 18/SemiBold steps.** `headline/XS-bold` leads at 20 and `body/M-bold` leads at 24 — same size, same weight, different leading. That is the one trap in this table, and it has caught this build twice: the same "Explain out loud" card rendered 18/400 on the lesson and 18/600/24 on the entry screen, and neither matched the frame. **Figma binds `font/size/md` + `font/lineHeight/sm`, which is `headline/XS-bold`.** Use that for anything 18 and bold; `body/M-bold` is not used anywhere in this build.
+**The scale has two 18/SemiBold steps.** `headline/XS-bold` leads at 20 and `body/M-bold` leads at 24 — same size, same weight, different leading. That is the one trap in this table, and it has caught this build twice: the same "Explain out loud" card rendered 18/400 on the lesson and 18/600/24 on the entry screen, and neither matched the frame. **Figma binds `font/size/md` + `font/lineHeight/sm`, which is `headline/XS-bold`.** Use that for anything 18 and bold that is a label; `body/M-bold` is the summary's `termRow` title — Figma's own `Greed/Body M Bold` there — and the inline `<strong>` inside running text.
 
 **Two things a screen must never do.** Bind a type step partially — all five properties (`font-family`, `font-weight`, `font-size`, `line-height`, `letter-spacing`) or none. And override a component's type from a screen: `listItem`, `transcriptSection`, `chatInput` and `button` own their own steps, and reaching in from outside is how the summary's card ended up fighting `listItemGroup` over its own padding.
 
@@ -357,18 +373,20 @@ Must be unmistakable. Follows `student talking` (`16219:12449`, superseding `156
 
 **The orb moves; the waveform does not.** `semantic/motion/{duration,easing}` now exist, and the orb breathes on them while Recording — which is the screen's primary claim that sound is arriving, and the reason it now hands the take over when the speaking stops. The waveform's bars are still static: what separates Talking from Idle is their height and their switch to `mascot/primary`, plus the card's accessible name changing to "Recording your answer". Animating the bars themselves is still open.
 
-### 11 · Nothing heard — `/recall/no-audio`
+### 11 · Didn't catch that — `/recall/no-audio`
 
-Zero confidence is its own state. Nothing heard and heard badly are different problems, usually with different causes, and neither consumes a round.
+Zero confidence is its own state. Nothing heard and heard badly are different problems, usually with different causes, and neither consumes a round. Follows `09c Didn't catch that` (`16311:14691`) from the summary iteration.
 
 **States** — one.
 
-**Components** — `Screen`, `RecallHeader`, `WaveformCard` (state=Idle), `TextBlock`, `Button`, `MascotSlot`.
+**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL, standby), the headline and caption bound directly (`headline/M` over `body/S` — no `textBlock` size is that pair), `ButtonGroup`, `Button`.
+
+The flat waveform card is gone: "Didn't catch that — Nothing came through" says what happened. The text fallback is a **Secondary button**, "Type instead", where it used to be the small link.
 
 | The student can | Which leads to |
 |---|---|
-| Tap "Try again" | `/recall/idle` |
-| Tap "Type your answer" | `/recall/text-fallback` |
+| Tap "Try again" (mic) | `/recall/idle` — no rung spent |
+| Tap "Type instead" | `/recall/text-fallback` |
 
 ### 12 · Processing — `/recall/processing`
 
@@ -409,14 +427,14 @@ Every take the judge accepts comes back **correct**, **partial** or **wrong**. T
 ```
 hint 1 ─▶ hint 2 ─▶ hint 3 ─▶ reveal ─▶ the take ─┬─▶ correct ─▶ rating ─▶ summary
                                                   └─▶ wrong ─▶ comparison ─▶ summary
-summary ─▶ choose folder screen ─▶ lesson
+summary ─▶ lesson   (the build: "Revise now"; the folder screen was removed)
 ```
 
 Each arrow out of a hint rung is a **miss**; a correct answer at any rung leaves the ladder for 13a. The branch at the take is the same branch every rung has — pass or miss — and the reveal is simply the rung where a miss has nowhere left to climb.
 
 ### 13 · Partial — the hint ladder — `/recall/result`
 
-**The breakdown is what makes partial different from wrong.** `partial` (`15620:9496`) splits the answer in two under the transcript — **WHAT YOU GOT**, then **STILL MISSING** — because something was credited. Wrong's list says "none of this landed"; this says "some of it did, here is the rest". The card owns both, so the screen passes them straight through and the session carries them on the take.
+**The revise ladder (`16301:5515`) pared the card down.** Rungs 1 and 2 show the score ring, the badge and the hint — no "What you said", no WHAT YOU GOT / STILL MISSING breakdown. The student has just said it; the card's job is the next step. The session still carries `got` / `stillMissing` on the take, and the card still draws the breakdown when a caller passes it; this screen does not.
 
 Drives the hint ladder and the affirmation. This is the **partial** path, and the only screen a hint is ever read on. Follows the `hint ladder` section (`15833:9103`), whose four frames share one shape:
 
@@ -424,8 +442,7 @@ Drives the hint ladder and the affirmation. This is the **partial** path, and th
 RecallHeader
 HintLadder            Hint 1 · Hint 2 · Hint 3 · Reveal
 the question, COMPACT  a plain 64-high bar. No mascot.
-RecallResponseCard     verdict + transcript + contest buttons + THE HINT (rungs 1–2)
-[hint panel]           rung 3 only — the hint promoted out of the card
+RecallResponseCard     score ring + verdict + THE HINT (inside the card on every rung)
 VoiceFab + TypeAnswer  the student re-answers HERE
 ```
 
@@ -437,7 +454,11 @@ VoiceFab + TypeAnswer  the student re-answers HERE
 
 **No mascot, and the question is restated flat.** No frame in the section has a `mascotSlot`; idle asks the question, this screen restates it so the student can answer without scrolling back. The 37.5% tuck rule does not apply here.
 
-**The hint moves at rung 3.** On rungs 1 and 2 it sits *inside* the verdict card, as `RecallResponseCard`'s `hint` slot. On rung 3 Figma promotes it into its own panel below the card, at a larger step with a warm label — the layer is named "escalating warmth" — so the last hint before the answer cannot be mistaken for the previous two.
+**Rung 3 branches on the verdict.**
+- **Partly right** → Hint 3, *inside* the card and warm: an outlined gold box with a lightbulb, the layer Figma names "escalating warmth" (`16301:5617`). It used to be promoted to a panel below the card.
+- **Wrong** → no hint. A red **0%** ring, "Not quite" and WHAT WAS MISSING (`16301:5541`). A third hint after a wrong answer is a fourth try at the same idea; the student is offered the answer instead.
+
+Either way the next-action reads **"Reveal answer"** in place of "Skip question", and the orb stays for one more try.
 
 **A pass carries no hint**, enforced in the screen rather than left to the caller: there is no next rung to hint at.
 
@@ -445,8 +466,9 @@ VoiceFab + TypeAnswer  the student re-answers HERE
 |---|---|
 | Tap the orb, on a miss | `/recall/recording` — the next attempt, from this screen |
 | Tap the orb, on a pass | Next term, or the summary |
-| Tap the next-action ("Skip Question") | Next term, scored as a miss |
-| Miss at rung 4 | `/recall/reveal` |
+| Tap the next-action ("Skip question"), rungs 1–2 | Next term, scored as a miss |
+| Tap "Reveal answer", rung 3 | `/recall/reveal` — `revealNow()` records the miss exactly as running out of rungs does |
+| Miss at rung 3 | `/recall/reveal` |
 | Tap "Type your answer" | `/recall/text-fallback` |
 | Tap ✕ | `/recall/exit` — **not built, left unwired** |
 
@@ -463,6 +485,8 @@ The **correct** path's first beat. Follows `correct-answer` (`15664:13017`).
 **Knowie is 2XL and tucked, like every other turn.** Figma sets the variant to 3XL on all three correct-loop frames and then resizes the instance to 96, 100 and 120 — 3XL is 200. `recall-correct.png` and `recall-partial.png` settle it: roughly 100 across, with the card over his lower third. That is 2XL and the same 37.5% tuck the idle screen already uses, so the correct loop reuses the same mascot block rather than inventing a second one. The one thing that would make a pass feel like a different product is Knowie sitting at a different height on it.
 
 **The card draws no contest buttons.** There is nothing to appeal about being right.
+
+**The card shows Knowie's answer, not the transcript.** The revise ladder (`16301:5619`) swapped "What you said" for the model answer in a bordered box inside the card, so the pass shows it the moment it lands. The orb still opens 13b, where it gets the whole screen.
 
 | The student can | Which leads to |
 |---|---|
@@ -486,7 +510,7 @@ The student got it right in their own words; this is the words Knowie would have
 
 | The student can | Which leads to |
 |---|---|
-| Tap "Say it back" | `/recall/recording`; `submit()` finds a settled term and advances |
+| Tap the orb, captioned "Next question" | The next term, or `/recall/rating` if it was the last. It used to read "Say it back" and route through the recorder, which re-judged a passed term |
 | Tap "Type your answer" | `/recall/text-fallback` |
 
 **One difference from the frame:** Figma draws the model answer in a plain `background/surface` box, where `recallResponseCard State=Reveal` puts an "Answer" badge above the same box. The component is used rather than a second card built beside it — the badge is the only thing added.
@@ -500,45 +524,39 @@ Follows `wrong` (`15888:15150`). The mirror of 13a: same mascot, same shape, `re
 | Tap the orb | `/recall/comparison` — the two answers side by side. Not another attempt; there is none left to make |
 | Tap "Next question" | The next term, or `/recall/rating` if it was the last |
 
-### 14b · Comparison — both answers — `/recall/comparison`
+### 14b · Term detail — `/recall/comparison`
 
-Follows `Active Recall Summary Screen` (`15888:15245`). **SPEC listed this as row 14 "Comparison" and nothing ever built it** — the row was renamed "Reveal" when the hint-ladder section arrived, and the comparison quietly stopped existing.
+Follows `compare with knowie` (`16319:17270`) from the summary iteration. **Reached two ways, one screen:**
 
-They are different screens. The reveal shows the model answer so the student can **say** it; this shows it **against the saying**, after the saying went wrong.
+| From | `?term=` | Tag | "Next" | "Try again" | ✕ |
+|---|---|---|---|---|---|
+| A summary row | the row's term id | "Previous mistake" if hinted or revealed, "Skipped" for a skip, none for an unaided pass | the next term's detail, then the summary | that term, fresh session (`startAt`) | "Close" — back to the summary |
+| The wrong ending | none | "Previous mistake" | `advance()` | `/recall/idle` | leave session |
 
-**Components** — `Screen`, `ListItemGroup` + `ListItem` (Strong) for the model answer's points, `ButtonGroup`, `Button`.
+**Components** — `Screen`, `RecallHeader` (full bar, no XP), the two answer cards, `ButtonGroup`, `Button`.
 
-**Both cards are one construction, against the frame.** Figma builds them differently: the correct-answer card puts its header inside the surface with a stroke around the whole card; the your-answer card puts its header outside with the stroke under it and the surface on the body only. Reading the two as a pair is the point of the screen, so both take the first treatment. **It is not `transcriptSection`** for the same reason — that component draws its own label and its own box, which produced a box inside a box and a second, smaller label.
+**The correct answer is the model answer in sentences**, one checked point each — the "full answer" the summary promises. **Your answer** is the transcript the session kept on that term's outcome; a skip says "You skipped this one." rather than drawing an empty box.
 
-**The model answer is broken into points, not left as prose.** "What did I miss" is answerable against a list and not against a paragraph — the same reason `recallResponseCard` breaks a wrong verdict into WHAT WAS MISSING.
+**The ✕ is drawn, not typed.** This screen used to print the character "✕" in a button — the text-glyph defect CLAUDE.md records.
 
-**No orb and no progress.** The term is over.
+### 14 · Reveal — the answer — `/recall/reveal`
 
-| The student can | Which leads to |
-|---|---|
-| Tap "Revise now" | `/recall/lesson` |
-| Tap "Try again" | `/recall/idle` — back into the loop at this term. The prototype wires this screen's second exit there, and a student who has just read what they missed should be able to try it |
-
-### 14 · Reveal — the ladder runs out — `/recall/reveal`
-
-Where four rungs end. The fourth frame of the same Figma section, so the shell is identical to result.
+Where the ladder ends: after a miss on rung 3, or when the student taps "Reveal answer" there. Follows `reveal` in the revise ladder (`16301:5618`).
 
 **States** — one.
 
-**Components** — `Screen`, `RecallHeader`, `HintLadder` (on `reveal`), the compact question bar, `RecallResponseCard` (State=Reveal — an "Answer" badge and the model answer, no transcript and no contest buttons, with "Try it yourself after reading" beneath), `VoiceFab` (state=Idle, captioned "Say it back"), `RecallSkip` ("Next question"), `TypeAnswer`.
+**Components** — `Screen`, `RecallHeader`, `HintLadder` (on `reveal`), the compact question bar, `RecallResponseCard` (State=Reveal — an "Answer" badge and the model answer in success green, in a green-outlined card, with "Try it yourself after reading" beneath), `ButtonGroup` + `Button` ("Try now").
 
-**Saying it back is required, not offered.** There is no "next question" here: the way on is to answer, by voice or by keyboard. This is the only moment in the loop where the student has a correct answer in front of them to say out loud, and letting them tap past it is the version of this screen that teaches nothing.
+**One button, and no text fallback — an exception, by the design owner's decision.** CLAUDE.md asks every recall screen for a text fallback; this one is exempt, and the exemption is recorded there. "Try now" leads to the recorder, which carries its own "Type your answer", so a student who cannot speak is one tap from typing. The way out is the ✕.
 
-**This reverses `sprint-context.md`'s "optional say-it-back".**
+**Saying it back is required, not offered.** There is no "next question": the way on is to try it. This reverses `sprint-context.md`'s "optional say-it-back".
 
-Neither path is judged and neither costs a rung — the term was settled the moment the ladder ran out. What the student buys is the saying.
+Not judged and costs no rung — the term was settled the moment the answer was shown.
 
 | The student can | Which leads to |
 |---|---|
-| Tap "Say it back" | `/recall/recording`, then on send the next term — unjudged |
-| Tap "Type your answer" | `/recall/text-fallback`, then on send the next term — unjudged |
-
-**Two ways forward and no way past.** Nobody is trapped; both paths advance. They just both involve doing it.
+| Tap "Try now" | `/recall/recording`, then on send the next term — unjudged |
+| Tap ✕ | The exit sheet |
 
 ### 15 · Session rating — `/recall/rating`
 
@@ -558,6 +576,8 @@ The confidence self-report, between the last term and the score. Follows `sessio
 | Tap the chosen one again | Clears it — the question is optional |
 | Tap "Continue" | `/recall/summary` |
 
+**The topics are numbered**, as the summary iteration's rating frame (`16318:16868`) draws them — an `<ol>`, so a screen reader counts them too. **The options keep their scale order** (least confident first), where that frame lists them need practice / pretty confident / somewhat less: a scale is read by where an option sits, and an unordered one is three unrelated statements.
+
 **Two departures from the frame**, both about the control:
 
 1. **It is single-choice**, though Figma draws checkboxes. The three options are mutually exclusive readings of one feeling and the frame shows exactly one filled. A radio group is the right semantics; this system has no radio, so `Checkbox` is used and made single-select.
@@ -568,28 +588,23 @@ The confidence self-report, between the last term and the score. Follows `sessio
 
 ### 16 · Summary — `/recall/summary`
 
-A count of terms explained unaided, not a grade — a count states what the student did rather than converting it into a mark. Follows the `summary` section's scaffold (`15857:10065`).
+Follows `17 Summary` (`16311:14220`) in the `summary iteration` section (`16318:17180`).
 
-**States** — one.
+**One claim, then the rows it counted.** "You explained N of M without help." at `headline/L`, then a **`termRow`** per term — Unaided, Hinted, Revealed or Skipped, each as a glyph, a word and a colour — and "Tap any topic to play back what you said and read the full answer."
 
-**Components** — `Screen`, `Percentage`, `ListItem` + `ListItemGroup` (variant=Strong, variant=Review), `ButtonGroup`, `Button`, plus a coloured stat tile drawn in the screen (logged in `component-gaps.md`).
+**No XP.** The frame's "+25 XP collected" pill and per-term XP column were dropped by the design owner. The ring, the stat tiles and the strong / review lists are gone; the rows carry all of it.
 
-**What came naturally leads.** Strong above review, in that order and never reversed: the same information the other way round meets a struggling student with a deficit before anything has been acknowledged.
-
-**The three tiles split the count rather than repeating it** — Perfect (unaided), Hinted (took help), Missed. They sum to the total, which is what makes the ring's fraction legible rather than decorative.
-
-**Skipped terms head the review list.** `sprint-context.md`: *"skip scores as a miss but leads the revise list"* — a term you could not start is the clearest gap you have.
+**The rating still decides something.** "I need to practice" puts "Redo N terms" first; any other answer leads with Continue. Both are always there.
 
 | The student can | Which leads to |
 |---|---|
-| Tap "Revise now" | The topic breakdown with weak terms marked — **not built, left unwired** |
-| Tap "Try again" | `/recall/second-pass` — **not built, left unwired** |
+| Tap a row | `/recall/comparison?term=<that term>` |
+| Tap "Continue" | `/entry` |
+| Tap "Redo N terms" | `/recall/idle`, a fresh session on term 1 |
 
-**Where this departs from `reference/recall-summary.png`.** The shipped app draws three outcome buckets — good explanations, needs practice, and a **Skipped** bucket Figma has no equivalent for — with no ring and no tiles at all. Figma is the authority on composition, so the ring and the two cards are what got built; skipped terms land at the head of the review card rather than being dropped.
+**No ✕ and no Skip in the bar.** The frame draws a greyed Skip with nothing to skip and a ✕ that would go where Continue goes.
 
-**`SummarySmallCards` is not used here.** It is a two-tile Recalled/Need-Review pair; this screen needs a three-way split.
-
-**XP does not appear.** `sprint-context.md` says the completion bonus lands at the summary, but neither the Figma frame nor the screenshot draws an XP figure on it. Flagged under Open.
+**A route bug the walk found:** Redo empties the outcomes, which tripped the page's "nothing to summarise → front door" redirect before the push to the first question landed. The route now marks itself as leaving.
 
 ### 17 · Second pass — `/recall/second-pass`
 
@@ -629,9 +644,9 @@ There is no speech-to-text and no judge. The behaviour below is the contract tha
 | Term | What it demonstrates |
 |---|---|
 | 1 | A clean pass, first round |
-| 2 | A pass after one hint |
-| 3 | A low-confidence retry — the misheard path |
-| 4 | A full miss through all four rounds, to the comparison screen |
+| 2 | Correct after the second hint — 65% → 75% → correct. Figma's use case B (`hint ladder`, `16231:12575`) |
+| 3 | A clean pass, first round |
+| 4 | Wrong after three attempts — 65% → 75% → 0% "Not quite" → reveal. Figma's use case A, same section |
 
 **Confidence drives the misheard control.** Every scripted transcript carries a confidence score. Below threshold, the misheard control appears; above it, it does not. A confidence rule generalises where a per-term flag does not.
 
@@ -705,9 +720,9 @@ Every turn: orb → listening → orb → the take (transcript, Continue / Retry
 | Term | What it should do |
 |---|---|
 | 1 | Passes first attempt. **Badge "Correct", no hint** — a pass has no next rung. Ladder lights nothing. |
-| 2 | **"Almost there"** at attempt 1 — the partial verdict, **ladder on Hint 1, hint inside the card**. Answer again → Correct, still Hint 1. |
+| 2 | **"Almost there", 65%** on the Hint 1 screen, hint inside the card. Answer again → **"Almost there", 75%** on Hint 2. Answer again → **Correct**. |
 | 3 | Correct at attempt 1. |
-| 4 | **"Almost there"** at attempt 1, and the credit **moves** as the student climbs: 35 at attempt 1, 60 at Hint 1 as one item crosses from missing to got. Then Hint 2 **inside the card**, Hint 3 **promoted into its own panel below it**, then **reveal** — model answer, no transcript, say-it-back offered. |
+| 4 | **"Almost there", 65%** on Hint 1, then **75%** on Hint 2 as one item crosses from missing to got. Answer again → **"Not quite", 0%** on Hint 3 with WHAT WAS MISSING, **no hint**, and "Reveal answer". Answer once more (or tap "Reveal answer") → **reveal** — the answer in green, "Try now" the only button. |
 
 **The failure states are not on this walk, by design.** `misheard`, `no-audio` and `re-record` open from the dev index or their own URLs, and each has its own Storybook story. Walking them here meant three of four turns opening on "we didn't hear you", which demonstrates the wrong thing about a voice product.
 

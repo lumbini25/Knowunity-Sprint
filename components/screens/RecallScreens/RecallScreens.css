@@ -852,71 +852,42 @@ span.knw-recall__exit {
   font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
 }
 
-/* The hint, promoted out of the card at rung 3 — "escalating warmth" in
-   Figma's own layer name. Bigger step, warmer label, its own surface, so the
-   last hint before the answer cannot be mistaken for the previous two.
-
-   TOKEN NOTE: Figma fills this with a variable called "Pro Background"
-   (#E88C30 at 12%). That value has no counterpart in tokens.json and belongs
-   to the PRO tier, which is a paid-plan signal rather than a feedback one —
-   design-system.md's "Never do this" forbids exactly that swap.
-   `feedback/warning/surface/subtle` is the file's own warm wash and is the
-   family the gold label already belongs to. */
-.knw-recall__hint-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-xs);
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--semantic-space-layout-l);
-  /* 12 — `radius/inner`, which is Figma's value exactly. It was `radius/input`
-     (24), the recall surfaces' radius, which rounded the panel like a field. */
-  border-radius: var(--semantic-radius-inner);
-  /* THE PANEL IS OUTLINED, and the outline is most of why it reads as promoted.
-     Figma strokes it 1 in the same gold as its label, so the hint stops being a
-     warmer patch of the card and becomes its own object on the screen. The
-     build had the wash and no edge, which is the quieter half of the idea. */
-  border: var(--semantic-stroke-default) solid var(--semantic-text-warning);
-  background: var(--semantic-feedback-warning-surface-subtle);
-  text-align: left;
-}
-
-/* text/warning — gold/300. This one matches Figma exactly.
-
-   The row shape mirrors `.knw-rrc__hint-label` exactly, because it is the same
-   label one rung later: mark, gap, text. Only the colour changes, and it
-   changes because the whole panel warms at rung 3. */
-.knw-recall__hint-panel-label {
-  display: flex;
-  align-items: center;
-  gap: var(--semantic-space-layout-xs);
-  margin: 0;
-  color: var(--semantic-text-warning);
-  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
-  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
-  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
-  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
-}
-
-.knw-recall__hint-panel-body {
-  margin: 0;
-  color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-body-m-regular-font-family);
-  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
-  font-size: var(--semantic-type-scale-body-m-regular-font-size);
-  line-height: var(--semantic-type-scale-body-m-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
-}
-
-.knw-recall__hint-panel-body strong {
-  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
-}
+/* The promoted hint panel that sat here is gone: the revise ladder brings
+   Hint 3 back inside the card as `.knw-rrc__hint--warm`. */
 
 /* ===== nothing heard ===== */
 
 .knw-recall--noaudio {
   justify-content: center;
+  gap: var(--semantic-space-layout-m);
+}
+
+/* `verdictHeader`: 28 Bold over 15 Regular, centred, 12 apart. */
+.knw-noaudio__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-m);
+  text-align: center;
+}
+
+.knw-noaudio__title {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-m-font-family);
+  font-weight: var(--semantic-type-scale-headline-m-font-weight);
+  font-size: var(--semantic-type-scale-headline-m-font-size);
+  line-height: var(--semantic-type-scale-headline-m-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+}
+
+.knw-noaudio__caption {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
 }
 
 /* THE FAB SLOT HAD NO RULE AT ALL — it was an inert div inheriting centring
@@ -1057,41 +1028,45 @@ span.knw-recall__exit {
   margin-block-end: calc(var(--semantic-space-layout-xl) * -1);
 }
 
-/* ===== summary ===== */
+/* ===== summary — `17 Summary` (16311:14220) ===== */
 
-/* Figma's topNavigation slot (15857:10065): a 16/16/24/16 block holding the
-   headline and the topic line, gap Space/300.
-
-   LEFT-ALIGNED, not centred. An earlier pass centred this on the strength of
-   `recall-summary.png`, reasoning that the screenshot is the authority on
-   specs. Alignment is composition, not a spec, and the file is unambiguous —
-   both lines are LEFT, and the headline sits flush with the cards below it.
-   Centring broke that column. */
-.knw-summary__head {
+/* The claim, then the rows, 24 apart. */
+.knw-summary {
   display: flex;
   flex-direction: column;
-  gap: var(--semantic-space-layout-m);
+  align-items: stretch;
+  gap: var(--semantic-space-layout-xl);
   box-sizing: border-box;
   width: 100%;
-  padding-block: var(--semantic-space-layout-l) var(--semantic-space-layout-xl);
-  padding-inline: var(--semantic-space-layout-l);
-  text-align: left;
+  padding-block: var(--semantic-space-layout-s);
 }
 
-/* Figma sets 28/32 Bold — headline/M. It was bound to headline/XL, which is 44:
-   the file's own step at 28 is M, and XL sits two sizes up the scale. */
-.knw-summary__title {
+/* 33 Bold, centred — headline/L, Figma's `Greed/Headline L` exactly. */
+.knw-summary__claim {
   margin: 0;
+  text-align: center;
   color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-headline-m-font-family);
-  font-weight: var(--semantic-type-scale-headline-m-font-weight);
-  font-size: var(--semantic-type-scale-headline-m-font-size);
-  line-height: var(--semantic-type-scale-headline-m-line-height);
-  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+  font-family: var(--semantic-type-scale-headline-l-font-family);
+  font-weight: var(--semantic-type-scale-headline-l-font-weight);
+  font-size: var(--semantic-type-scale-headline-l-font-size);
+  line-height: var(--semantic-type-scale-headline-l-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-l-letter-spacing);
 }
 
-.knw-summary__topic {
+/* Rows 8 apart, the hint 8 below them. */
+.knw-summary__terms,
+.knw-summary__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
   margin: 0;
+  padding: 0;
+}
+
+/* Caption M Regular, text/secondary, centred. */
+.knw-summary__hint {
+  margin: 0;
+  text-align: center;
   color: var(--semantic-text-secondary);
   font-family: var(--semantic-type-scale-caption-m-regular-font-family);
   font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
@@ -1100,94 +1075,51 @@ span.knw-recall__exit {
   letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
 }
 
-/* Figma's middleContent holds one column: the score card, then the two lists.
-   It measures 31 between them, which is not a step — Space/800 is the nearest,
-   and layout/2xl is the token on it. */
-.knw-recall--summary {
-  gap: var(--semantic-space-layout-2-xl);
-  text-align: left;
-  /* NOT A RECALL TURN, so not the 20 gutter. `space/gutter` exists because
-     every recall screenshot draws a 350 column at 20; the summary is not one of
-     those screens, and Figma builds all three of its cards at 358 inside
-     Space/400. Restoring the scaffold's own 16 is what makes them 358. */
-  padding-inline: var(--semantic-space-layout-l);
-  /* The slot already pads Space/200 at the top, which is Figma's whole gap
-     between the topic line and the score card. The turn screens' extra 24 was
-     pushing the card a block down the screen. Kept at the bottom, where it is
-     the scroll gutter under the pinned actions. */
-  padding-block: 0 var(--semantic-space-layout-xl);
-}
-
-/* The score card: the ring and the split, on one surface. Radius/400 like every
-   other card on this screen — it was bound to radius/input (24), which is the
-   recall surfaces' radius, not the summary's. */
-.knw-summary__overview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--semantic-space-layout-l);
-  box-sizing: border-box;
-  width: 100%;
-  padding-block: var(--semantic-space-layout-xl);
-  padding-inline: var(--semantic-space-layout-s);
-  border-radius: var(--semantic-radius-card);
-  background: var(--semantic-background-surface);
-}
-
-/* Figma nests the review block inside StrongAreas at gap Space/200, which puts
-   the two lists closer to each other than either is to the score card. */
-.knw-summary__groups {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-s);
-  width: 100%;
-}
-
-/* The three tiles are `summaryStatTile` now — the rules that were here moved
-   into the component when it stopped being a one-off. See component-gaps.md. */
-
-
-/* The two lists. Strong always first — see the screen's docblock. */
-.knw-summary__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-s);
-  width: 100%;
-}
-
-.knw-summary__group-label {
-  margin: 0;
-  color: var(--semantic-text-secondary);
-  text-transform: uppercase;
-  font-family: var(--semantic-type-scale-body-s-bold-font-family);
-  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
-  font-size: var(--semantic-type-scale-body-s-bold-font-size);
-  line-height: var(--semantic-type-scale-body-s-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
-}
-
-/* NO RULE FOR THE CARD ITSELF ANY MORE. `.knw-summary__card` used to restate
-   `listItemGroup`'s own padding, radius and fill and got two of the three
-   wrong — radius/input where the file draws Radius/400, and zero padding where
-   strongCard pads 12/16. The group is the card; the screen has nothing to add
-   to it, so the class is gone rather than left overriding a component from
-   outside. */
-
 /* ===== the front door: Entrypoint 1 ===== */
 
-/* Knowie and the greeting, held in the upper third with the rail and the
-   composer pinned below — the file leaves the middle deliberately empty, which
-   is what makes the screen read as waiting for you rather than as a dashboard. */
+/* Knowie, the greeting, then the week's topics — the redesigned entry
+   (16307:8816). The rail and composer stay pinned below; the list scrolls
+   under them, which is what Figma's cut-off fourth row draws. */
 .knw-home {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: var(--semantic-space-layout-2-xl);
+  gap: var(--semantic-space-layout-l);
   box-sizing: border-box;
   width: 100%;
-  padding-block: var(--semantic-space-layout-2-xl);
+  padding-block: var(--semantic-space-layout-s);
   text-align: center;
+}
+
+/* Figma: the prompt over the list, 16 apart. */
+.knw-home__topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-l);
+  width: 100%;
+  text-align: left;
+}
+
+/* 18/20 Regular, text/secondary — headline/XS-regular, bound exactly. */
+.knw-home__prompt {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-headline-xs-regular-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-regular-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-regular-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-regular-letter-spacing);
+}
+
+/* The list's card: background/surface at radius 16, clipping so the first and
+   last rows' press wash follows the corners. */
+.knw-home__list {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
 }
 
 /* 33 Bold, centred — headline/L, bound exactly.
@@ -1335,74 +1267,6 @@ span.knw-recall__exit {
   padding: var(--semantic-space-layout-xxs);
   border-radius: var(--semantic-radius-pill);
   background: var(--semantic-accent-brand-subtle);
-}
-
-/* ===== choose folder screen ===== */
-
-.knw-folders {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-xl);
-  width: 100%;
-  padding-block: var(--semantic-space-layout-l);
-  text-align: left;
-}
-
-.knw-folders__head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-s);
-  width: 100%;
-}
-
-/* 28 Bold — headline/M, the same step the summary and the lesson take. */
-.knw-folders__title {
-  margin: 0;
-  color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-headline-m-font-family);
-  font-weight: var(--semantic-type-scale-headline-m-font-weight);
-  font-size: var(--semantic-type-scale-headline-m-font-size);
-  line-height: var(--semantic-type-scale-headline-m-line-height);
-  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
-}
-
-.knw-folders__ask {
-  margin: 0;
-  color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-headline-s-font-family);
-  font-weight: var(--semantic-type-scale-headline-s-font-weight);
-  font-size: var(--semantic-type-scale-headline-s-font-size);
-  line-height: var(--semantic-type-scale-headline-s-line-height);
-  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
-}
-
-.knw-folders__hint {
-  margin: 0;
-  color: var(--semantic-text-secondary);
-  font-family: var(--semantic-type-scale-body-s-regular-font-family);
-  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
-  font-size: var(--semantic-type-scale-body-s-regular-font-size);
-  line-height: var(--semantic-type-scale-body-s-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
-}
-
-.knw-folders__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-l);
-  width: 100%;
-}
-
-/* Nothing studied yet. Centred, because an empty shelf has no list to align
-   to — the same call `.knw-entry--compose` makes for Knowie waiting over a
-   blank composer. */
-.knw-folders__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--semantic-space-layout-l);
-  width: 100%;
-  padding-block: var(--semantic-space-layout-l);
 }
 
 /* ===== the composer with a feature attached ===== */
@@ -1612,6 +1476,47 @@ span.knw-recall__exit {
   font-size: var(--semantic-type-scale-body-m-regular-font-size);
   line-height: var(--semantic-type-scale-body-m-regular-line-height);
   letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
+  /* EACH NEW LINE ARRIVES. The reply changes twice as the set is built
+     (composing, ready, settled); the element is keyed on the phase, so every
+     line remounts and rises on `settle`. Transform only, no fill mode — the
+     resting style stays visible if the animation never runs. */
+  animation: knw-entry-reply-arrive var(--semantic-motion-duration-settle)
+    var(--semantic-motion-easing-enter);
+}
+
+@keyframes knw-entry-reply-arrive {
+  from {
+    transform: translateY(var(--semantic-space-layout-s));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knw-entry__reply {
+    animation: none;
+  }
+}
+
+/* Knowie at work — `AI chat explain out loud` (16307:8815): the 64 mascot with
+   "Composing" beside it, on Knowie's side of the thread. */
+.knw-entry__composing {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--semantic-space-layout-s);
+}
+
+/* Caption M Regular, text/tertiary — the same quiet register as the
+   "✨ Explain out loud" note under the student's bubble. */
+.knw-entry__composing-label {
+  color: var(--semantic-text-tertiary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
 }
 
 /* THE CARD THAT STARTS THE SESSION, and the reason this screen exists.
@@ -1828,8 +1733,9 @@ span.knw-recall__exit {
   gap: var(--semantic-space-layout-s);
   width: 100%;
   margin: 0;
-  padding: 0;
-  list-style: none;
+  /* The numbers hang in the gutter the file gives them. */
+  padding: 0 0 0 var(--semantic-space-layout-l);
+  list-style: decimal;
   color: var(--semantic-text-secondary);
   font-family: var(--semantic-type-scale-body-m-regular-font-family);
   font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
@@ -1975,13 +1881,20 @@ span.knw-recall__exit {
   padding-inline: var(--semantic-space-layout-l);
 }
 
+/* `Lesson details accordion closed` (16311:15771): the header and the stats
+   24 apart, then the sections. */
 .knw-lesson {
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
   gap: var(--semantic-space-layout-xl);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-s);
   text-align: left;
 }
 
-/* Figma's `folder`: 24 block / 16 inline, gap Space/200, on the card surface. */
+/* Figma's `folder`: `accent/brand/bold`, radius 16, padding 24 / 12, gap 8. */
 .knw-lesson__folder {
   display: flex;
   flex-direction: column;
@@ -1989,25 +1902,27 @@ span.knw-recall__exit {
   box-sizing: border-box;
   width: 100%;
   padding-block: var(--semantic-space-layout-xl);
-  padding-inline: var(--semantic-space-layout-l);
-  border-radius: var(--semantic-radius-input);
-  background: var(--semantic-background-surface);
+  padding-inline: var(--semantic-space-layout-m);
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-accent-brand-bold);
 }
 
+/* Caption M Bold. Figma paints it an unbound white at 55% on the violet —
+   about 2.4:1, and even pure white only reaches 3.5:1 there, under AA at
+   12px (caught by axe on /recall/lesson). `text/on-brand` is the system's
+   text for a brand fill and clears it at about 5.5:1. The 28px title stays
+   white: large text needs 3:1 and passes. */
 .knw-lesson__eyebrow {
   margin: 0;
-  color: var(--semantic-text-secondary);
-  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
-  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
-  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
-  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+  color: var(--semantic-text-on-brand);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
 }
 
-/* Figma's "Voting Rights Act" is 28 Bold — headline/M. It was bound to
-   headline/XL, which is 44: the same one-step-too-far slip the summary title
-   carried, and from the same reading of "XL" as the top of the headline range
-   rather than a named size. */
+/* 28 Bold — headline/M, Figma exactly. */
 .knw-lesson__title {
   margin: 0;
   color: var(--semantic-text-primary);
@@ -2018,145 +1933,21 @@ span.knw-recall__exit {
   letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
 }
 
-/* Three equal columns, gap Space/300. A <dl>, because that is what a set of
-   label/value pairs is — and it pairs them for a screen reader too. */
+/* Three `statTile`s in equal columns, gap 12. The tile draws itself; this
+   only shares the row. */
 .knw-lesson__stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--semantic-space-layout-m);
   width: 100%;
-  margin: 0;
 }
 
-.knw-lesson__stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--semantic-space-layout-xxs);
-  padding-block: var(--semantic-space-layout-m);
-}
-
-.knw-lesson__stat-value {
-  margin: 0;
-  color: var(--semantic-text-primary);
-  font-variant-numeric: tabular-nums;
-  font-family: var(--semantic-type-scale-body-s-bold-font-family);
-  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
-  font-size: var(--semantic-type-scale-body-s-bold-font-size);
-  line-height: var(--semantic-type-scale-body-s-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
-}
-
-.knw-lesson__stat-label {
-  color: var(--semantic-text-secondary);
-  font-family: var(--semantic-type-scale-body-s-regular-font-family);
-  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
-  font-size: var(--semantic-type-scale-body-s-regular-font-size);
-  line-height: var(--semantic-type-scale-body-s-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
-}
-
-/* TOKEN NOTE: Figma sets the lesson body at 19/24. No step is 19 — the scale
-   runs 18 then 21 — so body/M (18) is the nearest bound one. */
-.knw-lesson__body {
-  margin: 0;
-  color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-body-m-regular-font-family);
-  font-weight: var(--semantic-type-scale-body-m-regular-font-weight);
-  font-size: var(--semantic-type-scale-body-m-regular-font-size);
-  line-height: var(--semantic-type-scale-body-m-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-body-m-regular-letter-spacing);
-}
-
-/* The way back into the loop. The WHOLE card is the target, which is what
-   Figma draws and what a thumb expects at 358×104.
-
-   TOKEN NOTE: Figma fills it with a variable called "EOL Card background"
-   (#0B1E4A) that has no counterpart in tokens.json. `accent/blue/subtle`
-   (#0A1635) is the nearest bound colour and the right role — a subtle surface
-   in the same blue family the feature already uses for XP. */
-.knw-lesson__eol {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--semantic-space-layout-2-xl);
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--semantic-space-layout-l);
-  border: none;
-  border-radius: var(--semantic-radius-input);
-  background: var(--semantic-accent-blue-subtle);
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.knw-lesson__eol:focus-visible {
-  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
-  outline-offset: var(--semantic-space-layout-xxs);
-}
-
-.knw-lesson__eol-body {
+/* One `lessonAccordion` per term. */
+.knw-lesson__sections {
   display: flex;
   flex-direction: column;
   gap: var(--semantic-space-layout-m);
-  min-width: 0;
-}
-
-.knw-lesson__eol-head {
-  display: flex;
-  align-items: center;
-  gap: var(--semantic-space-layout-s);
-}
-
-.knw-lesson__eol-icon {
-  display: block;
-  flex: none;
-  width: var(--semantic-size-icon-xl);
-  height: var(--semantic-size-icon-xl);
-  color: var(--semantic-accent-blue-bold);
-}
-
-.knw-lesson__eol-copy {
-  display: flex;
-  flex-direction: column;
-  gap: var(--semantic-space-layout-xxs);
-}
-
-.knw-lesson__eol-title {
-  color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-body-s-bold-font-family);
-  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
-  font-size: var(--semantic-type-scale-body-s-bold-font-size);
-  line-height: var(--semantic-type-scale-body-s-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
-}
-
-.knw-lesson__eol-time {
-  color: var(--semantic-text-secondary);
-  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
-  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
-  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
-  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
-}
-
-/* SAME CARD AS THE ENTRY SCREEN'S, SO THE SAME STEP — and the step is
-   headline/XS-bold, 18/600 at line-height 20. Figma binds this line
-   `font/size/md` + `font/lineHeight/sm`, which is that step exactly.
-   
-   IT TOOK TWO GOES. It was body/M-regular (18/400), so the same card read at
-   two different weights on two screens; moving it to body/M-bold matched the
-   weight but not the leading, because body/M is 18/24. See SPEC.md's type
-   table: the scale has two 18/SemiBold steps and they differ only in leading,
-   which is exactly the kind of near-miss that looks like sloppy spacing. */
-.knw-lesson__eol-topic {
-  color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
-  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
-  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
-  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+  width: 100%;
 }
 
 /* ===== comparison: your answer beside the right one ===== */
@@ -2181,30 +1972,50 @@ span.knw-recall__exit {
 .knw-compare__head {
   display: flex;
   flex-direction: column;
-  gap: var(--semantic-space-layout-s);
+  gap: var(--semantic-space-layout-m);
 }
 
-/* The eyebrow, in the violet the file uses for it. */
-.knw-compare__eyebrow {
+/* "Previous mistake" — Figma's `tag`: the clock-rewind glyph at 24 and the
+   words in `accent/coral/bold`, 15 / SemiBold, capitalised by the file. Gap
+   13 in Figma; `space/layout/m` (12) is the nearest step. */
+.knw-compare__tag {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
   margin: 0;
-  color: var(--semantic-feedback-partial-label-subtle);
+  color: var(--semantic-accent-coral-bold);
   text-transform: uppercase;
-  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
-  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
-  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
-  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
-  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
 }
 
-/* 28 Bold — headline/M, the step the summary and the lesson also take. */
+.knw-compare__tag-icon {
+  display: flex;
+  flex: none;
+  width: var(--semantic-size-icon-l);
+  height: var(--semantic-size-icon-l);
+}
+
+/* 21 Bold / 24 — headline/S, Figma's `Greed/Headline S`. It was headline/M
+   (28) when this screen followed the older comparison frame. */
 .knw-compare__question {
   margin: 0;
   color: var(--semantic-text-primary);
-  font-family: var(--semantic-type-scale-headline-m-font-family);
-  font-weight: var(--semantic-type-scale-headline-m-font-weight);
-  font-size: var(--semantic-type-scale-headline-m-font-size);
-  line-height: var(--semantic-type-scale-headline-m-line-height);
-  letter-spacing: var(--semantic-type-scale-headline-m-letter-spacing);
+  font-family: var(--semantic-type-scale-headline-s-font-family);
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
+  font-size: var(--semantic-type-scale-headline-s-font-size);
+  line-height: var(--semantic-type-scale-headline-s-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-s-letter-spacing);
+}
+
+/* The bolded key term stays on the step's own weight. Without this, <strong>
+   inside an already-bold headline resolved to "bolder" — 900, a weight the
+   scale does not have (caught by `npm run consistency`). */
+.knw-compare__question strong {
+  font-weight: var(--semantic-type-scale-headline-s-font-weight);
 }
 
 /* The model answer's card. `listItemGroup` already draws the surface, radius
@@ -2524,35 +2335,3 @@ span.knw-recall__exit {
   width: 100%;
 }
 
-/* ===== lesson: the mascot and the no-set note ============================ */
-
-/* Knowie, out of the explain-out-loud card and into the screen's own column —
-   the Never rule that card was breaking. Centred, because it introduces the
-   card below rather than belonging to any one line of the reading. */
-.knw-lesson__mascot {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding-block-start: var(--semantic-space-layout-m);
-}
-
-/* The bottom slot when a folder has reading but no speaking set. Same shape as
-   the card it replaces, so the screen does not change height class. */
-.knw-lesson__no-set {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--semantic-space-layout-m);
-  width: 100%;
-}
-
-.knw-lesson__no-set-note {
-  margin: 0;
-  text-align: center;
-  color: var(--semantic-text-secondary);
-  font-family: var(--semantic-type-scale-body-s-regular-font-family);
-  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
-  font-size: var(--semantic-type-scale-body-s-regular-font-size);
-  line-height: var(--semantic-type-scale-body-s-regular-line-height);
-  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
-}

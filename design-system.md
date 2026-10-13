@@ -50,7 +50,13 @@ Rules, not values. Every value lives in `tokens/tokens.json`. This file tells yo
 
 **statTile** — single stat tile: large number above a subdued label. See full spec below.
 
-**folderCard** — study folder entry card with a colour-band header. See full spec below.
+**folderCard** — study folder entry card with a colour-band header. No screen uses it since the folder screen was removed; kept in the library. See full spec below.
+
+**topicRow** — one topic the student covered, on the entry screen: progress ring, title, Event/Concept tag. The whole row starts recall on that term. See full spec below.
+
+**lessonAccordion** — one section of a lesson: an outlined pill that opens on the section's reading. See full spec below.
+
+**termRow** — one term's outcome on the session summary: badge, title, status tag, chevron. The whole row opens that term's detail. See full spec below.
 
 **feedback Button** — two-option action row inside recallResponseCard for flagging a transcription error. Renamed from `errorButton` in Figma. See full spec below.
 
@@ -110,11 +116,11 @@ Result surface for one evaluated recall attempt in the Explain Out Loud loop. Sh
 
 `State` with an additional boolean `showMissingSection` encoded in the variant name on Default.
 
-**State=Default, showMissingSection=True** — incorrect result. Student's answer did not land. Shows error badge (`feedback/error/surface/bold`), transcript of what was heard, `feedback Button` row, Divider, and Missing Section listing the missing concepts as bullets. `nextActionLabel` default: "Next question".
+**State=Default, showMissingSection=True** — incorrect result. Student's answer did not land. Leads with a 44px score ring in `feedback/error/bold`, "0%" by default (the revise ladder, `16301:5565`), beside the error badge (`feedback/error/surface/bold`), transcript of what was heard, `feedback Button` row, Divider, and Missing Section listing the missing concepts as bullets. `nextActionLabel` default: "Next question".
 
 **State=Default, showMissingSection=False** — partial result. Student touched the concept but didn't fully cover it. Shows partial badge (`feedback/partial/surface/bold`), transcript, and `feedback Button` row. No Divider or Missing Section. `nextActionLabel` default: "Reveal answer".
 
-**State=Reveal** — model answer revealed. Transcript and Action Buttons replaced by full model answer text (`text/primary`). Helper label "Try it yourself after reading" sits below card. Badge reads "Answer" in neutral pill (`background/surface` + `border/default` stroke). `nextActionLabel` default: "Next question".
+**State=Reveal** — model answer revealed. Transcript and Action Buttons replaced by full model answer text (`text/success`), in a card outlined 1px in `feedback/success/label/subtle` — the revise ladder, `16301:5618`. Helper label "Try it yourself after reading" sits below card, right-aligned (`helperText`). Badge reads "Answer" in neutral pill (`background/surface` + `border/default` stroke). `nextActionLabel` default: "Next question".
 
 **State=Correct** — passing result. Percentage circle (44×44, `feedback/success/surface/bold` ring) and green "✓ Correct" badge replace the standard badge row. Action Buttons replaced by Knowie Answer text block (`background/surface`, `border/default`, `Radius/300`). Left Accent Strip (`feedback/success/surface/bold`, 3px wide) runs along left edge of card.
 
@@ -613,6 +619,98 @@ Do not use accent=Gold for standard study folders — Gold signals PRO content. 
 
 ---
 
+## topicRow
+
+One topic the student covered this week. Built from Figma's **Topics list view** (Property 1=Default), instanced in the entry screen's `lesson` list (`16307:8816`). `components/TopicRow`.
+
+### Layer anatomy
+
+```
+topicRow (li)          divided from the row above by stroke/default, border/default
+  row (button)         padding: Space/300 block, Space/400 inline, gap: Space/300
+    step               control/m (40) — Figma 48, see Gaps
+      track            ring, stroke/strong, border/default
+      progress         arc, stroke/strong, accent/brand/bold, from 12 o'clock
+      core             control/xs (24) disc, accent/brand/bold
+        doc icon       iconSlot 200 (16), interactive/label/secondary
+    title              Body S Regular, text/primary
+    tag                pill, background/elevated, Space/050 × Space/200, Caption M Regular
+                       Event: accent/blue/label/subtle · Concept: text/secondary
+```
+
+### When to reach for it
+
+Inside a `background/surface` list at `radius/card`, one row per term, where a tap starts something about **that** term. The handler carries the row's index.
+
+### What not to do
+
+Do not render a row without `onSelect` beside rows that have one — unwired, it is plain text on purpose. Do not use it for summary results; that is `listItem`.
+
+---
+
+## lessonAccordion
+
+One section of a lesson. Built from the `sectionHeader` rows in Figma's **Lesson details accordion closed** (`16311:15771`). `components/LessonAccordion`.
+
+### Layer anatomy
+
+```
+lessonAccordion
+  header (button)      pill, stroke/default border/strong (border/selected when open)
+                       padding: Space/300 block, Space/600 inline, gap: Space/300, min 48 tall
+    title              Body S Bold, text/primary
+    book icon          iconSlot 300 (24), text/secondary
+  panel (region)       opens via grid rows 0fr → 1fr on motion/duration/settle; inert while closed
+    body               Body S Regular, text/secondary, inset Space/600
+```
+
+**Figma draws only the closed state.** The frame's own name says there is an open one; the open panel, the `border/selected` stroke and the motion are this component's.
+
+### When to reach for it
+
+On the lesson screen, one per term, as the last look before the session. Uncontrolled with `defaultOpen`, or pinned with `open`.
+
+### What not to do
+
+Do not use it as navigation — a pill that opens something should not also leave the screen.
+
+---
+
+## termRow
+
+One term's outcome on the session summary. Built from Figma's **termRow** (`16311:14136`), instanced on `17 Summary` (`16311:14220`). `components/TermRow`.
+
+### Variant axis: outcome
+
+| outcome | glyph | badge | tag |
+|---|---|---|---|
+| Unaided | check | `feedback/success/bold`, label-bold glyph | same pair |
+| Hinted | circle-half | `feedback/partial/bold` | `feedback/partial/subtle` + `label/subtle` — see Gaps |
+| Revealed | eye | `feedback/error/bold` | same pair |
+| Skipped | dash | `background/elevated`, `text/secondary` | same pair — a guess, see Gaps |
+
+### Layer anatomy
+
+```
+termRow (li)
+  row (button)         background/surface, radius/card, Space/300 block,
+                       Space/400 left / Space/300 right, gap Space/300; 64 tall
+    badge              control/m (40) circle, glyph iconSlot 250 (20)
+    title              Body M Bold, text/primary, one line, ellipsis
+    statusTag          radius/tab (8), Space/100 × Space/200, Caption M Bold
+    chevron            iconSlot 250, text/tertiary — only when the row opens
+```
+
+### When to reach for it
+
+The summary list and nowhere else (Figma's own rule). The label comes from `outcome`, never from a prop — *"a fifth outcome is a new variant and a decision."*
+
+### What not to do
+
+Do not draw the per-term XP the frame prints; it was dropped. Do not render a row without `onOpen` beside rows that have one.
+
+---
+
 ## feedback Button
 
 Renamed from `errorButton` in Figma. Two-option action row inside `recallResponseCard`. Allows the student to flag a transcription error or confirm their answer was heard correctly.
@@ -837,7 +935,7 @@ The listening screen keeps the tuck — the waveform is the panel Knowie leans o
 
 ### The hint ladder escalates in shape, not only in words
 
-Rungs 1 and 2 put the hint **inside** `recallResponseCard`, as a sibling of its body — which is where Figma draws `hint1`, and why the card's gap tightens from `Space/800` to `Space/200` when one is present. Rung 3 **promotes** it into its own panel below the card, a step larger and on a warm surface; Figma's layer name is "escalating warmth".
+The hint sits **inside** `recallResponseCard` on every rung, as a sibling of its body — which is where Figma draws `hint1`, and why the card's gap tightens from `Space/800` to `Space/200` when one is present. Rung 3 draws it warm (`hintTone="warm"`): an outlined gold box with the lightbulb, Figma's "escalating warmth". It used to be promoted to a panel below the card; the revise ladder (`16301:5617`) brought it back in. Rung 3 shows a hint only after a partly-right answer — a wrong one gets WHAT WAS MISSING and "Reveal answer" instead (`16301:5541`). The ladder rungs pass `showTranscript={false}` and no breakdown: the redesign draws the score, the verdict and the hint, nothing between.
 
 **A pass carries no hint**, enforced in `ResultScreen` rather than left to the caller: there is no next rung to hint at. A default prop beats an explicit `undefined`, so the rule has to live with the invariant, not the wiring.
 
@@ -988,7 +1086,7 @@ When building the recall flow. Screens 5, 6, 7 and 8 are the states the flow can
 
 ### What not to do
 
-Do not treat screen 8's anatomy as agreed design — its token bindings come from the components and are firm, but the layout is a proposal until it is drawn. Do not drop the text fallback or skip from a recall turn to save vertical space. Do not move skip down among the bottom escapes: `Idle` and `text fallback` both attach it to the question, on the right, which is what makes it read as "skip *this* term" rather than "leave the session". Do not stack `transcriptSection` above `recallResponseCard` on the misheard screen: the card carries its own transcript layer, so the two together print the same string twice.
+Do not treat screen 8's anatomy as agreed design — its token bindings come from the components and are firm, but the layout is a proposal until it is drawn. Do not drop the text fallback or skip from a recall turn to save vertical space. (The reveal is the one recorded exception — it carries only "Try now", by the design owner's decision; see CLAUDE.md.) Do not move skip down among the bottom escapes: `Idle` and `text fallback` both attach it to the question, on the right, which is what makes it read as "skip *this* term" rather than "leave the session". Do not stack `transcriptSection` above `recallResponseCard` on the misheard screen: the card carries its own transcript layer, so the two together print the same string twice.
 
 ---
 
@@ -1211,7 +1309,15 @@ Known absences. Do not fill them with invented values. Surface them as requests.
 - **`.knw-screen` was `min-height: 100vh` with `overflow: hidden`** — RESOLVED. On the first screen whose content exceeded the viewport (the summary, at 887 against 844) the column grew and the overflow clipped the last 43px, taking half the bottom slot's second button with no way to scroll to it. Now `height: 100vh`, so the middle scrolls and the slots stay put — which is what `.knw-screen__middle`'s `flex: 1 1 auto; min-height: 0` was always written for. **A latent scaffold bug, like the sheet overflow before it.**
 - **`hintLadder`'s dot is 10×10 and its rule is 18×2** — neither is on a scale. The size scale runs `control/XXS` 20, `XS` 24, `S` 32, and `size/bullet` is 5; `space/layout/M` (12) is the nearest bound value that is a size at all, and at 10px the 2px difference reads as nothing. The rule takes `size/control/XXS` (20) for width against Figma's 18, and `stroke/strong` for its height against 2. Request `size/dot` and `size/rule` if the ladder is drawn anywhere else.
 - **The in-card hint label is 10/12, and its colour fails AA** — no step is 10 (the scale runs 9, 12, 15, 16, 18), so `caption/S` (9) is the nearest. Figma binds `text/link` (violet/500), which is **4.43:1** on `background/surface` — under AA by seven hundredths, and at 9px nothing qualifies as large text. The build takes `feedback/partial/label/subtle` (#A78BFA, 5.67:1), which is also the better name: a hint is feedback on a partial answer, not a link.
-- **The promoted hint panel binds a PRO colour in Figma** — a variable named `Pro Background` (#E88C30 at 12%) with no counterpart in `tokens.json`, and the paid tier's colour doing a hint's job, which "Never do this" #8 forbids. The build takes `feedback/warning/surface/subtle` (gold/900-wash), the family the gold label on that same panel already belongs to. The label itself, `text/warning`, matches Figma exactly.
+- **The warm Hint 3 binds a PRO colour in Figma** — the lightbulb's 28px icon tile is a variable named `Pro Background` (#E88C30 at 12%) with no counterpart in `tokens.json`, and the paid tier's colour doing a hint's job, which "Never do this" #8 forbids. The tile is not drawn; the bulb sits in the label in `text/warning`. The box itself is unbound in Figma (rgba(245,181,61,0.2)); the build takes `feedback/warning/surface/subtle`, the nearest bound warm wash. From `recallResponseCard` (`.knw-rrc__hint--warm`).
+- **No 48 size step and no 4 stroke** — `topicRow`'s ring is 48 with a 4 stroke around a 32 core and a 20 glyph in Figma (`Topics list view`, entry `16307:8816`). The control scale runs 24 / 32 / 40 / 56, `size/tapTarget/min` is 48 but is a hit-area role rather than a drawing size, and strokes stop at 2. The row takes `control/m` 40, `control/xs` 24, `icon/s` 16 and `stroke/strong` 2 — the nearest steps that keep Figma's proportions. Commented in `TopicRow.tsx`. Request `size/ring` (48) and `stroke/heavy` (4), or confirm 40.
+- **`topicRow`'s Event tag fails AA in Figma's colour** — `accent/blue/bold` on the `background/elevated` pill measures 4.27:1 at 12px. The build takes `accent/blue/label/subtle` (4.70:1), the blue's own text token. Same call as the in-card hint label.
+- **The lesson header's eyebrow cannot be white** — Figma paints "1939 – 1945" an unbound white at 55% on `accent/brand/bold`. No white clears 4.5:1 on that violet (pure white reaches about 3.5:1), so the build takes `text/on-brand` (about 5.5:1). The 28px title stays white; large text needs 3:1. From the lesson screen (`.knw-lesson__eyebrow`).
+- **The ready card carries a mascot in Figma** — all three frames of the redesigned chat path (`16307:8815`, `8573`, `11255`) draw a small Knowie inside the Explain out loud card. "Never do this" forbids a mascot in a card, so the build shows Knowie once, at screen level, while composing. From `ExplainEntryScreen`.
+- **`termRow`'s fourth end state is a guess** — Figma's description says four, the frame draws three (Unaided, Revealed, Hinted), and the component set is unpublished so its variants could not be read. The session has one more outcome, a skip, so **Skipped** stands in: a dash on `background/elevated` with `text/secondary`, deliberately borrowing no verdict colour. Confirm the fourth variant, or replace it. From `TermRow`.
+- **Figma's `feedback/partial/bold` has drifted to orange** — `termRow`'s Hinted badge renders #E8792A in the file, where tokens.json resolves `feedback/partial/bold` to violet (the "Almost there" colour on every hint rung). The binding is followed, so Hinted is violet here. Its tag also moves to the subtle pair: no text reaches 4.5:1 on the bold violet at 12px (axe, `/recall/summary`). From `TermRow`.
+- **`button`'s icon did not take the variant's colour** — only the label was coloured, so a left icon on Primary inherited the page's near-white and vanished on Primary's near-white face. Fixed in `Button.css` (icon and label now share the variant colour) with a story; recorded because the defect was invisible in every screenshot until a Primary button carried an icon.
+- **No shadow tokens** — the revise ladder gives two `recallResponseCard` surfaces a coloured 0 4 4 drop shadow: the warm Hint 3 box (gold at 50%, `16301:5617`) and the Reveal card (green at 50%, `16301:5618`). `tokens.json` has no shadow or elevation tokens at all, so the nearest step is none, and both glows are left out — the 1px outline carries the meaning on its own. Commented at both bindings in `RecallResponseCard.css`. Request a `shadow/glow/{warning,success}` pair, or confirm the outlines are enough.
 - **The `thinking` mascot is 122×132** — off every illustration step (XL 64, 2XL 120, 3XL 200, 4XL 320), and `thinking progress` places the component directly rather than through a `mascotSlot`. The build sizes its box with `size/fab/thinking` (172) and contains the image inside, so the pose keeps its proportions. Request `size/illustration/M` if a third mascot size is wanted.
 - ~~**The processing header draws `progressIndicator` at `thickness="16"`**~~ — RESOLVED, and it was not one frame. All six recall frames bind 16: `Idle`, `cancel option`, `student talking`, `thinking progress`, `hint 1` and `reveal`. `recallHeader` was built on the component's 24 default and was 8px heavy on every screen in the loop. Now passes `thickness="16"` explicitly. Nothing is lost by the switch — `showText` has no effect at 16 by design, and the count was never drawn here anyway, only carried in the bar's accessible name.
 - **No avatar size, and no avatar role at all** — the app draws exactly one avatar, the 25×25 profile disc in the bottom nav of `detailed-lesson-by-chat.png`. The text fallback needs the same treatment beside a chat message, and the size scale has nothing between `control/XS` (24) and `control/S` (32). It takes `control/S`, which is a control size doing an avatar's job. Request `size/avatar/{S,M}` and a semantic role, so an avatar stops borrowing a button's scale.

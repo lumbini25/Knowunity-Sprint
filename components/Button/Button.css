@@ -121,11 +121,17 @@
 
 /* ===== variant ===== */
 
+/* THE ICON TAKES THE LABEL'S COLOUR, ON EVERY VARIANT. Only the label used to
+   be coloured, so an icon inherited the page's `text/primary` — near-white —
+   and on Primary's near-white face it vanished. Found when "Didn't catch that"
+   put a mic on its Primary button: the glyph rendered, 24px, invisible. */
+
 .knw-button--Primary .knw-button__surface {
   background: var(--semantic-interactive-primary);
 }
 
-.knw-button--Primary .knw-button__label {
+.knw-button--Primary .knw-button__label,
+.knw-button--Primary .knw-button__icon {
   color: var(--semantic-interactive-label-primary);
 }
 
@@ -133,7 +139,8 @@
   background: var(--semantic-background-surface);
 }
 
-.knw-button--Secondary .knw-button__label {
+.knw-button--Secondary .knw-button__label,
+.knw-button--Secondary .knw-button__icon {
   color: var(--semantic-text-primary);
 }
 
@@ -156,7 +163,8 @@
   padding-bottom: 0;
 }
 
-.knw-button--Tertiary .knw-button__label {
+.knw-button--Tertiary .knw-button__label,
+.knw-button--Tertiary .knw-button__icon {
   color: var(--semantic-text-primary);
 }
 

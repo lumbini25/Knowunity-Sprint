@@ -2,21 +2,21 @@
 
 /* Where the loop ends.
 
-   The session records an outcome per term; this route turns those into the two
-   lists and the split. Nothing is computed here that the session does not
+   The session records an outcome per term; this route hands them to the
+   summary, one `termRow` each. Nothing is computed here that the session does not
    already know — `passedAt` carries which rung a pass landed on, which is the
    whole basis for "explained unaided" versus "took a hint". */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SummaryScreen } from '../../../components/screens/RecallScreens/RecallScreens';
 import { useRouter } from 'next/navigation';
-import { useRecallSession } from '../../../lib/recall/session';
+import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
 import { SESSION } from '../../../lib/recall/script';
-import { SESSION_FOLDER } from '../../../lib/recall/folders';
 
 export default function Page() {
   const session = useRecallSession();
   const router = useRouter();
+  const { go } = useRecallNav();
 
   /* NOTHING TO SUMMARISE IS NOT AN EMPTY SUMMARY — IT IS NOT A SUMMARY.
      `terms` used to be handed over as `terms.length ? terms : undefined`, and
@@ -59,8 +59,15 @@ export default function Page() {
 
   /* `replace`, not `push`: a summary that never rendered should not sit in
      history, or Back would land on it and bounce straight out again. */
+  /* LEAVING ON PURPOSE IS NOT "NOTHING TO SUMMARISE". "Redo" starts a fresh
+     session, which empties the outcomes this page is rendering — and the
+     redirect below then fired before the push to the first question landed,
+     sending the student to the front door instead. Found walking the flow;
+     no story could see it, because stories render the screen, not the route. */
+  const leaving = useRef(false);
+
   useEffect(() => {
-    if (ready && empty) router.replace('/entry');
+    if (ready && empty && !leaving.current) router.replace('/entry');
   }, [ready, empty, router]);
 
   if (empty) return null;
@@ -76,41 +83,23 @@ export default function Page() {
 
   return (
     <SummaryScreen
-      /* The set the student actually practised, not a subject typed here by
-         hand — the summary named "World history" while the questions were about
-         something else. */
-      topic={`${SESSION_FOLDER.title} · ${session.termCount} concepts`}
       terms={terms}
-      /* WHAT THE STUDENT SAID ABOUT THEMSELVES, one screen back. Everything
-         else here is the script's view of the session; this is theirs, and
-         where the two disagree the screen takes theirs — a hinted pass that
-         left them unsure joins the review list. Persisted, so returning to
-         this summary later shows the same lists, and answering differently
-         after more practice moves them. */
+      /* WHAT THE STUDENT SAID ABOUT THEMSELVES, one screen back. It decides
+         which way on leads: "I need to practice" puts the redo first. */
       confidence={session.confidence}
-      /* "Revise now" goes to the REVISE SCREEN — the lesson, holding the term
-         the student did worst on. It used to hand them back the folder shelf
-         on the reasoning that what comes after a session is choosing the next
-         material. That reads well in the abstract and badly in the loop: the
-         summary has just named the concepts they missed, and the next tap
-         answered "which folder?" — a question they had already answered — when
-         the one they need is "that concept, again". `/recall/lesson` with no
-         folder is exactly that screen, and its own "Explain out loud" card is
-         the way back into the ladder.
-
-         The shelf is still one tap further on, from the lesson's back control.
-         Decision reversed deliberately; the old reasoning is kept above so the
-         next person does not re-argue it from scratch.
-
-         "Try again" goes to the FRONT DOOR, not back into Explain out loud.
-         It used to push `/entry/ready`, which drops the student straight into
-         a fresh session on the same feature — a narrower choice than the words
-         promise. From `/entry` the whole rail is available, so "try again" can
-         mean the same feature, a different one, or a different topic. The two
-         together give the student the shelf (Revise now) or the chat (Try
-         again), which is every way out of a finished session. */
-      onRevise={() => router.push('/recall/lesson')}
-      onTryAgain={() => router.push('/entry')}
+      /* A ROW OPENS ITS OWN TERM. The detail is about the row that was
+         tapped, so the term's id travels with the tap. */
+      onOpenTerm={(i) =>
+        router.push(`/recall/comparison?term=${encodeURIComponent(session.outcomes[i].termId)}`)
+      }
+      /* Continue leaves the finished session for the front door, where the
+         whole rail and the week's topics are. */
+      onContinue={() => router.push('/entry')}
+      /* "Redo N terms": the whole set again, fresh, from term 1. */
+      onRedo={() => {
+        leaving.current = true;
+        go(session.startAt(0));
+      }}
     />
   );
 }

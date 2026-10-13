@@ -92,6 +92,12 @@ export interface TermOutcome {
   passedAt: Rung | null;
   score: number | null;
   skipped: boolean;
+  /**
+   * What the student last said on this term — the take that passed it, or the
+   * last miss before the answer was shown. The summary's term detail plays it
+   * back beside the model answer. Absent on a skip: nothing was said.
+   */
+  transcript?: string;
 }
 
 /** The verdict currently on screen, if any. */
@@ -250,8 +256,23 @@ export interface RecallSession {
   retryAfterSilence: () => Destination;
   /** Skip the term. Scores as a miss, and leads the revise list. */
   skip: () => Destination;
+  /**
+   * "Reveal answer" on the last hint rung. Jumps the ladder to the reveal.
+   *
+   * THE SAME END THE LADDER REACHES ON ITS OWN, one take sooner: the term is
+   * recorded as missed exactly as running out of rungs records it, so asking
+   * for the answer is never a cheaper route than climbing to it. It is not a
+   * skip — the student stays on the term and says the answer back.
+   */
+  revealNow: () => Destination;
   /** Move on once a term is settled. */
   advance: () => Destination;
+  /**
+   * Start a fresh session on a term, from inside the recall routes — the
+   * lesson's "Explain out loud" when it was opened from the ready card.
+   * `startSessionAt` is the same act for callers outside the provider.
+   */
+  startAt: (index: number) => Destination;
   /** Leave, keeping the bonus waiting. */
   saveAndLeave: () => Destination;
 }
@@ -321,6 +342,33 @@ function read(): Persisted | null {
        restored is not a session that should crash. */
     return null;
   }
+}
+
+/**
+ * Start a fresh session on a chosen term — the entry screen's topic list.
+ *
+ * WRITTEN TO STORAGE, NOT CALLED ON THE PROVIDER, and that is the point.
+ * `/entry` sits outside `app/recall/`, so no provider is mounted when the row
+ * is tapped; the provider mounts with the first recall route and restores from
+ * this record. Calling into it from a recall page instead loses a race: a
+ * child's effect runs before its parent's, so the restore would overwrite the
+ * choice.
+ *
+ * A FRESH SESSION: outcomes and the rating clear, the rung goes to attempt 1.
+ * The microphone answer carries over — the student has already been asked.
+ */
+export function startSessionAt(index: number) {
+  const prev = read();
+  write({
+    termIndex: Math.max(0, Math.min(SESSION.length - 1, index)),
+    rung: 'attempt1',
+    takeIndex: 0,
+    outcomes: [],
+    micGranted: prev?.micGranted ?? false,
+    micAsked: prev?.micAsked ?? prev?.micGranted ?? false,
+    confidence: null,
+    verdict: null,
+  });
 }
 
 function write(state: Persisted) {
@@ -542,7 +590,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
          ladder is the shape of being partway there; a pass has no ladder left
          to show. */
       setResolved(true);
-      settleTerm({ termId: term.id, passedAt: rung, score, skipped: false });
+      settleTerm({ termId: term.id, passedAt: rung, score, skipped: false, transcript: take.transcript });
       return 'correct';
     }
 
@@ -563,7 +611,7 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     setProgress((prev) => ({ ...prev, rung: climbed, takeIndex: 0 }));
 
     if (climbed === 'reveal') {
-      settleTerm({ termId: term.id, passedAt: null, score: null, skipped: false });
+      settleTerm({ termId: term.id, passedAt: null, score: null, skipped: false, transcript: take.transcript });
       return 'reveal';
     }
     return 'result';
@@ -736,6 +784,30 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
     }
   }, [term.id, termIndex, settleTerm]);
 
+  const startAt = useCallback((index: number): Destination => {
+    setProgress((prev) => ({
+      ...prev,
+      termIndex: Math.max(0, Math.min(SESSION.length - 1, index)),
+      rung: 'attempt1',
+      takeIndex: 0,
+      outcomes: [],
+      confidence: null,
+    }));
+    setVerdict(null);
+    setTyped(false);
+    setResolved(false);
+    setExitOpen(false);
+    return 'idle';
+  }, []);
+
+  const revealNow = useCallback((): Destination => {
+    /* The verdict on screen is the last thing the student said on this term. */
+    settleTerm({ termId: term.id, passedAt: null, score: null, skipped: false, transcript: verdict?.transcript });
+    setProgress((prev) => ({ ...prev, rung: 'reveal', takeIndex: 0 }));
+    setVerdict(null);
+    setTyped(false);
+    return 'reveal';
+  }, [term.id, settleTerm, verdict?.transcript]);
 
   /* Records the ask, nothing more. Goes through `setProgress` so it lands in
      the same sessionStorage record as the rung and the outcomes — one place
@@ -811,14 +883,16 @@ export function RecallSessionProvider({ children }: { children: ReactNode }) {
       contest,
       retryAfterSilence,
       skip,
+      revealNow,
       advance,
+      startAt,
       saveAndLeave,
     }),
     [
       term, termIndex, rung, rungScript, take, verdict, resolved, outcomes, exitOpen,
       micGranted, micAsked, confidence, setConfidence, grantMic, declineMic,
       requestExit, dismissExit, handOver,
-      submit, answerByText, confirm, discard, contest, retryAfterSilence, skip, advance,
+      submit, answerByText, confirm, discard, contest, retryAfterSilence, skip, revealNow, advance, startAt,
       saveAndLeave,
     ],
   );

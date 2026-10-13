@@ -22,8 +22,6 @@ export default function Page() {
       verdict={verdict?.verdict ?? 'Wrong'}
       rung={session.rung}
       question={session.term.question}
-      gotItems={session.verdict?.got}
-      stillMissingItems={session.verdict?.stillMissing}
       transcript={verdict?.transcript}
       /* A settled term has no next rung, so no hint. */
       hint={resolved ? undefined : rungScript?.hint?.body}
@@ -38,6 +36,9 @@ export default function Page() {
       onRecord={resolved ? () => go(session.advance()) : goTo('recording')}
       nextActionLabel={resolved ? 'Next question' : 'Skip question'}
       onNextAction={resolved ? () => go(session.advance()) : () => go(session.skip())}
+      /* Rung 3 offers the answer instead of the skip. Settles the term as a
+         miss, the same as running out of rungs. */
+      onReveal={() => go(session.revealNow())}
       onTypeAnswer={goTo('text-fallback')}
       onExit={session.requestExit}
     />

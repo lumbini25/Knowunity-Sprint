@@ -30,7 +30,7 @@ Each variant also carries its own description:
 >
 > **Default/False** — Partial result. Student touched the concept but didn't fully cover it. Shows partial badge, transcript, and errorButton row. No Divider or Missing Section.
 >
-> **Reveal** — Model answer revealed. Transcript and Action Buttons replaced by full model answer text. Nothing sits below the card. Badge reads 'Answer' in neutral pill.
+> **Reveal** — Model answer revealed. Transcript and Action Buttons replaced by full model answer text. Helper label 'Try it yourself after reading' sits below card. Badge reads 'Answer' in neutral pill.
 >
 > **Correct** — Passing result. Percentage circle (44×44) and green '✓ Correct' badge replace the standard badge row. Action Buttons replaced by Knowie Answer text block. Left Accent Strip runs along left edge of card.
 
@@ -60,7 +60,14 @@ Unlike most gaps this session these were all *already bound* in Figma — the se
 
 **Nothing was reusable, and one near-miss is worth naming.** The Correct state's 44px score ring looks like \`percentage\`, but that component is a 121px arc with a score and a caption; this is a closed 44px ring with a bare percentage. Different token, different content, no shared markup. \`chips\` does not fit the badge either — its axes are size/color/active with Primary and pro fills, not verdict colours. The only reuse is \`XCloseIcon\` from BottomSheet for the ✗ on the incorrect badge.
 
-**State=Reveal carries nothing under the card.** Figma gives it the Card and a Helper Label — "Try it yourself after reading" — where the other three states carry "Next question" or "Reveal answer". The helper is not built: on the screen the idle voiceFab sits directly below the card with "Say it back" written above it, which says the same thing at the control, at the moment the student can act on it. Two instructions for one action read as two. The \`helperLabel\` prop is gone with it.
+**The revise ladder (16301:5515) changed four things, all opt-in by prop so the other screens are untouched:**
+
+- \`showTranscript={false}\` drops "What you said". The hint rungs and Correct pass it; Misheard never does, because there the transcript is the verdict.
+- \`hintTone="warm"\` draws the last hint as an outlined gold box inside the card, with \`hintIcon\` carrying the screens' lightbulb. Figma adds a 0 4 4 drop shadow; tokens.json has no shadow tokens, so it is left out and logged under Gaps.
+- \`knowieAnswer\` puts Knowie's model answer in a bordered box inside a Correct card — the \`[Knowie Answer]\` layer.
+- \`helperText\` draws "Try it yourself after reading" under a Reveal card. It was dropped while an orb sat below the card saying the same thing; the redesign took the orb away, so the helper is back. Reveal's answer is now success green in a green-outlined card.
+
+Wrong also carries the score ring now — a red 0% beside "Not quite".
 
 **The badges were rebuilt in Figma while this component was being written, and the code follows the new nodes.** All three glyph badges now put their icon in an \`iconSlot\` at \`Size=200\` and keep the words in the label, instead of baking a character into the string:
 
@@ -105,6 +112,10 @@ const meta = {
     transcriptText: { control: 'text' },
     nextActionLabel: { control: 'text' },
     percentageText: { control: 'text' },
+    showTranscript: { control: 'boolean' },
+    hintTone: { control: 'radio', options: ['default', 'warm'] },
+    knowieAnswer: { control: 'text' },
+    helperText: { control: 'text' },
   },
   decorators: [
     (Story) => (
@@ -135,6 +146,11 @@ export const IncorrectWithMissing: Story = {
     await expect(canvas.getByText(/Not quite/)).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Next question' })).toBeVisible();
     await expect(canvas.getByText('WHAT WAS MISSING')).toBeVisible();
+
+    // A red 0% ring beside the badge — the revise ladder's Wrong (16301:5565).
+    const ring = canvasElement.querySelector('.knw-rrc__score-ring') as HTMLElement;
+    await expect(getComputedStyle(ring).borderTopColor).toBe('rgb(255, 107, 107)');
+    await expect(canvas.getByText('0%')).toBeVisible();
 
     // Proves the token stylesheet reached the card: surface fill, 24px corners,
     // and the Space/800 gap Figma sets on the card.
@@ -267,13 +283,14 @@ export const NoNextAction: Story = {
 
 export const Reveal: Story = {
   name: 'State=Reveal',
-  args: { State: 'Reveal' },
+  args: { State: 'Reveal', helperText: 'Try it yourself after reading' },
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText('Answer')).toBeVisible();
-    // Reveal carries nothing under the card. The helper line it used to draw
-    // said the same thing as "Say it back" above the orb, one screen element
-    // earlier and further from the control.
-    await expect(canvas.queryByText('Try it yourself after reading')).toBeNull();
+    // The helper line under the card, right-aligned where the next-action
+    // sits on every other state.
+    const helper = canvas.getByText('Try it yourself after reading');
+    await expect(helper).toBeVisible();
+    await expect(getComputedStyle(helper).textAlign).toBe('right');
 
     // A neutral outlined pill, not a verdict colour.
     const badge = canvasElement.querySelector('.knw-rrc__badge') as HTMLElement;
@@ -289,8 +306,33 @@ export const Reveal: Story = {
     // Transcript and actions are both replaced by the model answer.
     await expect(canvasElement.querySelector('.knw-rrc__transcript')).toBeNull();
     await expect(canvasElement.querySelector('.knw-rrc__actions')).toBeNull();
+    // THE ANSWER IS DRAWN AS THE ANSWER: text/success, in a card outlined in
+    // the same green-300 (16301:5618).
     const model = canvasElement.querySelector('.knw-rrc__model-text') as HTMLElement;
-    await expect(getComputedStyle(model).color).toBe('rgb(244, 242, 255)');
+    await expect(getComputedStyle(model).color).toBe('rgb(74, 229, 176)');
+    const card = canvasElement.querySelector('.knw-rrc__card') as HTMLElement;
+    await expect(getComputedStyle(card).borderTopColor).toBe('rgb(74, 229, 176)');
+  },
+};
+
+export const CorrectWithKnowieAnswer: Story = {
+  name: "State=Correct — Knowie's answer",
+  args: {
+    State: 'Correct',
+    showTranscript: false,
+    knowieAnswer: 'Historical thinking is critically analysing evidence to understand the past.',
+    onNextAction: fn(),
+  },
+  play: async ({ canvas, canvasElement }) => {
+    // Knowie's answer replaces the transcript — the `[Knowie Answer]` layer:
+    // background/surface, border/default, Radius/300, Body S.
+    await expect(canvasElement.querySelector('.knw-transcript')).toBeNull();
+    const box = canvas.getByText(/critically analysing evidence/);
+    const bs = getComputedStyle(box);
+    await expect(bs.borderTopLeftRadius).toBe('12px');
+    await expect(bs.borderTopColor).toBe('rgba(255, 255, 255, 0.1)');
+    await expect(bs.fontSize).toBe('15px');
+    await expect(canvas.getByRole('button', { name: 'Next question' })).toBeVisible();
   },
 };
 

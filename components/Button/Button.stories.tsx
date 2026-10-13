@@ -284,3 +284,25 @@ export const WithRightIcon: Story = {
   name: 'showRightIcon=true',
   args: { variant: 'Primary', size: 'M', state: 'Default', showRightIcon: true },
 };
+
+/** THE ICON IS THE LABEL'S COLOUR. It used to inherit the page's near-white,
+    which vanished on Primary's near-white face. */
+export const PrimaryLWithIcon: Story = {
+  name: 'Primary L — with a left icon',
+  args: {
+    variant: 'Primary',
+    size: 'L',
+    CTA: 'Try again',
+    showLeftIcon: true,
+    leftIcon: (
+      <svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">
+        <rect x="9" y="2" width="6" height="11" rx="3" fill="currentColor" />
+      </svg>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const icon = canvasElement.querySelector('.knw-button__icon') as HTMLElement;
+    const label = canvasElement.querySelector('.knw-button__label') as HTMLElement;
+    await expect(getComputedStyle(icon).color).toBe(getComputedStyle(label).color);
+  },
+};

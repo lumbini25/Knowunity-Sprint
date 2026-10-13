@@ -77,11 +77,5 @@ export const FOLDERS: Folder[] = [
   },
 ];
 
-/** The folder a route was opened for, by title. */
-export function findFolder(title: string | null | undefined): Folder | undefined {
-  if (!title) return undefined;
-  return FOLDERS.find((f) => f.title === title);
-}
-
 /** The one folder the recall loop can actually run. */
 export const SESSION_FOLDER = FOLDERS.find((f) => f.hasSession)!;

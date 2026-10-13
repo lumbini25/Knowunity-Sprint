@@ -72,7 +72,7 @@ export function Screen({
                inset lived only on `.knw-screen__bottom`, and that element is
                not rendered when nothing fills it — so a screen without a
                bottom slot had no bottom inset at all, and the last thing on it
-               sat under the home indicator. `/entry/folders` is such a screen,
+               sat under the home indicator. The folder screen was such a screen,
                and CLAUDE.md's "every screen applies safe-area insets top and
                bottom" is a hard rule, not a default.
 

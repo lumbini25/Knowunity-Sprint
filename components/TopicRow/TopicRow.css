@@ -1,0 +1,146 @@
+/* topicRow — built from Figma's "Topics list view" (entry screen 16307:8816).
+   Every value is a semantic token. The list's surface and radius belong to
+   whoever lists the rows; a row draws only itself and the hairline under it. */
+
+.knw-topic {
+  list-style: none;
+}
+
+/* Figma strokes each row in `interactive/secondary` at 0.77 — a hairline
+   between rows, not a border round each. `border/default` is the same white
+   at 10% and is the role; `stroke/default` (1) the nearest weight. The last
+   row draws none, so the list's own edge is the only edge. */
+.knw-topic + .knw-topic {
+  border-top: var(--semantic-stroke-default) solid var(--semantic-border-default);
+}
+
+.knw-topic__row {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  /* 64 tall rendered — clears `size/tapTarget/min` with the whole row as the
+     target. Figma pads 12 / 16. */
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.knw-topic__row {
+  cursor: pointer;
+  /* The press is a state change, so it crosses rather than snaps. */
+  transition: background var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard);
+}
+
+/* Pressed washes the whole row, because the whole row is what was pressed —
+   the inverse ramp, since the row rests on a surface. Same as `folderCard`. */
+button.knw-topic__row:active {
+  background: var(--semantic-interactive-pressed-inverse);
+}
+
+/* Inset: the list clips to its radius, so a ring drawn outside the row would
+   be cut off on the first and last rows. */
+button.knw-topic__row:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: calc(var(--semantic-space-layout-xxs) * -1);
+}
+
+/* ===== the ring ===== */
+
+/* 40, not Figma's 48 — see the TOKEN NOTE in TopicRow.tsx. */
+.knw-topic__step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-control-m);
+  height: var(--semantic-size-control-m);
+}
+
+.knw-topic__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* The arc starts at twelve o'clock, as a progress ring does. */
+  transform: rotate(-90deg);
+}
+
+.knw-topic__track,
+.knw-topic__progress {
+  fill: none;
+  /* 2, not Figma's 4 — no stroke step is 4. The SVG is drawn 1:1 with its
+     viewBox, so a px stroke here is a px on screen. */
+  stroke-width: var(--semantic-stroke-strong);
+}
+
+.knw-topic__track {
+  stroke: var(--semantic-border-default);
+}
+
+.knw-topic__progress {
+  stroke: var(--semantic-accent-brand-bold);
+  stroke-linecap: round;
+}
+
+.knw-topic__core {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--semantic-size-control-xs);
+  height: var(--semantic-size-control-xs);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-accent-brand-bold);
+  /* Figma: `interactive/label/secondary` on the glyph. */
+  color: var(--semantic-interactive-label-secondary);
+}
+
+/* ===== title and tag ===== */
+
+.knw-topic__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+.knw-topic__tag {
+  flex: none;
+  padding-block: var(--semantic-space-layout-xxs);
+  padding-inline: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-background-elevated);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* EVENT TAKES THE LABEL TIER, one step lighter than Figma. The file binds
+   `accent/blue/bold` (#5FA0FC), which on the elevated pill measures 4.27:1 —
+   under AA at 12px, caught by axe on /entry. `accent/blue/label/subtle`
+   (#7BA8F2) is the same blue's text token and clears it at 4.70:1, the same
+   move the in-card hint label made.
+
+   Concept is an unbound white at 67%; `text/secondary` is the same white at
+   68% and is the role. */
+.knw-topic__tag[data-kind='Event'] {
+  color: var(--semantic-accent-blue-label-subtle);
+}
+
+.knw-topic__tag[data-kind='Concept'] {
+  color: var(--semantic-text-secondary);
+}

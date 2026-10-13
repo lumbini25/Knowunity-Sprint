@@ -18,6 +18,11 @@
  * So: the addon guards components, this guards pages, and neither replaces
  * the other. Run both.
  *
+ * WHAT IT AUDITS: every route in ROUTES, at 390px dark, against WCAG 2.0–2.2
+ * A/AA, with a seeded FINISHED session so the summary renders. A route that
+ * redirects is a failure, never a pass. WHAT IT DOES NOT: tap targets above
+ * axe's 24px floor (ours is 48), and any state reached only by interacting.
+ *
  * USAGE
  *   npm run dev          # in one terminal
  *   npm run a11y         # in another
@@ -41,7 +46,6 @@ const ROUTES = [
   '/entry',
   '/entry/compose',
   '/entry/ready',
-  '/entry/folders',
   '/entry/quiz',
   '/entry/summarize',
   '/recall/idle',
@@ -54,6 +58,9 @@ const ROUTES = [
   '/recall/reveal',
   '/recall/wrong',
   '/recall/comparison',
+  /* The summary's term detail — the same route reached from a tapped row,
+     which renders a different screen from the wrong-ending one above. */
+  '/recall/comparison?term=appeasement',
   '/recall/rating',
   '/recall/summary',
   '/recall/lesson',
@@ -90,9 +97,25 @@ async function main() {
      provider reads it on its first render. */
   await context.addInitScript(() => {
     try {
+      /* A FINISHED SESSION, NOT AN EMPTY ONE. With `outcomes: []` the
+         summary has nothing to summarise and redirects to /entry — so for as
+         long as this seed was empty, /recall/summary audited the front door
+         and reported it clean. One outcome per end state, so every termRow
+         variant is on the page axe reads. The turn routes ignore outcomes. */
       window.sessionStorage.setItem(
         'knw.recall.session',
-        JSON.stringify({ termIndex: 0, rung: 'attempt1', takeIndex: 0, outcomes: [], micGranted: true }),
+        JSON.stringify({
+          termIndex: 0,
+          rung: 'attempt1',
+          takeIndex: 0,
+          outcomes: [
+            { termId: 'turning-points', passedAt: 'attempt1', score: 100, skipped: false, transcript: '"Stalingrad and D-Day."' },
+            { termId: 'appeasement', passedAt: 'hint2', score: 100, skipped: false, transcript: '"Munich, 1938."' },
+            { termId: 'total-war', passedAt: null, score: null, skipped: true },
+            { termId: 'post-war-order', passedAt: null, score: null, skipped: false, transcript: '"The United Nations."' },
+          ],
+          micGranted: true,
+        }),
       );
     } catch {
       /* Blocked storage. The audit still runs; idle just shows the primer. */
@@ -110,6 +133,18 @@ async function main() {
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 });
     } catch {
       failures.push({ route, error: `could not load ${url} — is \`npm run dev\` running?` });
+      await page.close();
+      continue;
+    }
+
+    /* A REDIRECT IS NOT A PASS. If the route sent the page somewhere else,
+       auditing what loaded would report that page's result under this
+       route's name — which is how /recall/summary printed "ok" while showing
+       /entry. answer-sent is the one route that leaves on purpose, after a
+       300ms beat, so it is checked before that beat can elapse. */
+    const landed = new URL(page.url());
+    if (landed.pathname + landed.search !== route && route !== '/recall/answer-sent') {
+      failures.push({ route, error: `redirected to ${landed.pathname}${landed.search} — not audited` });
       await page.close();
       continue;
     }

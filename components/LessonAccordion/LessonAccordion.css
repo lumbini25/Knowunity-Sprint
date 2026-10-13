@@ -1,0 +1,107 @@
+/* lessonAccordion — from the `sectionHeader` rows of Figma's lesson details
+   (16311:15771). Every value is a semantic token. */
+
+.knw-accordion {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Figma: stroke `border/strong` 1, radius full, padding 12 / 24, gap 12. */
+.knw-accordion__header {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  /* 48 rendered — 20 line + 12 + 12 + the 2 border — clears tapTarget/min. */
+  min-height: var(--semantic-size-tap-target-min);
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-xl);
+  border: var(--semantic-stroke-default) solid var(--semantic-border-strong);
+  border-radius: var(--semantic-radius-pill);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard),
+    border-color var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard);
+}
+
+/* Open is a state the pill has to show, not only the panel under it — the
+   stroke moves to `border/selected`, the system's own "this one is chosen". */
+.knw-accordion[data-open='true'] .knw-accordion__header {
+  border-color: var(--semantic-border-selected);
+}
+
+.knw-accordion__header:active {
+  background: var(--semantic-interactive-pressed-inverse);
+}
+
+.knw-accordion__header:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* Body S Bold, text/primary — Figma exactly. */
+.knw-accordion__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+}
+
+/* Figma paints the book in an unbound white at 67%; `text/secondary` is the
+   same white at 68% and is the role. */
+.knw-accordion__icon {
+  display: flex;
+  flex: none;
+  color: var(--semantic-text-secondary);
+}
+
+/* ===== the panel ===== */
+
+/* Grid rows 0fr -> 1fr is the opening: a height transition to an intrinsic
+   size, which `height: auto` cannot animate. `motion/duration/settle` — "something
+   arriving or leaving". */
+.knw-accordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--semantic-motion-duration-settle) var(--semantic-motion-easing-standard);
+}
+
+.knw-accordion[data-open='true'] .knw-accordion__panel {
+  grid-template-rows: 1fr;
+}
+
+.knw-accordion__clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Inset to the pill's text, so the reading sits under the name it belongs to. */
+.knw-accordion__body {
+  padding-block: var(--semantic-space-layout-m) var(--semantic-space-layout-xs);
+  padding-inline: var(--semantic-space-layout-xl);
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+/* The section still opens; it just stops travelling. */
+@media (prefers-reduced-motion: reduce) {
+  .knw-accordion__header,
+  .knw-accordion__panel {
+    transition: none;
+  }
+}

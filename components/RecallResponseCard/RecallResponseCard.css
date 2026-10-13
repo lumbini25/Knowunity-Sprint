@@ -103,6 +103,36 @@
   font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
 }
 
+/* ===== the hint, warm — rung 3 =====
+
+   Figma's "Hint 2 — more direct, escalating warmth" layer inside the card on
+   `hint 3` (16301:5617). It used to be a panel below the card; the revise
+   ladder brings it back in and lets the surface do the escalating: an outlined
+   gold box, a 12/16 gold label instead of the 9/12 violet one.
+
+   FILL: Figma draws rgba(245,181,61,0.2) unbound. `feedback/warning/surface/
+   subtle` is the system's warm wash and the nearest bound step.
+
+   NO GLOW. Figma adds a 0 4 4 gold drop shadow. tokens.json has no shadow
+   tokens at all, so the nearest step is none; the outline carries the
+   promotion on its own. Logged in design-system.md under Gaps. */
+.knw-rrc__hint--warm {
+  gap: var(--semantic-space-layout-xs);
+  padding: var(--semantic-space-layout-l);
+  border: var(--semantic-stroke-default) solid var(--semantic-feedback-warning-label-subtle);
+  border-radius: var(--semantic-radius-inner);
+  background: var(--semantic-feedback-warning-surface-subtle);
+}
+
+.knw-rrc__hint--warm .knw-rrc__hint-label {
+  color: var(--semantic-text-warning);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
 .knw-rrc__body {
   display: flex;
   flex-direction: column;
@@ -162,7 +192,7 @@
 }
 
 .knw-rrc--Misheard .knw-rrc__badge-label,
-.knw-rrc--Misheard .knw-iconslot {
+.knw-rrc--Misheard .knw-rrc__badge .knw-iconslot {
   color: var(--semantic-feedback-warning-label-bold);
 }
 
@@ -176,8 +206,10 @@
 
 /* The ring keeps partial/bold; the label and glyph move to the pair's text
    token, taking 3.51:1 to 5.67:1 on the card surface. */
+/* Scoped to the badge, like Wrong's below — unscoped it also painted the warm
+   Hint 3 bulb violet when Hint 3 moved into the Partial card. */
 .knw-rrc--Partial .knw-rrc__badge-label,
-.knw-rrc--Partial .knw-iconslot {
+.knw-rrc--Partial .knw-rrc__badge .knw-iconslot {
   color: var(--semantic-feedback-partial-label-subtle);
 }
 
@@ -231,7 +263,7 @@
   color: var(--semantic-feedback-success-label-bold);
 }
 
-/* ===== score header row (Partial and Correct) ===== */
+/* ===== score header row (Wrong, Partial and Correct) ===== */
 
 .knw-rrc__header {
   display: flex;
@@ -254,6 +286,16 @@
   inset: 0;
   border: var(--semantic-stroke-strong) solid var(--semantic-feedback-success-bold);
   border-radius: var(--semantic-radius-pill);
+}
+
+/* Wrong's ring and figure take the red of its own badge — 16301:5565 draws
+   "0%" in feedback/error/bold beside "Not quite". */
+.knw-rrc--Wrong .knw-rrc__score-ring {
+  border-color: var(--semantic-feedback-error-bold);
+}
+
+.knw-rrc--Wrong .knw-rrc__score-text {
+  color: var(--semantic-feedback-error-bold);
 }
 
 /* Partial's ring and figure take the violet pair, matching its own badge. */
@@ -291,7 +333,36 @@
 }
 
 .knw-rrc__model-text {
+  color: var(--semantic-text-success);
+}
+
+/* REVEAL IS THE ANSWER, AND IT IS DRAWN AS ONE. The revise ladder (16301:5618)
+   outlines the card in the success green and sets the answer in it, so the
+   one correct answer on screen reads as correct before it is read.
+
+   NO GLOW, as with the warm hint: Figma's 0 4 4 green drop shadow has no token
+   to bind. Logged under Gaps. */
+.knw-rrc--Reveal .knw-rrc__card {
+  border: var(--semantic-stroke-default) solid var(--semantic-feedback-success-label-subtle);
+}
+
+/* Knowie's answer inside a Correct card — design-system.md's `[Knowie Answer]`
+   layer: background/surface, border/default, Radius/300, padding Space/300,
+   Body S Regular. Figma's frame (16301:5649) sets the text in an unbound 12px
+   Inter; Body S is what the component spec binds, and Greed is the app's only
+   face. */
+.knw-rrc__knowie-answer {
+  margin: 0;
+  padding: var(--semantic-space-layout-m);
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
+  border-radius: var(--semantic-radius-inner);
+  background: var(--semantic-background-surface);
   color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
 }
 
 /* ===== action buttons ===== */
@@ -408,6 +479,21 @@
 }
 
 /* ===== below the card ===== */
+
+/* Reveal's `[Helper Label]` — Caption M Bold, text/secondary. The component
+   spec says centre-aligned; the frame (16301:5618) right-aligns it under the
+   card where the next-action sits on every other state, and the frame is
+   what the screen shows. */
+.knw-rrc__helper {
+  margin: 0;
+  text-align: right;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
 
 .knw-rrc__next {
   margin: 0;

@@ -37,11 +37,12 @@ const BASE = process.env.BASE_URL ?? 'http://localhost:3000';
  * developer opens still has to be operable; this does not, because it is not
  * a designed screen. Two lists, two questions, one recorded reason. */
 const ROUTES = [
-  '/entry', '/entry/compose', '/entry/ready', '/entry/folders',
+  '/entry', '/entry/compose', '/entry/ready',
   '/entry/quiz', '/entry/summarize',
   '/recall/idle', '/recall/recording', '/recall/answer-sent', '/recall/processing',
   '/recall/result', '/recall/correct', '/recall/correct-feedback', '/recall/reveal',
-  '/recall/wrong', '/recall/comparison', '/recall/rating', '/recall/summary',
+  '/recall/wrong', '/recall/comparison', '/recall/comparison?term=appeasement',
+  '/recall/rating', '/recall/summary',
   '/recall/lesson', '/recall/exit', '/recall/no-audio', '/recall/text-fallback',
   '/recall/permission-primer', '/recall/permission-sheet', '/recall/permission-denied',
   '/recall/misheard', '/recall/re-record',
@@ -162,6 +163,33 @@ const browser = await chromium.launch();
 const context = await browser.newContext({
   viewport: { width: 390, height: 844 },
   colorScheme: 'dark',
+});
+
+/* THE SAME FINISHED SESSION `a11y` SEEDS, and for the same reason. With no
+   seed, /recall/summary redirected to /entry and idle opened on the primer, so
+   this report measured the front door twice and never saw the summary's type.
+   One outcome per end state; the turn routes ignore outcomes. */
+await context.addInitScript(() => {
+  try {
+    window.sessionStorage.setItem(
+      'knw.recall.session',
+      JSON.stringify({
+        termIndex: 0,
+        rung: 'attempt1',
+        takeIndex: 0,
+        outcomes: [
+          { termId: 'turning-points', passedAt: 'attempt1', score: 100, skipped: false, transcript: '"Stalingrad and D-Day."' },
+          { termId: 'appeasement', passedAt: 'hint2', score: 100, skipped: false, transcript: '"Munich, 1938."' },
+          { termId: 'total-war', passedAt: null, score: null, skipped: true },
+          { termId: 'post-war-order', passedAt: null, score: null, skipped: false, transcript: '"The United Nations."' },
+        ],
+        micGranted: true,
+        micAsked: true,
+      }),
+    );
+  } catch {
+    /* Blocked storage: the report still runs, on the unseeded screens. */
+  }
 });
 
 const allOffScale = new Map(); // "kind prop value el" -> routes

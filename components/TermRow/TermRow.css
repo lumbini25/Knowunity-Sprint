@@ -1,0 +1,127 @@
+/* termRow — Figma "termRow" (16311:14136). Every value is a semantic token. */
+
+.knw-termrow {
+  list-style: none;
+}
+
+/* Figma: background/surface, radius 16, padding 12 / 12 / 12 / 16, gap 12,
+   min 64 tall — which the 40 badge plus 12 above and below already makes, so
+   no height is declared. */
+.knw-termrow__row {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-m);
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-m);
+  padding-inline: var(--semantic-space-layout-l) var(--semantic-space-layout-m);
+  border: none;
+  border-radius: var(--semantic-radius-card);
+  background: var(--semantic-background-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.knw-termrow__row {
+  cursor: pointer;
+  transition: background var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard);
+}
+
+/* "It needs a Pressed state." The whole row washes, because the whole row is
+   what was pressed — the inverse ramp, since it rests on a surface. */
+button.knw-termrow__row:active {
+  background: var(--semantic-interactive-pressed-inverse);
+}
+
+button.knw-termrow__row:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* 40 circle, glyph 20. */
+.knw-termrow__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--semantic-size-control-m);
+  height: var(--semantic-size-control-m);
+  border-radius: var(--semantic-radius-pill);
+}
+
+/* 18 / SemiBold / 24 — body/M-bold, Figma's `Greed/Body M Bold`. One line,
+   truncated, as Figma sets it. */
+.knw-termrow__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-body-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-m-bold-font-size);
+  line-height: var(--semantic-type-scale-body-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-m-bold-letter-spacing);
+}
+
+/* statusTag: radius 8, padding 4 / 8, Caption M Bold. */
+.knw-termrow__tag {
+  flex: none;
+  padding-block: var(--semantic-space-layout-xs);
+  padding-inline: var(--semantic-space-layout-s);
+  border-radius: var(--semantic-radius-tab);
+  font-family: var(--semantic-type-scale-caption-m-bold-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-bold-font-size);
+  line-height: var(--semantic-type-scale-caption-m-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
+}
+
+.knw-termrow__chevron {
+  display: flex;
+  flex: none;
+  color: var(--semantic-text-tertiary);
+}
+
+/* ===== the four end states — badge and tag share one colour pair ===== */
+
+.knw-termrow[data-outcome='Unaided'] :is(.knw-termrow__badge, .knw-termrow__tag) {
+  background: var(--semantic-feedback-success-bold);
+  color: var(--semantic-feedback-success-label-bold);
+}
+
+.knw-termrow[data-outcome='Revealed'] :is(.knw-termrow__badge, .knw-termrow__tag) {
+  background: var(--semantic-feedback-error-bold);
+  color: var(--semantic-feedback-error-label-bold);
+}
+
+/* Figma binds `feedback/partial/bold` here and renders it orange (#E8792A):
+   the file's variable has drifted from tokens.json, where partial is violet —
+   the colour "Almost there" uses on every hint rung. The binding is followed,
+   so Hinted reads as the same family as the ladder's partial verdict. Logged
+   in design-system.md's Gaps. */
+.knw-termrow[data-outcome='Hinted'] .knw-termrow__badge {
+  background: var(--semantic-feedback-partial-bold);
+  color: var(--semantic-feedback-partial-label-bold);
+}
+
+/* THE TAG CANNOT SIT ON THE BOLD VIOLET. No text colour reaches 4.5:1 on
+   `feedback/partial/bold` at 12px — the dark label measures about 4.35:1,
+   white about 3.9:1 — and axe failed it on /recall/summary. The tag takes the
+   pair's subtle surface with its light label instead, the move the card's own
+   "Almost there" pill already makes. The badge keeps the bold fill: a glyph
+   needs 3:1, which it clears. */
+.knw-termrow[data-outcome='Hinted'] .knw-termrow__tag {
+  background: var(--semantic-feedback-partial-subtle);
+  color: var(--semantic-feedback-partial-label-subtle);
+}
+
+/* The guessed fourth state: neutral, so it does not borrow a verdict colour
+   for something that was never judged. */
+.knw-termrow[data-outcome='Skipped'] :is(.knw-termrow__badge, .knw-termrow__tag) {
+  background: var(--semantic-background-elevated);
+  color: var(--semantic-text-secondary);
+}

@@ -1,6 +1,7 @@
 'use client';
 
-/* Four rungs spent. The answer, and one optional chance to say it back.
+/* The answer — four rungs spent, or asked for on rung 3 — and one chance to
+   say it back.
 
    The term is already settled by the time this renders — `submit()` records
    the miss before returning `reveal` — so both actions here advance. */
@@ -18,15 +19,13 @@ export default function Page() {
       answer={session.term.modelAnswer}
       progress={(session.termIndex / session.termCount) * 100}
       progressText={`${session.termIndex + 1} of ${session.termCount}`}
-      /* Neither path is judged and neither costs a rung — `submit()` sees the
-         reveal rung, finds nothing to judge, and advances. What the student
-         buys is the saying.
+      /* Not judged and costs no rung — `submit()` sees the reveal rung and
+         advances. What the student buys is the saying.
 
-         There is no "next question": the way on is to answer. Both of these
-         advance the term, so the screen has two ways forward and no way to tap
-         past the answer without engaging with it. */
-      onSayItBack={goTo('recording')}
-      onTypeAnswer={goTo('text-fallback')}
+         ONE WAY ON, by the design owner's call: "Try now" goes to the
+         recorder, which carries its own "Type your answer". No orb and no
+         text fallback on this screen — see `RevealScreen`. */
+      onTryNow={goTo('recording')}
       onExit={session.requestExit}
     />
   );

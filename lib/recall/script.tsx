@@ -202,6 +202,11 @@ export interface ScriptedTerm {
    * reads as a topic in a list, so the name is authored rather than derived.
    */
   title: string;
+  /**
+   * What kind of thing the term is — the tag on its entry-screen row
+   * (`topicRow`). Figma's rows read "Event" or "Concept".
+   */
+  kind: 'Event' | 'Concept';
   /** Knowie's framing line. Attempt 1 only, where Knowie is asking rather than reporting. */
   intro?: ReactNode;
   /** A node, not a string: the app bolds the key term in place. */
@@ -220,16 +225,23 @@ export interface ScriptedTerm {
 /**
  * Four terms, chosen to show recovery rather than only success:
  *   1  Turning points     a clean pass, first attempt
- *   2  Appeasement        a pass after one hint   — Figma's worked example
- *   3  Total war          a low-confidence retry  — the misheard path
- *   4  The post-war order a full miss through all four, via nothing-heard
+ *   2  Appeasement        a pass after the second hint, 65 -> 75 -> correct
+ *                         — Figma's use case B (`hint ladder`, 16231:12575)
+ *   3  Total war          a clean pass, first attempt
+ *   4  The post-war order wrong after three attempts, 65 -> 75 -> 0 -> reveal
+ *                         — Figma's use case A, same section
+ *
+ * The misheard and nothing-heard detours no longer open any turn; they keep
+ * their own routes and stories. See SPEC.md, "The scripted session no longer
+ * opens a turn on a capture failure".
  *
  * WORLD WAR II, BECAUSE THAT IS THE FOLDER THE STUDENT CHOSE. The set used to
  * teach method — primary sources, historiography — while the shelf offered
  * periods, so whichever folder was opened, these four questions arrived. The
- * content is now the folder's; the four PATHS above are unchanged, because
- * they are the demo: every confidence, verdict and score below is the same
- * number it was, so each screen in the loop is still reachable.
+ * content is now the folder's. The PATHS are the demo, and terms 2 and 4 now
+ * follow Figma's two worked use cases step for step — their scores are the
+ * file's own numbers, so a reviewer holding the prototype beside the build
+ * sees the same 65, 75 and 0 on the same screens.
  *
  * THE FULL MISS IS THE POST-WAR ORDER, DELIBERATELY. Slot 4 needs a term the
  * scripted student fails at through every rung, which means authoring four
@@ -241,6 +253,7 @@ export const SESSION: ScriptedTerm[] = [
   {
     id: 'turning-points',
     title: 'Turning points',
+    kind: 'Event',
     intro:
       "Welcome to your study session on World War II. Let's start with the moments the war swung on.",
     question: (
@@ -357,6 +370,7 @@ export const SESSION: ScriptedTerm[] = [
   {
     id: 'appeasement',
     title: 'Appeasement',
+    kind: 'Concept',
     question: (
       <>
         What was <strong>appeasement</strong>, and why did it fail?
@@ -409,11 +423,22 @@ export const SESSION: ScriptedTerm[] = [
           ),
         },
         takes: [
+          /* FIGMA'S USE CASE B: CORRECT AFTER THE SECOND HINT (`hint ladder`,
+             16231:12575 — Hint1 at 65%, hint2 at 75%, then `correct answer`
+             16297:9329). This take used to pass, so the term ended one hint
+             early and the hint2 screen was never part of the walk. Now the
+             student uses the hint — Munich and the Sudetenland arrive — but
+             still stops short of WHY it failed, so it scores 75 and the ladder
+             climbs to Hint 2. Shown on the hint2 screen, since a rung's verdict
+             is always drawn on the screen after it. */
           {
             transcript:
-              '"Munich — they let Hitler take the Sudetenland from Czechoslovakia to avoid a war, and it did not stop him, he took the rest of it anyway."',
+              '"Munich — they let Hitler take the Sudetenland so there would not be another war."',
             confidence: 0.91,
-            verdict: 'Correct',
+            verdict: 'Partial',
+            score: 75,
+            got: ['Concession to avoid war', 'Names Munich or the Sudetenland'],
+            stillMissing: ['Why conceding made war more likely'],
           },
         ],
       },
@@ -429,9 +454,11 @@ export const SESSION: ScriptedTerm[] = [
           ),
         },
         takes: [
+          /* The pass, after the second hint: the missing half — why it failed —
+             finally lands, on top of what the student already had. */
           {
             transcript:
-              '"Every time they gave something up they thought it would be the end of it. It was not — it just bought him more room for the next demand."',
+              '"Giving him the Sudetenland at Munich was meant to be the last concession, and it was not — every one just bought him room for the next demand, so it made war more likely."',
             confidence: 0.94,
             verdict: 'Correct',
           },
@@ -473,6 +500,7 @@ export const SESSION: ScriptedTerm[] = [
   {
     id: 'total-war',
     title: 'Total war',
+    kind: 'Concept',
     question: (
       <>
         What does <strong>total war</strong> mean, and how did World War II show it?
@@ -582,6 +610,7 @@ export const SESSION: ScriptedTerm[] = [
   {
     id: 'post-war-order',
     title: 'The post-war order',
+    kind: 'Event',
     question: (
       <>
         What <strong>new order</strong> did the Allies build after 1945, and what was it meant to
@@ -607,12 +636,18 @@ export const SESSION: ScriptedTerm[] = [
              unchanged and still reached by their own story and URL. */
           /* PARTIAL, NOT WRONG — the student named one of the three things.
              See the ladder note on this term: credit is shown while they climb
-             and withheld only at the last rung. */
+             and withheld only at the last rung.
+
+             FIGMA'S USE CASE A: WRONG AFTER THREE ATTEMPTS (`hint ladder`,
+             16231:12575 — Hint1 65%, hint2 75%, hint3 0% "Not quite", then
+             reveal and "Try now"). The scores follow the file's numbers, which
+             win over the rubric where they are explicit — same rule term 2's
+             65 already follows. */
           {
             transcript: '"They split Germany up between the Allies afterwards, I think."',
             confidence: 0.88,
             verdict: 'Partial',
-            score: 35,
+            score: 65,
             got: ['Names the occupation of Germany'],
             stillMissing: ['Names the United Nations', 'Why it was built — the memory of 1919'],
           },
@@ -631,7 +666,7 @@ export const SESSION: ScriptedTerm[] = [
         },
         takes: [
           /* The second Partial, and it MOVES: one item crosses from missing to
-             got and the score follows it, 35 -> 60. A ladder whose feedback
+             got and the score follows it, 65 -> 75. A ladder whose feedback
              never changes teaches the student that answering again is
              pointless. */
           {
@@ -639,7 +674,7 @@ export const SESSION: ScriptedTerm[] = [
               '"Germany was occupied by the Allies, and they set up the United Nations so the powers had to keep talking."',
             confidence: 0.9,
             verdict: 'Partial',
-            score: 60,
+            score: 75,
             got: ['Names the occupation of Germany', 'Names the United Nations'],
             stillMissing: ['Why it was built — the memory of 1919'],
           },

@@ -81,8 +81,11 @@ const DEFAULTS: Record<
 /** The states that carry the transcript plus the two verdict-correction buttons. */
 const CONTESTABLE = new Set<RecallResponseCardState>(['Wrong', 'Misheard', 'Partial']);
 
-/** The states that lead with the score ring beside the badge. */
-const HAS_SCORE = new Set<RecallResponseCardState>(['Partial', 'Correct']);
+/** The states that lead with the score ring beside the badge.
+    Wrong joined with the revise-ladder redesign (16301:5515): its card now
+    draws a red 0% ring beside "Not quite", the same header Partial and
+    Correct carry, so every scored verdict reads the same way. */
+const HAS_SCORE = new Set<RecallResponseCardState>(['Wrong', 'Partial', 'Correct']);
 
 export interface RecallResponseCardProps extends HTMLAttributes<HTMLDivElement> {
   /** Figma variant axis. */
@@ -94,8 +97,17 @@ export interface RecallResponseCardProps extends HTMLAttributes<HTMLDivElement> 
   showMissingSection?: boolean;
   /** Figma: badgeLabel. Falls back to the per-state default. */
   badgeLabel?: string;
-  /** Figma: transcriptText. Default and Correct states. */
+  /** Figma: transcriptText. Wrong, Misheard, Partial and Correct. */
   transcriptText?: string;
+  /**
+   * Whether the "What you said" block draws. Default true.
+   *
+   * THE REVISE LADDER (16301:5515) DROPPED IT from every hint rung and from
+   * Correct: the student has just heard themselves say it, and the card's job
+   * on those frames is the next step, not a replay. Misheard keeps it — there
+   * the transcript IS the verdict, the thing being contested.
+   */
+  showTranscript?: boolean;
   /** Figma: nextActionLabel. Falls back to the per-state default. */
   nextActionLabel?: string;
   /** Figma: percentageText. Partial and Correct. Falls back to the per-state
@@ -116,8 +128,19 @@ export interface RecallResponseCardProps extends HTMLAttributes<HTMLDivElement> 
    * is the remainder after something was credited.
    */
   stillMissingItems?: string[];
-  /** The model answer. Reveal only — Correct no longer carries an answer box. */
+  /** The model answer. Reveal only. */
   answerText?: string;
+  /**
+   * Knowie's own answer, drawn inside a Correct card — design-system.md's
+   * `[Knowie Answer]` layer: a bordered `background/surface` box under the
+   * header. Correct only; nothing draws unless it is set.
+   */
+  knowieAnswer?: string;
+  /**
+   * The line under a Reveal card — Figma's `[Helper Label]`, "Try it yourself
+   * after reading". Reveal only; nothing draws unless it is set.
+   */
+  helperText?: string;
   /** Labels on the two verdict-correction buttons. Default only. */
   primaryActionLabel?: string;
   secondaryActionLabel?: string;
@@ -132,12 +155,23 @@ export interface RecallResponseCardProps extends HTMLAttributes<HTMLDivElement> 
    * The hint itself. A node rather than a string, because hints bold a term in
    * place exactly as questions do.
    *
-   * The hint lives INSIDE the card on rungs 1 and 2. On rung 3 the screen
-   * promotes it into its own panel below the card instead — see
-   * `hint ladder` node 15833:9103, where the layer is named "escalating
-   * warmth" — so on that rung the screen passes no hint here.
+   * The hint lives INSIDE the card on every rung. It used to be promoted to a
+   * panel below the card on rung 3; the revise ladder (16301:5617) brings it
+   * back inside and warms it instead — see `hintTone`.
    */
   hint?: ReactNode;
+  /**
+   * The hint's register. `default` is the violet note on rungs 1 and 2;
+   * `warm` is rung 3 — Figma's "escalating warmth", an outlined gold panel
+   * that says this is the last hint before the answer.
+   */
+  hintTone?: 'default' | 'warm';
+  /**
+   * The mark beside the hint label. Defaults to the card's alert-circle; the
+   * warm rung passes the screens' lightbulb, which is drawn once in the app's
+   * icon set and passed in rather than redrawn here.
+   */
+  hintIcon?: ReactNode;
   /**
    * Makes the next-action a real control.
    *
@@ -153,6 +187,7 @@ export function RecallResponseCard({
   showMissingSection = true,
   badgeLabel,
   transcriptText = '"Primary sources are documents I wrote about the event afterwards."',
+  showTranscript = true,
   nextActionLabel,
   percentageText,
   gotItems = ['Context and evidence-based thinking', 'Critical source evaluation'],
@@ -163,12 +198,16 @@ export function RecallResponseCard({
     'Not filtered through interpretation',
   ],
   answerText = 'Historical thinking is the process of weighing evidence, placing it in context, and judging how reliable it is.',
+  knowieAnswer,
+  helperText,
   primaryActionLabel,
   secondaryActionLabel,
   onPrimaryAction,
   onSecondaryAction,
   hintLabel = 'Hint 1',
   hint,
+  hintTone = 'default',
+  hintIcon,
   onNextAction,
   ...rest
 }: RecallResponseCardProps) {
@@ -240,7 +279,11 @@ export function RecallResponseCard({
             {State === 'Reveal' ? (
               <p className="knw-rrc__model-text">{answerText}</p>
             ) : (
-              <TranscriptSection transcript={transcriptText} />
+              showTranscript && <TranscriptSection transcript={transcriptText} />
+            )}
+
+            {State === 'Correct' && knowieAnswer && (
+              <p className="knw-rrc__knowie-answer">{knowieAnswer}</p>
             )}
 
             {/* Wrong, Misheard and Partial all let the student separate "the
@@ -330,10 +373,10 @@ export function RecallResponseCard({
               keeps the hint clear of the verdict rather than reading as part
               of it. */}
           {hint && (
-            <div className="knw-rrc__hint">
+            <div className={`knw-rrc__hint knw-rrc__hint--${hintTone}`}>
               <p className="knw-rrc__hint-label">
                 <IconSlot size="200">
-                  <HintIcon />
+                  {hintIcon ?? <HintIcon />}
                 </IconSlot>
                 {hintLabel}
               </p>
@@ -343,14 +386,7 @@ export function RecallResponseCard({
         </div>
       </div>
 
-      {/* Reveal carries nothing under the card — no next-action link, and no
-          helper line either.
-
-          Figma gave Reveal a helper reading "Try it yourself after reading".
-          On the screen it is redundant: the idle voiceFab sits directly below
-          with "Say it back" written above it, which says the same thing at the
-          moment the student can act on it, and says it at the control rather
-          than at the card. Two instructions for one action read as two.
+      {/* Reveal carries no next-action link — only the helper line, when set.
 
           The link becomes a real <button> only when a handler is supplied.
           Figma sets it to "Skip Question" on the hint rungs, where it is the
@@ -370,6 +406,12 @@ export function RecallResponseCard({
 
           Omitting it is the rule this build keeps everywhere else: a control
           that does nothing when tapped is worse than one that is not there. */}
+      {/* REVEAL'S HELPER IS BACK. The redesign (16301:5618) takes the orb off
+          the reveal and puts a "Try now" button at the bottom of the screen,
+          so the instruction no longer sits at a control directly below — it
+          belongs at the answer, where Figma draws it. */}
+      {State === 'Reveal' && helperText && <p className="knw-rrc__helper">{helperText}</p>}
+
       {State === 'Reveal' || !onNextAction ? null : (
         <button
           type="button"
