@@ -200,6 +200,10 @@ Do not use during the processing state — this component appears only once a ve
 
 Circular tap target for voice input in the Explain Out Loud recall loop.
 
+### Motion: what each orb says
+
+Recording breathes its sheen and swells its glow (`motion/duration/breath`, `easing/continuous`), and adds a **halo leaving the orb** every two breaths — sound coming in. Thinking ("Evaluating…") pulses its defocus between `effect/blur-soft` and `blur-glow` and adds a **slow sway of the highlight**, ±14° — a thought being turned over, deliberately not a spinner, which would promise a long wait. Transform, opacity and filter only, on the sheen and a pseudo-element, so the tap target never moves. Under reduced motion the second layers go and the breath holds its legible frame.
+
 ### The orb sits `space/layout/xl` (24) below the content above it, on every turn
 
 One distance, everywhere the orb appears: listening, the take, processing, the two ladder screens, correct, correct-feedback, reveal, wrong and misheard. Nine screens, 24 on all of them.
@@ -263,6 +267,8 @@ Do not use state=Recording when the student has already sent their answer. Do no
 ---
 
 ## waveformCard
+
+**`surface` (boolean, default true) — the build's, not a Figma axis.** The recall flow iteration (`student talking`, `16301:6570`) sets the bars bare under the orb beside a live status line; `surface={false}` drops the card's fill, border and padding and nothing else.
 
 24-bar voice amplitude visualiser shown during the listening phase of the Explain Out Loud recall loop. Bars scale with the student's voice amplitude in production — this component shows the design-time resting position.
 
@@ -628,11 +634,11 @@ One topic the student covered this week. Built from Figma's **Topics list view**
 ```
 topicRow (li)          divided from the row above by stroke/default, border/default
   row (button)         padding: Space/300 block, Space/400 inline, gap: Space/300
-    step               control/m (40) — Figma 48, see Gaps
+    step               control/s (32) — Figma ~33, see Gaps
       track            ring, stroke/strong, border/default
       progress         arc, stroke/strong, accent/brand/bold, from 12 o'clock
-      core             control/xs (24) disc, accent/brand/bold
-        doc icon       iconSlot 200 (16), interactive/label/secondary
+      core             control/xxs (20) disc, accent/brand/bold
+        doc icon       iconSlot 150 (12), interactive/label/secondary
     title              Body S Regular, text/primary
     tag                pill, background/elevated, Space/050 × Space/200, Caption M Regular
                        Event: accent/blue/label/subtle · Concept: text/secondary
@@ -1310,13 +1316,14 @@ Known absences. Do not fill them with invented values. Surface them as requests.
 - **`hintLadder`'s dot is 10×10 and its rule is 18×2** — neither is on a scale. The size scale runs `control/XXS` 20, `XS` 24, `S` 32, and `size/bullet` is 5; `space/layout/M` (12) is the nearest bound value that is a size at all, and at 10px the 2px difference reads as nothing. The rule takes `size/control/XXS` (20) for width against Figma's 18, and `stroke/strong` for its height against 2. Request `size/dot` and `size/rule` if the ladder is drawn anywhere else.
 - **The in-card hint label is 10/12, and its colour fails AA** — no step is 10 (the scale runs 9, 12, 15, 16, 18), so `caption/S` (9) is the nearest. Figma binds `text/link` (violet/500), which is **4.43:1** on `background/surface` — under AA by seven hundredths, and at 9px nothing qualifies as large text. The build takes `feedback/partial/label/subtle` (#A78BFA, 5.67:1), which is also the better name: a hint is feedback on a partial answer, not a link.
 - **The warm Hint 3 binds a PRO colour in Figma** — the lightbulb's 28px icon tile is a variable named `Pro Background` (#E88C30 at 12%) with no counterpart in `tokens.json`, and the paid tier's colour doing a hint's job, which "Never do this" #8 forbids. The tile is not drawn; the bulb sits in the label in `text/warning`. The box itself is unbound in Figma (rgba(245,181,61,0.2)); the build takes `feedback/warning/surface/subtle`, the nearest bound warm wash. From `recallResponseCard` (`.knw-rrc__hint--warm`).
-- **No 48 size step and no 4 stroke** — `topicRow`'s ring is 48 with a 4 stroke around a 32 core and a 20 glyph in Figma (`Topics list view`, entry `16307:8816`). The control scale runs 24 / 32 / 40 / 56, `size/tapTarget/min` is 48 but is a hit-area role rather than a drawing size, and strokes stop at 2. The row takes `control/m` 40, `control/xs` 24, `icon/s` 16 and `stroke/strong` 2 — the nearest steps that keep Figma's proportions. Commented in `TopicRow.tsx`. Request `size/ring` (48) and `stroke/heavy` (4), or confirm 40.
+- **`topicRow`'s ring sits between steps** — Figma's redesign (`16307:8816`) draws a ~33 ring with a ~2.8 stroke around a ~22 core and a ~14 glyph. The row takes `control/s` 32, `control/xxs` 20, `icon/xs` 12 and `stroke/strong` 2 — all within 2px of the frame. (It was 48 / 4 / 32 / 20 before the redesign, which had no step at all.) Commented in `TopicRow.tsx`.
 - **`topicRow`'s Event tag fails AA in Figma's colour** — `accent/blue/bold` on the `background/elevated` pill measures 4.27:1 at 12px. The build takes `accent/blue/label/subtle` (4.70:1), the blue's own text token. Same call as the in-card hint label.
 - **The lesson header's eyebrow cannot be white** — Figma paints "1939 – 1945" an unbound white at 55% on `accent/brand/bold`. No white clears 4.5:1 on that violet (pure white reaches about 3.5:1), so the build takes `text/on-brand` (about 5.5:1). The 28px title stays white; large text needs 3:1. From the lesson screen (`.knw-lesson__eyebrow`).
 - **The ready card carries a mascot in Figma** — all three frames of the redesigned chat path (`16307:8815`, `8573`, `11255`) draw a small Knowie inside the Explain out loud card. "Never do this" forbids a mascot in a card, so the build shows Knowie once, at screen level, while composing. From `ExplainEntryScreen`.
 - **`termRow`'s fourth end state is a guess** — Figma's description says four, the frame draws three (Unaided, Revealed, Hinted), and the component set is unpublished so its variants could not be read. The session has one more outcome, a skip, so **Skipped** stands in: a dash on `background/elevated` with `text/secondary`, deliberately borrowing no verdict colour. Confirm the fourth variant, or replace it. From `TermRow`.
 - **Figma's `feedback/partial/bold` has drifted to orange** — `termRow`'s Hinted badge renders #E8792A in the file, where tokens.json resolves `feedback/partial/bold` to violet (the "Almost there" colour on every hint rung). The binding is followed, so Hinted is violet here. Its tag also moves to the subtle pair: no text reaches 4.5:1 on the bold violet at 12px (axe, `/recall/summary`). From `TermRow`.
 - **`button`'s icon did not take the variant's colour** — only the label was coloured, so a left icon on Primary inherited the page's near-white and vanished on Primary's near-white face. Fixed in `Button.css` (icon and label now share the variant colour) with a story; recorded because the defect was invisible in every screenshot until a Primary button carried an icon.
+- **`textField` showed no focus at all** — the input's outline was removed and nothing replaced it, so a focused field looked idle. The field's edge now takes `border/focus` while focused, which is also what the text fallback's typed frame (`16311:12479`) draws. A `multiline` prop renders a `<textarea>` in the same chrome for that screen's 160-tall explanation box; the Figma set has no multi-line axis, so this is the build's. From `TextField`.
 - **No shadow tokens** — the revise ladder gives two `recallResponseCard` surfaces a coloured 0 4 4 drop shadow: the warm Hint 3 box (gold at 50%, `16301:5617`) and the Reveal card (green at 50%, `16301:5618`). `tokens.json` has no shadow or elevation tokens at all, so the nearest step is none, and both glows are left out — the 1px outline carries the meaning on its own. Commented at both bindings in `RecallResponseCard.css`. Request a `shadow/glow/{warning,success}` pair, or confirm the outlines are enough.
 - **The `thinking` mascot is 122×132** — off every illustration step (XL 64, 2XL 120, 3XL 200, 4XL 320), and `thinking progress` places the component directly rather than through a `mascotSlot`. The build sizes its box with `size/fab/thinking` (172) and contains the image inside, so the pose keeps its proportions. Request `size/illustration/M` if a third mascot size is wanted.
 - ~~**The processing header draws `progressIndicator` at `thickness="16"`**~~ — RESOLVED, and it was not one frame. All six recall frames bind 16: `Idle`, `cancel option`, `student talking`, `thinking progress`, `hint 1` and `reveal`. `recallHeader` was built on the component's 24 default and was 8px heavy on every screen in the loop. Now passes `thickness="16"` explicitly. Nothing is lost by the switch — `showText` has no effect at 16 by design, and the count was never drawn here anyway, only carried in the bar's accessible name.

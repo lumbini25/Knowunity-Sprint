@@ -368,6 +368,68 @@
     var(--semantic-motion-easing-continuous) infinite alternate;
 }
 
+/* ===== the second layer: what each orb is doing =====
+
+   The breath and the defocus say "alive". On their own they do not say WHICH
+   kind of alive, and the student meets the two orbs a few seconds apart. So
+   each gets one more layer, chosen for what it communicates:
+
+   LISTENING — A HALO MOVING OUTWARD. Sound is coming in; the ring leaves the
+   orb and dissolves, the way a level meter answers a voice. One ring at a
+   time, on the same `breath` cycle, so it never strobes (WCAG 2.3.1 is three a
+   second; this is under one).
+
+   EVALUATING — THE HIGHLIGHT SWAYS. The sheen turns a few degrees one way and
+   back, like a thought being turned over. A sway, not a spin: a full rotation
+   is a loader, and a loader says "this may take a while", which is not the
+   promise a 2.6s judge should make. Small, contained, and on the layer over
+   the orb — the orb itself never moves under the student's eye.
+
+   Both are transform and opacity only, on pseudo-elements and the sheen, so
+   nothing moves a tap target and nothing triggers layout. */
+
+/* The halo. A pseudo-element on the stage, behind the button, so it adds no
+   box and catches no taps. Its RESTING style is invisible on purpose — it
+   exists only while Recording animates it, and it is not the component's own
+   default state, so the opacity trap CLAUDE.md names does not apply: nothing
+   the student needs is hidden when the animation does not run. */
+.knw-fab--Recording .knw-fab__stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: var(--semantic-stroke-strong) solid var(--semantic-mascot-primary);
+  border-radius: var(--semantic-radius-pill);
+  opacity: 0;
+  pointer-events: none;
+  animation: knw-fab-halo calc(var(--semantic-motion-duration-breath) * 2)
+    var(--semantic-motion-easing-continuous) infinite;
+}
+
+@keyframes knw-fab-halo {
+  from {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+@keyframes knw-fab-sway {
+  from {
+    transform: rotate(-14deg) scale(1);
+  }
+  to {
+    transform: rotate(14deg) scale(1.04);
+  }
+}
+
+.knw-fab--Thinking .knw-fab__sheen {
+  animation: knw-fab-sway var(--semantic-motion-duration-breath)
+    var(--semantic-motion-easing-continuous) infinite alternate;
+}
+
 /* The orb changing size between states is the student's own tap answering
    them, so it takes the standard curve at `quick`. Not the breath — that is
    the loop, and the two are different things. */
@@ -400,6 +462,18 @@
      frame is the one with less blur. The base rule already paints it, so the
      animation is simply dropped. */
   .knw-fab--Thinking .knw-fab__button {
+    animation: none;
+  }
+
+  /* The halo and the sway are the second layer, so under reduced motion they
+     simply go: the breath's resting frame and the label already say which
+     state this is. */
+  .knw-fab--Recording .knw-fab__stage::before {
+    animation: none;
+    opacity: 0;
+  }
+
+  .knw-fab--Thinking .knw-fab__sheen {
     animation: none;
   }
 

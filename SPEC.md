@@ -205,16 +205,20 @@ A student who has denied permission opens straight into a text session on later 
 
 Runs the identical ladder and the identical hints as the voice path. Say-it-back becomes type-it-again. The mastery number has to mean one thing across both.
 
-**States** — one per round; the round's prompt and the student's answer are props.
+Follows the recall flow iteration: `15 Text fallback, empty` (`16311:12322`) and `16 Text fallback, typed` (`16311:12479`).
 
-**Components** — `Screen`, `ChatInput` (Status=Inactive), `RecallSkip`, `MascotSlot` (XL) holding `Knowie` in `standby`, plus the chat bubble and avatar drawn locally.
+**The student really types.** A multi-line `textField` (`multiline`, the field's edge going violet while focused), under Knowie and the question with "Explain it like you would to a classmate.", and "Typed answers are judged the same way and count the same." beneath it. The judge is still scripted, so the words do not change the verdict — which the helper line does not claim they do. The old chat composer over a drawn keyboard is gone from this screen.
+
+**States** — empty (Send answer disabled), typed (enabled), sent (disabled, "Sent", the box read-only for the 450ms before the judge).
+
+**Components** — `Screen`, `RecallHeader` (with **Skip in the bar**, where this frame draws it), `MascotSlot` (XL), `TextField` (multiline), `ButtonGroup` + `Button` (Primary L "Send answer →", Tertiary "Switch to voice").
 
 | The student can | Which leads to |
 |---|---|
-| Send an answer | `/recall/processing`, then the **verdict** — `result`, `correct` or `reveal` |
-| Tap the mic in the composer | `/recall/idle` — back to voice |
-| Tap "Skip question" | Next term, or `/recall/summary` if it was the last |
-| Tap ✕ | `/recall/exit` |
+| Type, then "Send answer" | `/recall/processing`, then the **verdict** — `result`, `correct` or `reveal` |
+| Tap "Switch to voice" | `/recall/idle` — back to voice |
+| Tap "Skip" (bar) | Next term, or `/recall/rating` if it was the last |
+| Tap ✕ | the exit sheet |
 
 **Send goes through `answerByText()`, not plain `submit()`, and the difference is two questions it does not ask.** `submit()` checks the take for the two *microphone* failures first — nothing heard (`no-audio`) and heard badly (`misheard`). Neither can be true of something the student typed. Send used to push straight to `/recall/processing`, which runs `submit()` unchanged, so on the two terms whose script opens with a capture failure a student who had typed a full answer was told the app heard nothing — on the one screen that exists **because** they could not speak. The ladder was never reached, and neither were rating and summary.
 
@@ -226,24 +230,26 @@ Everything after those two questions is shared on purpose: same rungs, same hint
 
 ### 5 · The take — `/recall/answer-sent`
 
-**The listening loop's second half**, and the screen the student lands on when they stop speaking. Follows Figma's `cancel option` (`15707:18257`).
+**The listening loop's second half**, and the screen the student lands on when they stop speaking. Follows the recall flow iteration's `student talking` paused / playing frames (`16301:6933`, `16311:13086`).
+
+**Playback, mocked as Figma shows it.** The question stays up; the orb is a **Play** control with the bin beside it. Play turns to **Stop** and comes back after a few seconds or on a tap. No audio was captured, so nothing plays — the design owner's call; the transcript is shown on the evaluation screen that follows instead of here.
 
 **Two beats, and only the second is 300ms.** Voice_UX state 5 — "cancel and re-record before send", Must, brief F2 — lives in the first, and lives there precisely because that beat *waits*.
 
-**States** — `sent=false`: the take. `transcriptSection` shows what was heard, Continue and Retry are live, and so is the trash. `sent=true`: submitted. Controls gone, 300ms, then the judge.
+**States** — `sent=false`: the take, with Play/Stop, the bin, Retry and Submit answer. `sent=true`: submitted. Controls gone, the orb reads "Answer sent", 300ms, then the judge.
 
-**The orb is status here, not a control.** It reads "Answer sent" on both beats; the decisions sit in the buttons. That is what makes the three exits three different things rather than three ways out.
+**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL), `QuestionBubble`, `VoiceFab` (state=Sent, icon swapped to Play/Stop, `showDiscard` on beat 1), `Button` (Secondary M "Retry", Primary M "Submit answer", side by side), `TypeAnswer`.
 
-**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL), `TranscriptSection`, `ButtonGroup` (Horizontal, M), `Button` (Primary M "Continue", Secondary M "Retry"), `RecallSkip`, `VoiceFab` (state=Sent, `showDiscard` on beat 1), `TypeAnswer`.
+**No skip on the take.** The frame draws none, and the bin already leaves the take — to a turn that has one.
 
 | The student can | Which leads to | Rung |
 |---|---|---|
-| Tap "Continue" | Beat 2, then `/recall/processing` after 300ms | **consumed** |
+| Tap Play / Stop | Mocked playback; nothing changes but the control | — |
+| Tap "Submit answer" | Beat 2, then `/recall/processing` after 300ms | **consumed** |
 | Tap "Retry" | `/recall/recording` — say it again | intact |
-| Tap the trash | `/recall/idle` — the take is dropped | intact |
+| Tap the bin | Confirms first, then the next term | scores as a skip |
 | Tap "Type your answer" | `/recall/text-fallback` | — |
-| Tap "Skip question" | Next term, or the summary | scores as a miss |
-| Tap ✕ | `/recall/exit` — **not built, left unwired** | — |
+| Tap ✕ | the exit sheet | — |
 
 ### 6 · Misheard transcript — `/recall/misheard`
 
@@ -322,14 +328,14 @@ The resting state of every term, and the loop's spine.
 
 **`npm run a11y` seeds the flag.** Otherwise it would audit the primer twice — here and at `/recall/permission-primer`, which is its own row — and never audit the first turn.
 
-**Components** — `Screen`, `RecallHeader`, `QuestionBubble`, `RecallSkip`, `VoiceFab` (state=Idle), `TypeAnswer`, `MascotSlot`.
+**Components** — `Screen`, `RecallHeader`, `QuestionBubble`, `VoiceFab` (state=Idle, captioned "Tap to answer"), `TypeAnswer` ("Type instead"), `MascotSlot`, and **`RecallSkip` pinned low** — the recall flow iteration (`idle`, `16301:6756`) moves skip from a link under the question to a full-width Primary bar at the bottom. Every turn with a skip now carries it there: idle, listening, the hint rungs and re-record. The text fallback carries it in its bar, as its frame draws.
 
 | The student can | Which leads to |
 |---|---|
 | Tap the mic | `/recall/recording` |
-| Tap "Type your answer" | `/recall/text-fallback` |
-| Tap "Skip question" | Next term, or `/recall/summary` |
-| Tap ✕ | `/recall/exit` |
+| Tap "Type instead" | `/recall/text-fallback` |
+| Tap "Skip question" (bottom bar) | Next term, or `/recall/rating` |
+| Tap ✕ | the exit sheet |
 
 ### 10 · Listening — `/recall/recording`
 
@@ -355,7 +361,9 @@ Must be unmistakable. Follows `student talking` (`16219:12449`, superseding `156
 >
 > Both constants live in `lib/recall/script.tsx` beside `JUDGE_LATENCY_MS`: mocked latency, not design motion, and not a token — there is nothing in `tokens/tokens.json` they could come from.
 
-**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL, tucked 37.5% behind the waveform exactly as it tucks behind the question bubble), `WaveformCard`, `QuestionBubble` (no intro), `VoiceFab` (state=Recording, captioned **"Listening"**), `TypeAnswer`, `RecallSkip`.
+**Components** — `Screen`, `RecallHeader`, `MascotSlot` (2XL, tucked behind the question exactly as on idle), `QuestionBubble` (no intro), `VoiceFab` (state=Recording, captioned **"Listening"**), the live line "● Listening, 0:11" with a running clock, `WaveformCard` with `surface={false}` under it, `TypeAnswer`, and `RecallSkip` pinned low. Follows the iteration's `student talking` (`16301:6570`): the waveform moves from a panel above the question to the bare bars under the orb.
+
+**The orb moves with what it means.** Listening adds a halo leaving the orb on the breath cycle — sound coming in. Evaluating (on `/recall/processing`) adds a slow sway of the highlight over its focus pulse — an idea being turned over, not a spinner. Transform, opacity and filter only; both stop under reduced motion.
 
 **The question stays on screen, restated under the waveform.** This reverses the earlier decision recorded here — "no question bubble, the question belongs to idle" — which the updated frame no longer draws. A student giving a long spoken answer can lose sight of what was asked; Voice_UX principle 1 (status is the most important job) still holds, and restating rather than re-asking is what keeps both true at once. Same surface `QuestionBubble` draws on idle and answer-sent, minus the intro line.
 
@@ -466,7 +474,7 @@ Either way the next-action reads **"Reveal answer"** in place of "Skip question"
 |---|---|
 | Tap the orb, on a miss | `/recall/recording` — the next attempt, from this screen |
 | Tap the orb, on a pass | Next term, or the summary |
-| Tap the next-action ("Skip question"), rungs 1–2 | Next term, scored as a miss |
+| Tap "Skip question" (the bottom bar), rungs 1–2 | Next term, scored as a miss |
 | Tap "Reveal answer", rung 3 | `/recall/reveal` — `revealNow()` records the miss exactly as running out of rungs does |
 | Miss at rung 3 | `/recall/reveal` |
 | Tap "Type your answer" | `/recall/text-fallback` |

@@ -112,3 +112,15 @@ export const BothStates: Story = {
     await expect(canvasElement.querySelectorAll('.knw-waveform__bar')).toHaveLength(48);
   },
 };
+
+export const Bare: Story = {
+  name: 'surface=false — bars only',
+  args: { state: 'Talking', surface: false },
+  play: async ({ canvasElement }) => {
+    // The recall iteration draws the bars under the orb with no card.
+    const root = canvasElement.querySelector('.knw-waveform') as HTMLElement;
+    const s = getComputedStyle(root);
+    await expect(s.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    await expect(s.borderTopWidth).toBe('0px');
+  },
+};

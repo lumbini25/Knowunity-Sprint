@@ -53,15 +53,16 @@ button.knw-topic__row:focus-visible {
 
 /* ===== the ring ===== */
 
-/* 40, not Figma's 48 — see the TOKEN NOTE in TopicRow.tsx. */
+/* 32 — `control/s`. Figma's redesign (16307:8816) shrank the ring to ~33 from
+   48; 32 is the step, and the gap the old 48 opened has nearly closed. */
 .knw-topic__step {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: var(--semantic-size-control-m);
-  height: var(--semantic-size-control-m);
+  width: var(--semantic-size-control-s);
+  height: var(--semantic-size-control-s);
 }
 
 .knw-topic__ring {
@@ -76,8 +77,9 @@ button.knw-topic__row:focus-visible {
 .knw-topic__track,
 .knw-topic__progress {
   fill: none;
-  /* 2, not Figma's 4 — no stroke step is 4. The SVG is drawn 1:1 with its
-     viewBox, so a px stroke here is a px on screen. */
+  /* 2 — `stroke/strong`. Figma's 4 scaled with the ring to ~2.8; no step
+     sits between 2 and the score ring's 8. The SVG's viewBox is 32, drawn at
+     32, so a px stroke here is a px on screen. */
   stroke-width: var(--semantic-stroke-strong);
 }
 
@@ -95,8 +97,9 @@ button.knw-topic__row:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--semantic-size-control-xs);
-  height: var(--semantic-size-control-xs);
+  /* 20 — `control/xxs`, the nearest step to Figma's 22 core. */
+  width: var(--semantic-size-control-xxs);
+  height: var(--semantic-size-control-xxs);
   border-radius: var(--semantic-radius-pill);
   background: var(--semantic-accent-brand-bold);
   /* Figma: `interactive/label/secondary` on the glyph. */

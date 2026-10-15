@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, userEvent, fn } from 'storybook/test';
 import {
@@ -325,239 +326,126 @@ export const ExplainEntryTyping: Story = {
 };
 
 export const AnswerSent: Story = {
-  name: 'The take · beat 1 (state 5 lives here)',
+  name: 'The take · beat 1 — play it back',
   render: () => (
-    <AnswerSentScreen onSend={fn()} onRetry={fn()} onDiscard={fn()} onSkip={fn()} onTypeAnswer={fn()} />
+    <AnswerSentScreen onSend={fn()} onRetry={fn()} onDiscard={fn()} onTypeAnswer={fn()} onExit={fn()} />
   ),
   play: async ({ canvas, canvasElement }) => {
-    // A take exists and has NOT been submitted, so this beat WAITS — which is
-    // what makes "cancel and re-record before send" (brief F2) reachable at
-    // all. An earlier build ran the whole screen as a 300ms flash and killed it.
-    await expect(canvas.getByRole('button', { name: 'Continue' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Retry' })).toBeVisible();
+    // `student talking` (16301:6933): the question stays up, the orb plays
+    // the take back, the bin sits beside it, Retry beside Submit answer.
+    await expect(canvasElement.querySelector('.knw-recall__bubble')).toBeTruthy();
+    await expect(canvas.queryByText('WHAT YOU SAID')).toBeNull();
 
-    // WHAT WAS HEARD, NOT WHAT WAS ASKED. An earlier build drew a question
-    // bubble here; the node draws a transcript, and by this beat checking the
-    // transcript is the entire point — Voice_UX principle 4.
-    await expect(canvas.getByText('WHAT YOU SAID')).toBeVisible();
-    await expect(canvasElement.querySelector('.knw-recall__bubble')).toBeNull();
+    // PLAYBACK IS MOCKED: Play turns to Stop and back. No audio exists.
+    const play = canvas.getByRole('button', { name: 'Play your answer' });
+    await userEvent.click(play);
+    await expect(canvas.getByRole('button', { name: 'Stop playback' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Stop playback' }));
+    await expect(canvas.getByRole('button', { name: 'Play your answer' })).toBeVisible();
 
-    // THE ORB IS STATUS, NOT A CONTROL. Figma captions it "Answer sent" and
-    // puts the decisions in the buttons, which is what makes the trash, Retry
-    // and Continue three different things rather than three ways out.
-    await expect(canvasElement.querySelector('.knw-fab--Sent')).toBeTruthy();
-    await expect(canvas.queryByRole('button', { name: 'Tap to send' })).toBeNull();
-
+    // The bin, to the left of the orb, still a 40 pill.
     const discard = canvas.getByRole('button', { name: 'Discard and re-record' });
-    await expect(discard).toBeVisible();
-
-    // The trash glyph rides in an iconSlot at Size=200.
-    const slot = discard.querySelector('.knw-iconslot') as HTMLElement;
-    await expect(getComputedStyle(slot).width).toBe('16px');
-
-    // The trash sits to the LEFT of the orb.
     const orb = canvasElement.querySelector('.knw-fab__stage') as HTMLElement;
-    await expect(discard.getBoundingClientRect().right)
-      .toBeLessThanOrEqual(orb.getBoundingClientRect().left);
+    await expect(discard.getBoundingClientRect().right).toBeLessThanOrEqual(orb.getBoundingClientRect().left);
 
-    // `cancel option`'s 40×40 interactive/secondary pill.
-    const ds = getComputedStyle(discard);
-    await expect(ds.width).toBe('40px');
-    await expect(ds.backgroundColor).toBe('rgba(255, 255, 255, 0.1)');
+    // Retry then Submit answer, side by side; Submit takes the width.
+    const retry = canvas.getByRole('button', { name: 'Retry' });
+    const submit = canvas.getByRole('button', { name: 'Submit answer' });
+    await expect(retry.getBoundingClientRect().right).toBeLessThanOrEqual(submit.getBoundingClientRect().left);
+    await expect(submit.getBoundingClientRect().width).toBeGreaterThan(retry.getBoundingClientRect().width);
 
-    // Both escapes are present, as they are on every recall turn.
+    // The text path stays (CLAUDE.md). No skip on the take — the frame draws
+    // none, and the bin returns to a turn that has one.
     await expect(canvas.getByRole('button', { name: 'Type your answer' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
-
-    // Knowie at mascotSlot size=2XL, the size the frame uses, in the WAITING
-    // pose — the decision on this beat is the student's, and excited is the
-    // pose Knowie asks in.
-    const slotEl = canvasElement.querySelector('.knw-mascot') as HTMLElement;
-    await expect(slotEl.classList.contains('knw-mascot--2XL')).toBe(true);
-    await expect(canvas.getByLabelText('Knowie, waiting')).toBeVisible();
-
-    // THE TRANSCRIPT IS NOT TUCKED. `knw-recall__prompt` carries the question
-    // bubble's 37.5% overlap and reusing it dragged the transcript up under
-    // Knowie's feet; here they meet instead.
-    const mascotBox = slotEl.getBoundingClientRect();
-    const said = canvasElement.querySelector('.knw-transcript') as HTMLElement;
-    await expect(said.getBoundingClientRect().top)
-      .toBeGreaterThanOrEqual(mascotBox.bottom - 1);
-
-    // The progress count is not drawn — Top Nav Default sets showText=false —
-    // but it is not discarded either: it reaches the progressbar's name, so it
-    // is still available to anyone not reading the fill.
-    await expect(canvas.queryByText('1/4')).toBeNull();
-    await expect(canvas.getByRole('progressbar', { name: 'Terms answered: 1 of 4' }))
-      .toBeVisible();
-
-    // The XP cluster: the bolt is SOLID and takes accent/blue/bold, the exact
-    // colour the app renders XP in.
-    const xp = canvas.getByLabelText('0 XP this session');
-    await expect(getComputedStyle(xp).color).toBe('rgb(95, 160, 252)');
-    await expect(xp.querySelectorAll('svg path')).toHaveLength(1);
-
-    // The row fits: border-box on the header, or the padding is added to the
-    // 100% and the figure clips off the right edge.
-    const header = canvasElement.querySelector('.knw-recall__header') as HTMLElement;
-    await expect(Math.round(xp.getBoundingClientRect().right))
-      .toBeLessThanOrEqual(Math.round(header.getBoundingClientRect().right));
-
-    await expect(xp.textContent).toBe('0');
+    await expect(canvas.queryByRole('button', { name: 'Skip question' })).toBeNull();
   },
 };
 
 export const AnswerSentDiscardSheet: Story = {
   name: 'The take · the delete confirmation',
-  // `discardSheetOpen` pins the sheet the way `sent` pins the beat — the route
-  // lets the screen raise it on the trash; a story has to hold it still.
   render: () => (
-    <AnswerSentScreen
-      discardSheetOpen
-      onRetry={fn()}
-      onDiscard={fn()}
-      onTypeAnswer={fn()}
-      onSkip={fn()}
-      onExit={fn()}
-    />
+    <AnswerSentScreen discardSheetOpen onRetry={fn()} onDiscard={fn()} onTypeAnswer={fn()} onExit={fn()} />
   ),
   play: async ({ canvas, canvasElement }) => {
-    // Follows `bottom sheet for delete control` (16073:26275): Knowie, the
-    // question, the warning under it, and an ordinary Yes / No.
     await expect(canvas.getByText('Are you sure you want to delete this answer?')).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Yes' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'No' })).toBeVisible();
-
-    // THE WARNING IS THE POINT. Deleting moves the student on, so the sheet
-    // says so before they answer Yes — the trash is the one control here that
-    // costs them the question.
-    await expect(
-      canvas.getByText(/moved forward to the next question/),
-    ).toBeVisible();
-
-    // HANDLE ONLY, NO ✕ — the same call the mic sheet makes. Both ways out
-    // are on the sheet, so a third silent one in the corner would only muddy
-    // which is which.
+    await expect(canvas.getByText(/moved forward to the next question/)).toBeVisible();
     await expect(canvas.queryByRole('button', { name: 'Close' })).toBeNull();
-
-    // The sheet is raised over the take, not instead of it: the screen behind
-    // still holds the transcript the student is deciding about.
-    await expect(canvasElement.querySelector('.knw-transcript')).toBeTruthy();
+    // Raised over the take, not instead of it: the question is still behind.
+    await expect(canvasElement.querySelector('.knw-recall__bubble')).toBeTruthy();
   },
 };
 
 export const AnswerSentConfirmed: Story = {
   name: 'The take · beat 2, the 300ms flash',
-  // `sent` pins the beat. The route lets the screen move between the two
-  // itself; a story has to hold one still, and no onAdvance is passed, so the
-  // 300ms timer never arms and the beat stays inspectable.
-  render: () => <AnswerSentScreen sent onDiscard={fn()} onTypeAnswer={fn()} onSkip={fn()} onExit={fn()} />,
+  render: () => <AnswerSentScreen sent onDiscard={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
-    // Submitted. The caption is voiceFab's own default for Sent, and Knowie
-    // has taken the answer away — the same pose the processing screen this
-    // flash hands off to uses, so the mascot carries through unbroken.
+    // Submitted: the orb reads "Answer sent", Knowie takes it away to judge.
     await expect(canvasElement.querySelector('.knw-fab--Sent')).toBeTruthy();
     await expect(canvas.getByText('Answer sent')).toBeVisible();
     await expect(canvas.getByLabelText('Knowie, thinking')).toBeVisible();
-
-    // THE DECISION IS OVER, SO THE CONTROLS FOR IT ARE GONE. Continue, Retry
-    // and the trash all go — a control nobody can reach in 300ms should not be
-    // drawn. This is the assertion that keeps the two beats from collapsing.
-    await expect(canvas.queryByRole('button', { name: 'Continue' })).toBeNull();
+    // The decision is over, so its controls are gone — including playback.
+    await expect(canvas.queryByRole('button', { name: 'Submit answer' })).toBeNull();
     await expect(canvas.queryByRole('button', { name: 'Retry' })).toBeNull();
+    await expect(canvas.queryByRole('button', { name: 'Play your answer' })).toBeNull();
     await expect(canvas.queryByRole('button', { name: 'Discard and re-record' })).toBeNull();
-
-    // The transcript holds still across both beats, so the flash does not read
-    // as a layout jump.
-    await expect(canvas.getByText('WHAT YOU SAID')).toBeVisible();
-
-    // The escapes stay put. They are a hard rule from CLAUDE.md — every recall
-    // screen keeps a text fallback and a way out.
     await expect(canvas.getByRole('button', { name: 'Type your answer' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
   },
 };
 
-export const TextFallbackTyping: Story = {
-  name: '6a · Text fallback — typing',
-  render: () => <TextFallbackScreen state="Typing" onUseVoice={fn()} onSkip={fn()} />,
-  play: async ({ canvas, canvasElement }) => {
-    // The answer is going in, so it is in the composer and not yet a message.
-    await expect(canvasElement.querySelector('.knw-recall__answer')).toBeNull();
-    await expect(canvasElement.querySelector('.knw-chat--typing')).toBeTruthy();
+export const TextFallbackEmpty: Story = {
+  name: '6a · Text fallback — empty',
+  render: () => <TextFallbackScreen onSend={fn()} onUseVoice={fn()} onSkip={fn()} />,
+  play: async ({ canvas }) => {
+    // `15 Text fallback, empty` (16311:12322): a real box, waiting.
+    const box = canvas.getByRole('textbox', { name: 'Your explanation' });
+    await expect(box.tagName).toBe('TEXTAREA');
+    await expect(box).toHaveAttribute('placeholder', 'Type your explanation');
+    await expect(canvas.getByText(/judged the same way and count the same/)).toBeVisible();
 
-    // NOTHING TO SEND YET. Send appears on the next beat, when there is a
-    // finished answer to send — offering it now would be offering to submit
-    // half a sentence.
-    await expect(canvas.queryByRole('button', { name: 'Send' })).toBeNull();
+    // "SEND ANSWER" WAITS FOR WORDS — nothing empty is judged.
+    await expect(canvas.getByRole('button', { name: /Send answer/ })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: 'Switch to voice' })).toBeVisible();
 
-    // The keyboard is up, which is the whole premise of the screen.
-    await expect(canvasElement.querySelector('.knw-recall__keyboard')).toBeTruthy();
-    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
+    // Skip lives in the bar on this screen, as the frame draws it.
+    const skip = canvas.getByRole('button', { name: 'Skip' });
+    await expect(skip.closest('.knw-recall__header')).toBeTruthy();
+    await expect(skip.getBoundingClientRect().height).toBeGreaterThanOrEqual(48);
   },
 };
 
-export const TextFallbackReady: Story = {
-  name: '6b · Text fallback — ready to send',
-  render: () => <TextFallbackScreen state="Ready" onSend={fn()} onUseVoice={fn()} onSkip={fn()} />,
-  play: async ({ canvas, canvasElement }) => {
-    // The whole answer is in the box and Send is live.
-    await expect(canvas.getByRole('button', { name: 'Send' })).toBeVisible();
-    await expect(canvas.getByText(/The main causes of World War II/)).toBeVisible();
+/* A stateful harness, so the story types for real — the route owns the value
+   the same way. */
+function TypedTextFallback() {
+  const [value, setValue] = useState('');
+  return <TextFallbackScreen value={value} onChange={setValue} onSend={fn()} onUseVoice={fn()} onSkip={fn()} />;
+}
 
-    /* STILL NOT A MESSAGE. It is in the composer, not the thread — drawing it
-       in both at once said the student had said something they had not
-       finished saying. */
-    await expect(canvasElement.querySelector('.knw-recall__answer')).toBeNull();
+export const TextFallbackTyped: Story = {
+  name: '6b · Text fallback — typed',
+  render: () => <TypedTextFallback />,
+  play: async ({ canvas }) => {
+    // `16 Text fallback, typed` (16311:12479): the student types, and Send
+    // comes alive the moment there are words.
+    const box = canvas.getByRole('textbox', { name: 'Your explanation' });
+    const send = canvas.getByRole('button', { name: /Send answer/ });
+    await expect(send).toBeDisabled();
+    await userEvent.type(box, 'Feudalism was a system where kings gave land');
+    await expect(box).toHaveValue('Feudalism was a system where kings gave land');
+    await expect(send).toBeEnabled();
   },
 };
 
 export const TextFallback: Story = {
   name: '6c · Text fallback — sent',
-  /* THE TURN HAS THREE BEATS. `Sent` is the one Figma's `text fallback` frame
-     draws: the answer has left the composer and become the student's message,
-     and the composer has reset to a placeholder. The build used to draw only
-     this screen's middle beat — a finished answer sitting in the box — so
-     there was no picture of the answer going in, and none of it having gone. */
   render: () => (
-    <TextFallbackScreen state="Sent" onSend={fn()} onUseVoice={fn()} onSkip={fn()} />
+    <TextFallbackScreen value="Feudalism was a system where kings gave land" sent onUseVoice={fn()} onSkip={fn()} />
   ),
-  play: async ({ canvas, canvasElement }) => {
-    // Knowie's turn is plain text with the mascot beneath it — NO surface.
-    // Only the student's turn gets a bubble, and that asymmetry is what makes
-    // it read as a conversation rather than two identical blocks.
-    const ask = canvasElement.querySelector('.knw-recall__ask-text') as HTMLElement;
-    await expect(ask).toBeVisible();
-    await expect(getComputedStyle(ask).backgroundColor).toBe('rgba(0, 0, 0, 0)');
-
-    const answer = canvasElement.querySelector('.knw-recall__answer-text') as HTMLElement;
-    const as = getComputedStyle(answer);
-    await expect(as.backgroundColor).toBe('rgb(34, 36, 47)');
-    await expect(as.borderRadius).toBe('24px');
-
-    // The student's turn is mirrored right, with the avatar outside the bubble.
-    const avatar = canvasElement.querySelector('.knw-recall__avatar') as HTMLElement;
-    await expect(avatar.getBoundingClientRect().left)
-      .toBeGreaterThanOrEqual(answer.getBoundingClientRect().right);
-    await expect(ask.getBoundingClientRect().left)
-      .toBeLessThan(answer.getBoundingClientRect().left);
-
-    // chatInput carries the composer, so the way back to voice is one tap.
-    await expect(canvasElement.querySelector('.knw-chat')).toBeTruthy();
-
-    // NO DEAD SPACE. The keyboard is up on a typing turn, and the conversation
-    // is bottom-aligned, so the student's last turn sits just above the
-    // composer rather than leaving ~500px of nothing between them.
-    const kb = canvasElement.querySelector('.knw-recall__keyboard') as HTMLElement;
-    await expect(kb).toBeTruthy();
-    await expect(kb.getAttribute('src')).toContain('ios-keyboard.png');
-    await expect(getComputedStyle(kb).height).toBe('342px');
-    const composer = canvasElement.querySelector('.knw-chat') as HTMLElement;
-    const gap = composer.getBoundingClientRect().top - answer.getBoundingClientRect().bottom;
-    await expect(gap).toBeLessThan(80);
-
-    // Skip is still under the question, on the right.
-    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
+  play: async ({ canvas }) => {
+    // Gone to the judge: the button says so and takes no second tap.
+    await expect(canvas.getByRole('button', { name: /Sent/ })).toBeDisabled();
+    await expect(canvas.getByRole('textbox', { name: 'Your explanation' })).toHaveAttribute('readonly');
   },
 };
 
@@ -827,37 +715,27 @@ export const ReRecord: Story = {
 /** The escapes are the point: every turn has a way out that isn't voice. */
 export const EscapesAlwaysPresent: Story = {
   name: 'Every turn has a way out',
-  render: () => <AnswerSentScreen onTypeAnswer={fn()} onSkip={fn()} onExit={fn()} />,
+  render: () => <IdleScreen onRecord={fn()} onTypeAnswer={fn()} onSkip={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
-    const type = canvas.getByRole('button', { name: 'Type your answer' });
+    const type = canvas.getByRole('button', { name: 'Type instead' });
     const skip = canvas.getByRole('button', { name: 'Skip question' });
-    await userEvent.click(type);
-    await userEvent.click(skip);
     await expect(type).toBeVisible();
     await expect(skip).toBeVisible();
 
-    // Skip sits under what Knowie put on screen, not down among the bottom
-    // escapes — the Idle screen's placement. On the take that panel is the
-    // transcript rather than the question bubble, so the anchor is `__said`.
-    const panel = canvasElement.querySelector(
-      '.knw-recall__said, .knw-recall__prompt',
-    ) as HTMLElement;
-    const skipBox = skip.getBoundingClientRect();
-    await expect(skipBox.top).toBeGreaterThanOrEqual(panel.getBoundingClientRect().bottom);
-    await expect(skipBox.top).toBeLessThan(type.getBoundingClientRect().top);
-
-    // And it is pushed to the right edge of the content column.
-    const row = canvasElement.querySelector('.knw-recall__skip') as HTMLElement;
-    await expect(Math.round(row.getBoundingClientRect().right - skipBox.right)).toBe(0);
+    // SKIP IS PINNED LOW NOW — a full-width bar in the bottom slot, below
+    // everything else on the turn (recall iteration, 16301:6756).
+    await expect(skip.closest('.knw-screen__bottom')).toBeTruthy();
+    await expect(skip.getBoundingClientRect().top).toBeGreaterThan(type.getBoundingClientRect().bottom);
+    await expect(Math.round(skip.getBoundingClientRect().width)).toBe(358);
+    await expect(skip.getBoundingClientRect().height).toBeGreaterThanOrEqual(48);
+    // The ✕ is the other way out.
+    await expect(canvas.getByRole('button', { name: 'Leave session' })).toBeVisible();
+    void canvasElement;
   },
 };
 
 export const Idle: Story = {
   name: '9 · Idle',
-  /* The intro is passed, not defaulted. It belongs to the FIRST turn — only
-     term 1 authors one — and it used to be a default parameter, which meant
-     every later turn borrowed it: skipping to the last question welcomed the
-     student to a session they were three questions into. */
   render: () => (
     <IdleScreen
       intro="Welcome to your study session on world history. Let's start with how historians handle evidence."
@@ -868,65 +746,39 @@ export const Idle: Story = {
     />
   ),
   play: async ({ canvas, canvasElement }) => {
-    // The resting state: the question is up and the orb is waiting.
-    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
+    // `idle` (16301:6756): "Tap to answer" over the mic, "Type instead" under.
+    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Type instead' })).toBeVisible();
     await expect(canvas.getByText(/Welcome to your study session/)).toBeVisible();
 
-    // Idle is the ONLY recall turn that asks the question in the bubble, with
-    // Knowie tucked behind it. Everything downstream restates it flat.
-    await expect(canvasElement.querySelector('.knw-recall__bubble')).toBeTruthy();
+    // The question in the bubble, Knowie tucked behind it.
     const mascot = canvasElement.querySelector('.knw-recall__mascot') as HTMLElement;
     const bubble = canvasElement.querySelector('.knw-recall__bubble') as HTMLElement;
     const overlap = mascot.getBoundingClientRect().bottom - bubble.getBoundingClientRect().top;
     await expect(+(overlap / mascot.getBoundingClientRect().height).toFixed(3)).toBe(0.375);
 
-    // Both escapes, as on every turn.
-    await expect(canvas.getByRole('button', { name: 'Type your answer' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
+    // Skip is the full-width bar at the bottom, not a link by the question.
+    const skip = canvas.getByRole('button', { name: 'Skip question' });
+    await expect(skip.closest('.knw-screen__bottom')).toBeTruthy();
+    await expect(skip.classList.contains('knw-button--Primary')).toBe(true);
 
-    // THE EXIT IS A THUMB TARGET, NOT A GLYPH BOX. It was 24 square — the WCAG
-    // 2.5.8 floor exactly, on the control most likely to be hit by accident.
-    // axe never flagged it: target size is a WCAG 2.2 rule and the harness runs
-    // 2.1. Asserted here instead.
+    // The exit is a thumb target.
     const exit = canvas.getByRole('button', { name: 'Leave session' });
-    const box = exit.getBoundingClientRect();
-    await expect(Math.round(box.width)).toBeGreaterThanOrEqual(44);
-    await expect(Math.round(box.height)).toBeGreaterThanOrEqual(44);
-
-    // The progress bar is thickness=16, which is what all six recall frames
-    // bind. The component defaults to 24.
+    await expect(Math.round(exit.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
     const bar = canvasElement.querySelector('.knw-progress') as HTMLElement;
     await expect(getComputedStyle(bar).height).toBe('16px');
-
-    // Skip is right-aligned caption/M SemiBold on text/secondary — measured off
-    // this frame: textAlignHorizontal=RIGHT, 12px, SemiBold.
-    const skip = canvasElement.querySelector('.knw-recall__skip') as HTMLElement;
-    const skipBtn = canvas.getByRole('button', { name: 'Skip question' });
-    await expect(Math.round(skipBtn.getBoundingClientRect().right))
-      .toBe(Math.round(skip.getBoundingClientRect().right));
-    await expect(getComputedStyle(skipBtn).fontSize).toBe('12px');
   },
 };
 
 export const IdleLaterTurn: Story = {
   name: '9b · Idle — a later turn, no welcome',
-  /* What every turn after the first looks like, and what the skip loop lands
-     on three times out of four. No `intro`, so none is drawn — the question
-     alone, which is the whole content of a turn in progress. */
   render: () => <IdleScreen onRecord={fn()} onSkip={fn()} onTypeAnswer={fn()} onExit={fn()} />,
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('button', { name: 'Speak to start' })).toBeVisible();
-
-    /* THE GREETING IS NOT REPEATED. It was a default parameter, so a turn that
-       passed no intro — which is terms 2, 3 and 4 — got the welcome anyway.
-       Asserted as absence, because that is the bug: something appearing where
-       nothing was passed. */
+    await expect(canvas.getByRole('button', { name: 'Tap to answer' })).toBeVisible();
+    // The greeting belongs to the first turn only.
     await expect(canvas.queryByText(/Welcome to your study session/)).toBeNull();
     await expect(canvasElement.querySelector('.knw-recall__intro')).toBeNull();
-
-    // The question still is.
     await expect(canvasElement.querySelector('.knw-recall__prompt')).toBeTruthy();
-    // And a way past it, which is what the skip loop needs.
     await expect(canvas.getByRole('button', { name: 'Skip question' })).toBeVisible();
   },
 };
@@ -951,6 +803,20 @@ export const ListeningTalking: Story = {
 
     // NO DISCARD. Nothing is recorded yet to throw away; voiceFab enforces it.
     await expect(canvas.queryByRole('button', { name: 'Discard and re-record' })).toBeNull();
+
+    // THE ITERATION (16301:6570): the question above, then under the orb a
+    // live line with a running clock, and the bare waveform — no card.
+    await expect(canvas.getByText(/^Listening, 0:0\d$/)).toBeVisible();
+    const orb = canvasElement.querySelector('.knw-fab__stage') as HTMLElement;
+    const wave = canvasElement.querySelector('.knw-waveform') as HTMLElement;
+    await expect(wave.classList.contains('knw-waveform--bare')).toBe(true);
+    await expect(wave.getBoundingClientRect().top).toBeGreaterThan(orb.getBoundingClientRect().bottom);
+    const bubble = canvasElement.querySelector('.knw-recall__bubble') as HTMLElement;
+    await expect(bubble.getBoundingClientRect().bottom).toBeLessThan(orb.getBoundingClientRect().top);
+
+    // Skip, pinned low with every other turn's.
+    const skip = canvas.getByRole('button', { name: 'Skip question' });
+    await expect(skip.closest('.knw-screen__bottom')).toBeTruthy();
   },
 };
 

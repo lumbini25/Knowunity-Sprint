@@ -20,6 +20,13 @@
   background: var(--semantic-background-surface);
 }
 
+/* `surface={false}`: the bars alone, no card. */
+.knw-waveform--bare {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
 .knw-waveform__bars {
   display: flex;
   align-items: center;

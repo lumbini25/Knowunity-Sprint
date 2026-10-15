@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect } from 'storybook/test';
+import { expect, userEvent } from 'storybook/test';
 import { TextField } from './TextField';
 import { XCloseIcon } from '../BottomSheet/icons';
 
@@ -183,5 +183,30 @@ export const AllVariants: Story = {
     await expect(canvasElement.querySelectorAll('.knw-textfield')).toHaveLength(3);
     // Only the Error field draws a caption without being asked.
     await expect(canvasElement.querySelectorAll('.knw-textfield__caption')).toHaveLength(1);
+  },
+};
+
+export const Multiline: Story = {
+  name: 'multiline — an explanation',
+  args: {
+    multiline: true,
+    rows: 6,
+    showTitle: false,
+    titleText: 'Your explanation',
+    showLeadingIcon: false,
+    placeholder: 'Type your explanation',
+  },
+  play: async ({ canvas, canvasElement }) => {
+    // A real <textarea>, named, that takes typing.
+    const box = canvas.getByRole('textbox', { name: 'Your explanation' });
+    await expect(box.tagName).toBe('TEXTAREA');
+    await userEvent.type(box, 'Feudalism was a system');
+    await expect(box).toHaveValue('Feudalism was a system');
+
+    // FOCUS SHOWS. The edge takes border/focus while the student writes —
+    // it used to look identical focused and idle.
+    const field = canvasElement.querySelector('.knw-textfield__field') as HTMLElement;
+    await Promise.all(canvasElement.getAnimations({ subtree: true }).map((a) => a.finished));
+    await expect(getComputedStyle(field).borderTopColor).toBe('rgb(167, 139, 250)');
   },
 };

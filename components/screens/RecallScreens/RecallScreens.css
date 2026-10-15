@@ -429,78 +429,193 @@ span.knw-recall__exit {
 /* Skip sits directly under the question, pushed to the right edge — the
    placement the Idle screen uses. It is a secondary action attached to the
    question, not one of the bottom escapes. */
+/* Skip, pinned low and full width — the recall flow iteration (16301:6756).
+   The button draws itself; this only lets it fill the column. */
 .knw-recall__skip {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   width: 100%;
 }
 
-/* A bare text control, the way Figma draws it: caption/M-bold on
-   text/secondary, no surface, no border. */
-/* 73x16 BEFORE THIS, on the control every recall turn carries. The glyph is
-   bare text by design — Figma draws it with no surface — so the target grows
-   instead of the label: `size/tapTarget/min` says so itself, "Controls shorter
-   than this keep it as a transparent hit area". Inline-flex plus a min-height
-   centres the words in a box that is tall enough to hit. */
-.knw-recall__skip-control {
-  display: inline-flex;
-  align-items: center;
+/* ===== the text fallback — 16311:12322 / 16311:12479 ===== */
+
+.knw-typed {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding-block: var(--semantic-space-layout-s);
+  text-align: left;
+}
+
+/* Knowie beside the question, 12 apart, top-aligned — Figma's `prompt`. */
+.knw-typed__prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--semantic-space-layout-m);
+}
+
+.knw-typed__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+  min-width: 0;
+}
+
+/* 18 SemiBold / 20 — headline/XS-bold, Figma's title step. */
+.knw-typed__question {
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-family: var(--semantic-type-scale-headline-xs-bold-font-family);
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+  font-size: var(--semantic-type-scale-headline-xs-bold-font-size);
+  line-height: var(--semantic-type-scale-headline-xs-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-headline-xs-bold-letter-spacing);
+}
+
+.knw-typed__question strong {
+  font-weight: var(--semantic-type-scale-headline-xs-bold-font-weight);
+}
+
+.knw-typed__hint {
+  margin: 0;
+  color: var(--semantic-text-secondary);
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+/* Field, helper, then the two ways on — Figma's `bottom stack`, 16 apart. */
+.knw-typed__foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-l);
+  width: 100%;
+}
+
+.knw-typed__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-layout-s);
+}
+
+/* Caption M Regular, text/tertiary — the promise that typing is not lesser. */
+.knw-typed__helper {
+  margin: 0;
+  color: var(--semantic-text-tertiary);
+  font-family: var(--semantic-type-scale-caption-m-regular-font-family);
+  font-weight: var(--semantic-type-scale-caption-m-regular-font-weight);
+  font-size: var(--semantic-type-scale-caption-m-regular-font-size);
+  line-height: var(--semantic-type-scale-caption-m-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-caption-m-regular-letter-spacing);
+}
+
+/* The header's "Skip" — the right end of the bar, where the XP figure sits on
+   other turns. Body S Bold, text/primary, 48 square at least so it clears the
+   tap floor; the press dims nothing, it washes like the other bar controls. */
+.knw-recall__header-skip {
+  flex: none;
+  min-width: var(--semantic-size-tap-target-min);
   min-height: var(--semantic-size-tap-target-min);
   padding: 0;
   border: none;
+  border-radius: var(--semantic-radius-pill);
   background: none;
+  color: var(--semantic-text-primary);
+  cursor: pointer;
+  font-family: var(--semantic-type-scale-body-s-bold-font-family);
+  font-weight: var(--semantic-type-scale-body-s-bold-font-weight);
+  font-size: var(--semantic-type-scale-body-s-bold-font-size);
+  line-height: var(--semantic-type-scale-body-s-bold-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-bold-letter-spacing);
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard);
+}
+
+.knw-recall__header-skip:active {
+  background: var(--semantic-interactive-pressed);
+}
+
+.knw-recall__header-skip:focus-visible {
+  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
+  outline-offset: var(--semantic-space-layout-xxs);
+}
+
+/* ===== the take — Retry beside Submit answer ===== */
+
+/* Figma's `button pair`: Retry hugs its label, Submit answer takes the rest,
+   16 apart. */
+.knw-recall__take-actions {
+  display: flex;
+  gap: var(--semantic-space-layout-l);
+  width: 100%;
+}
+
+.knw-recall__take-actions > :last-child {
+  flex: 1 1 auto;
+}
+
+/* The button's face is inline and hugs its label; the wide one has to fill
+   the box it was given, the way `buttonGroup` stretches its last child. */
+.knw-recall__take-actions > :last-child > .knw-button__surface {
+  width: 100%;
+}
+
+/* ===== listening — the live status under the orb ===== */
+
+/* `liveStatus` and the bare waveform, 8 apart, centred under the orb. */
+.knw-recall__live {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  width: 100%;
+}
+
+/* Caption M Bold, text/primary, the dot 8 before it. Tabular figures so the
+   clock does not shuffle the line as it ticks. */
+.knw-recall__live-status {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-layout-s);
+  margin: 0;
+  color: var(--semantic-text-primary);
+  font-variant-numeric: tabular-nums;
   font-family: var(--semantic-type-scale-caption-m-bold-font-family);
   font-weight: var(--semantic-type-scale-caption-m-bold-font-weight);
   font-size: var(--semantic-type-scale-caption-m-bold-font-size);
   line-height: var(--semantic-type-scale-caption-m-bold-line-height);
   letter-spacing: var(--semantic-type-scale-caption-m-bold-letter-spacing);
-  color: var(--semantic-text-secondary);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
-.knw-recall__skip-control:focus-visible {
-  outline: var(--semantic-stroke-strong) solid var(--semantic-border-focus);
-  outline-offset: var(--semantic-space-layout-xxs);
+/* The dot is the "on air" light. It blinks on the orb's own breath — the same
+   1600ms cycle, so the screen keeps one rhythm — and rests fully lit, so the
+   resting style is never the faint end. */
+.knw-recall__live-dot {
+  flex: none;
+  width: var(--semantic-size-icon-xxs);
+  height: var(--semantic-size-icon-xxs);
+  border-radius: var(--semantic-radius-pill);
+  background: var(--semantic-accent-brand-bold);
+  animation: knw-recall-live var(--semantic-motion-duration-breath)
+    var(--semantic-motion-easing-continuous) infinite alternate;
 }
 
-/* ===== the text turn, as a conversation ===== */
-
-/* The conversation is bottom-aligned, the way a chat is: turns stack upward
-   from just above the composer, so empty space sits above the first message
-   rather than below the last. That is what closes the gap an earlier build had
-   between the answer and the composer. */
-.knw-recall--chat {
-  gap: var(--semantic-space-layout-l);
-  align-items: stretch;
-  /* GROW TO FILL, BUT NEVER SHRINK BELOW THE CONVERSATION.
-
-     This used to be `justify-content: flex-end` with `min-height: 100%`, and
-     the pair hid the question. `min-height: 100%` overrides a flex item's
-     automatic minimum size, so the item was free to shrink to the middle
-     slot's height while its children stayed full size; `flex-end` then pushed
-     the overflow off the TOP edge. Overflow in the start direction is not
-     counted in `scrollHeight`, so the middle slot reported nothing to scroll
-     and rendered no scrollbar — the question was not merely clipped, it was
-     unreachable. Below roughly 740px of viewport the student was asked to type
-     an answer to a question they could not see, which is the one thing this
-     screen exists to prevent.
-
-     `flex: 1 0 auto` says the opposite: take the spare height when there is
-     some, and never give up your own. When the conversation outgrows the slot
-     the slot scrolls, top-first, and the question is the first thing there. */
-  flex: 1 0 auto;
-  text-align: left;
+@keyframes knw-recall-live {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.6);
+  }
 }
 
-/* Bottom-aligns the conversation the way a chat is bottom-aligned, using an
-   auto margin rather than `justify-content`. The difference is the failure
-   mode: an auto margin distributes only FREE space, so it collapses to zero
-   the moment there is none and the turns fall back to normal top-down flow.
-   `justify-content: flex-end` has no such fallback — it keeps pushing after
-   the space runs out, which is what put the question off-screen. */
-.knw-recall--chat > .knw-recall__ask {
-  margin-block-start: auto;
+@media (prefers-reduced-motion: reduce) {
+  .knw-recall__live-dot {
+    animation: none;
+  }
 }
 
 /* Knowie's turn: plain text with the mascot beneath it, NO surface. Figma's
@@ -981,27 +1096,6 @@ span.knw-recall__exit {
    box inside `recallResponseCard` already uses for the same reason. */
 .knw-recall__card--on-sheet {
   background: var(--semantic-background-elevated);
-}
-
-/* The sheet's Settings path is the SCREEN'S, unchanged.
-   An earlier version stacked the chips vertically here on the theory that a
-   sheet turns a breadcrumb into steps. Figma disagrees and so does the screen
-   behind it: `mic permission denied` lays them out HORIZONTAL with wrap at
-   gap Space/200, inside a `background/surface` card at Radius/400. Two
-   treatments of one path, one of them invented, is worse than either. */
-
-/* Skip, and the way back to voice, on one row. The text turn is the only
-   screen that needs both: everywhere else "answer out loud" IS the screen. */
-.knw-recall__turn-escapes {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--semantic-space-layout-m);
-  width: 100%;
-}
-
-.knw-recall__turn-escapes .knw-recall__skip {
-  width: auto;
 }
 
 /* ===== the transcript, where it is not a question bubble ===== */

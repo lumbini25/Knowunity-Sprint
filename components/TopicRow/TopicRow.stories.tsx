@@ -10,7 +10,7 @@ const DESCRIPTION = `One topic the student covered this week, on the entry scree
 
 **DON'T** — do not render a row without \`onSelect\` beside rows that have one; without it the row is plain text on purpose. Do not use it for summary results — that is \`listItem\`.
 
-**TOKEN NOTE** — Figma's ring is 48 with a 4 stroke around a 32 core and a 20 glyph. No size step is 48 and no stroke is 4, so the row takes the nearest steps that keep the proportions: \`control/m\` 40, \`control/xs\` 24, \`icon/s\` 16, \`stroke/strong\` 2. Logged in design-system.md's Gaps.`;
+**TOKEN NOTE** — Figma's redesign shrank the ring to ~33 around a ~22 core and a ~14 glyph (it was 48 / 32 / 20). The row takes the nearest steps: \`control/s\` 32, \`control/xxs\` 20, \`icon/xs\` 12, \`stroke/strong\` 2. Logged in design-system.md's Gaps.`;
 
 const meta = {
   title: 'Components/TopicRow',
@@ -50,6 +50,12 @@ export const Event: Story = {
     const tag = canvasElement.querySelector('.knw-topic__tag') as HTMLElement;
     await expect(tag.textContent).toBe('Event');
     await expect(getComputedStyle(tag).color).toBe('rgb(123, 168, 242)');
+
+    // The smaller ring (16307:8816): control/s 32 around a control/xxs 20 core.
+    const step = canvasElement.querySelector('.knw-topic__step') as HTMLElement;
+    await expect(getComputedStyle(step).width).toBe('32px');
+    const core = canvasElement.querySelector('.knw-topic__core') as HTMLElement;
+    await expect(getComputedStyle(core).width).toBe('20px');
 
     // A full ring by default — Figma draws every row at 100.
     const arc = canvasElement.querySelector('.knw-topic__progress') as SVGCircleElement;

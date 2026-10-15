@@ -20,74 +20,46 @@
 import { useEffect, useState } from 'react';
 import { TextFallbackScreen } from '../../../components/screens/RecallScreens/RecallScreens';
 import { useRecallSession, useRecallNav } from '../../../lib/recall/session';
-import { isContestable, isSilent } from '../../../lib/recall/script';
 
-/* The answer "types itself" for a beat before it can be sent, and sits sent
-   for a beat before the judge takes it. Mocked latency, like the ready card's
-   and the judge's — named constants with a comment saying so, not motion
-   tokens, because no motion scale exists and neither is a design value. */
-const TYPING_MS = 1100;
+/* Sent sits for a beat before the judge takes it. Mocked latency, like the
+   judge's — a named constant, not a motion token. */
 const SENT_MS = 450;
 
 export default function Page() {
   const session = useRecallSession();
   const { go, goTo } = useRecallNav();
 
-  /* THE TURN HAS THREE BEATS AND THEY ARE NOT SESSION STATE. Which beat is on
-     screen matters for exactly as long as this screen does; a reload should
-     start the typing again rather than resume it half-written. Same call the
-     mic primer's sheet makes. */
-  const [state, setState] = useState<'Typing' | 'Ready' | 'Sent'>('Typing');
+  /* WHAT THE STUDENT TYPES, FOR REAL. Not session state: a reload should open
+     on an empty box rather than resume a half-written answer. The judge is
+     still scripted — `answerByText()` judges the rung's clean take — so the
+     words do not change the verdict, which is the mock this prototype is. */
+  const [value, setValue] = useState('');
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setState('Ready'), TYPING_MS);
-    return () => clearTimeout(id);
-  }, []);
-
-  /* Sent hands over to the judge after its beat. `answerByText()` is the same
-     submission as the take screen's, with the two microphone questions
-     dropped — see the note above. */
-  useEffect(() => {
-    if (state !== 'Sent') return;
+    if (!sent) return;
     const id = setTimeout(() => go(session.answerByText()), SENT_MS);
     return () => clearTimeout(id);
-    /* `go` and `session` are fresh each render; the timer is keyed to the beat,
-       which changes once. */
+    /* `go` and `session` are fresh each render; the timer is keyed to the
+       send, which happens once. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
-
-  /* WHAT THE STUDENT "TYPED" IS THE SCRIPT'S OWN CLEAN TAKE, not a fixture.
-     The route passed no answer at all, so every typed turn showed the
-     component's default — "Neolithic settelment is" — under a World War II
-     question. The clean take is the one `answerByText()` will actually judge,
-     so the words on screen and the words being marked are the same words. */
-  const clean = session.rungScript?.takes.find((t) => !isSilent(t) && !isContestable(t));
-  const typed = (clean ?? session.take)?.transcript.replace(/^"|"$/g, '');
+  }, [sent]);
 
   return (
     <TextFallbackScreen
       prompt={session.term.question}
-      answer={typed}
-      state={state}
+      value={value}
+      onChange={setValue}
+      sent={sent}
+      onSend={() => {
+        if (value.trim()) setSent(true);
+      }}
       progress={(session.termIndex / session.termCount) * 100}
       progressText={`${session.termIndex + 1} of ${session.termCount}`}
-      onSend={() => setState('Sent')}
       onUseVoice={goTo('idle')}
-      /* NOT OFFERED ON THE TURN REACHED FROM THE REVEAL. The reveal states that
-         saying it back is required rather than offered, and both of its paths
-         land here or on `recording` — so a skip on either one is the tap past
-         the answer the reveal says does not exist.
-
-         It also mislabels the student. By the time the reveal is on screen the
-         term is already settled as missed; `session.skip()` overwrites that
-         outcome by termId with `skipped: true`, so somebody who read the whole
-         model answer and only declined to repeat it lands in the summary's
-         review list under the same heading as a term they never opened.
-
-         Nobody is trapped, which is what sprint-context.md's "skip on every
-         turn" is for: the header's ✕ still leaves the session, and both ways
-         forward remain. What is gone is the one that quietly rewrites what
-         happened. */
+      /* NOT OFFERED ON THE TURN REACHED FROM THE REVEAL. The reveal says saying
+         it back is required, and `skip()` would overwrite the settled miss
+         with `skipped: true`. The ✕ still leaves. */
       onSkip={session.rung === 'reveal' ? undefined : () => go(session.skip())}
       onExit={session.requestExit}
     />

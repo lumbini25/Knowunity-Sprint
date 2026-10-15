@@ -24,12 +24,10 @@ import './TopicRow.css';
  * lighter than Figma's `accent/blue/bold`, which fails AA on the pill),
  * "Concept" in `text/secondary`, both on a `background/elevated` pill.
  *
- * TOKEN NOTE — the ring is smaller than Figma, on purpose and logged. Figma
- * draws a 48 ring with a 4 stroke around a 32 core holding a 20 icon. No size
- * step is 48 (the control scale runs 24, 32, 40, 56; `tapTarget/min` is 48 but
- * is a hit-area role, not a drawing size), and no stroke is 4. The nearest
- * steps that keep Figma's proportions are `control/m` 40, `control/xs` 24,
- * `icon/s` 16 and `stroke/strong` 2. design-system.md, Gaps.
+ * TOKEN NOTE — Figma's redesign shrank the ring to ~33 around a ~22 core
+ * holding a ~14 glyph (it was 48 / 32 / 20). The nearest steps are
+ * `control/s` 32, `control/xxs` 20 and `icon/xs` 12, with `stroke/strong` 2
+ * for Figma's scaled ~2.8 stroke. design-system.md, Gaps.
  */
 
 export type TopicKind = 'Event' | 'Concept';
@@ -60,19 +58,19 @@ export function TopicRow({
   const content = (
     <>
       <span className="knw-topic__step" aria-hidden="true">
-        <svg className="knw-topic__ring" viewBox="0 0 40 40">
-          <circle className="knw-topic__track" cx="20" cy="20" r="19" />
+        <svg className="knw-topic__ring" viewBox="0 0 32 32">
+          <circle className="knw-topic__track" cx="16" cy="16" r="15" />
           <circle
             className="knw-topic__progress"
-            cx="20"
-            cy="20"
-            r="19"
+            cx="16"
+            cy="16"
+            r="15"
             pathLength={100}
             strokeDasharray={`${clamped} 100`}
           />
         </svg>
         <span className="knw-topic__core">
-          <IconSlot size="200">
+          <IconSlot size="150">
             <DocIcon />
           </IconSlot>
         </span>

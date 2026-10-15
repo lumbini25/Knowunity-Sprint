@@ -11,6 +11,7 @@ import { ButtonGroup } from '../../ButtonGroup/ButtonGroup';
 import { Chips } from '../../Chips/Chips';
 import { ChipFeedback } from '../../ChipFeedback/ChipFeedback';
 import { TopicRow } from '../../TopicRow/TopicRow';
+import { TextField } from '../../TextField/TextField';
 import { TermRow } from '../../TermRow/TermRow';
 import type { TermOutcomeKind } from '../../TermRow/TermRow';
 import { StatTile } from '../../StatTile/StatTile';
@@ -38,6 +39,9 @@ import {
   HintBulbIcon,
   ScanIcon,
   RailMicIcon,
+  ArrowRightIcon,
+  PlayIcon,
+  StopIcon,
   MicIcon,
   QuizIcon,
   SummarizeIcon,
@@ -144,6 +148,7 @@ export function RecallHeader({
   xp = 0,
   onExit,
   exitLabel = 'Leave session',
+  onSkip,
 }: {
   progress?: number;
   /** Not rendered — carried in the progressbar's accessible name. */
@@ -161,6 +166,12 @@ export function RecallHeader({
   /** The ✕'s accessible name. "Leave session" on a turn; "Close" where it
       goes back rather than out. */
   exitLabel?: string;
+  /**
+   * A "Skip" control at the right end of the bar, in place of the XP figure —
+   * where the text fallback's iteration (16311:12322) puts it, since that
+   * screen's bottom already carries Send and Switch to voice.
+   */
+  onSkip?: () => void;
 }) {
   return (
     <div className="knw-recall__header">
@@ -198,7 +209,11 @@ export function RecallHeader({
           one unit — the pattern `mascotSlot` and `waveformCard` already use.
           `aria-label` on a bare <p> is prohibited: a paragraph has no role that
           takes a name. */}
-      {xp === null ? null : (
+      {onSkip ? (
+        <button type="button" className="knw-recall__header-skip" onClick={onSkip}>
+          Skip
+        </button>
+      ) : xp === null ? null : (
         <div className="knw-recall__xp" role="img" aria-label={`${xp} XP this session`}>
           <span className="knw-recall__xp-icon">
             <BoltIcon />
@@ -1273,36 +1288,31 @@ export interface RecallEscapesProps {
 }
 
 /**
- * Skip, in the place and the treatment the `Idle` screen gives it: directly
- * under the question bubble, pushed to the right edge, set in
- * `caption/M-bold` on `text/secondary`.
+ * Skip, as the recall flow iteration places it (`idle`, 16301:6756): a
+ * full-width button pinned to the bottom of the turn, not a small link tucked
+ * under the question.
  *
- * It is a bare text control, not `button variant=Tertiary` — Figma draws it as
- * a text layer with no surface, the same weight as `typeAnswerComponent`.
- * Attaching it to the question is what makes it read as "skip *this* term"
- * rather than "leave the session".
+ * WHY THE MOVE. The link sat at the right edge in caption type — easy to miss
+ * and, at 12px, the smallest control on a screen whose other controls are a
+ * 140px orb. The bottom slot is where the thumb already is and where every
+ * other way on lives.
+ *
+ * NO HANDLER, NO CONTROL — unchanged. A skip with nothing wired is not drawn,
+ * which is how the turn reached from the reveal offers none.
  */
 export function RecallSkip({
   onSkip,
   skipLabel = 'Skip question',
 }: Pick<RecallEscapesProps, 'onSkip' | 'skipLabel'>) {
-  /* NO HANDLER, NO CONTROL. Without this the button rendered anyway with
-     `onClick={undefined}` — present, focusable, announced to a screen reader as
-     a button, and doing nothing when tapped. A control that lies about being a
-     control is worse than an absent one, and it made omitting the prop look
-     like it omitted the skip when it did not.
-
-     Every screen that means to offer skip passes a handler, so this changes
-     nothing that exists; it makes leaving the prop off mean what it reads as.
-     The turn reached from the reveal is the first caller to rely on it — see
-     `app/recall/recording` and `app/recall/text-fallback`. */
   if (!onSkip) return null;
 
   return (
     <div className="knw-recall__skip">
-      <button type="button" className="knw-recall__skip-control" onClick={onSkip}>
-        {skipLabel}
-      </button>
+      {/* Primary, as the frame draws it — the white bar. A group of one so it
+          fills the column like every other pinned CTA. */}
+      <ButtonGroup variant="Vertical" size="M">
+        <Button variant="Primary" size="M" CTA={skipLabel} onClick={onSkip} />
+      </ButtonGroup>
     </div>
   );
 }
@@ -1312,10 +1322,16 @@ export function RecallSkip({
  * as a "Must". Skip is the other Must, but it lives under the question — see
  * `RecallSkip`.
  */
-export function RecallEscapes({ onTypeAnswer }: Pick<RecallEscapesProps, 'onTypeAnswer'>) {
+export function RecallEscapes({
+  onTypeAnswer,
+  typeLabel,
+}: Pick<RecallEscapesProps, 'onTypeAnswer'> & {
+  /** The link's words. Idle's iteration frame says "Type instead". */
+  typeLabel?: string;
+}) {
   return (
     <div className="knw-recall__escapes">
-      <TypeAnswer onClick={onTypeAnswer} />
+      <TypeAnswer onClick={onTypeAnswer} label={typeLabel} />
     </div>
   );
 }
@@ -1324,9 +1340,19 @@ export function RecallEscapes({ onTypeAnswer }: Pick<RecallEscapesProps, 'onType
 /* The take — the listening loop's second half, and where state 5 lives */
 /* ------------------------------------------------------------------ */
 
+/** How long a mocked playback "runs" before Play comes back. Mocked latency,
+    like the judge's — a named constant, not a motion token. */
+const PLAYBACK_MS = 4000;
+
 export interface AnswerSentScreenProps extends RecallEscapesProps {
-  /** What was heard. The screen exists so the student can check it. */
+  /**
+   * What was heard. Kept for the session and the stories; the iteration's
+   * take screen does not print it — the transcript is shown on the
+   * evaluation screen that follows, by the design owner's decision.
+   */
   transcript?: string;
+  /** The question, restated above the playback — the iteration keeps it up. */
+  prompt?: ReactNode;
   /** Say it again. Costs no rung — the take is replaced, not judged. */
   onRetry?: () => void;
   /**
@@ -1410,14 +1436,18 @@ export interface AnswerSentScreenProps extends RecallEscapesProps {
  */
 export function AnswerSentScreen({
   transcript = '"It was when Britain kept a pease? with Hitler to avoid a war, I think."',
+  prompt = (
+    <>
+      What were the major <strong>turning points</strong> of World War II, and why were they
+      significant?
+    </>
+  ),
   sent: sentProp,
   onSend,
   onRetry,
   onDiscard,
   discardSheetOpen: discardSheetOpenProp,
   onExit,
-  onSkip,
-  skipLabel,
   onAdvance,
   holdMs = 300,
   ...escapes
@@ -1439,6 +1469,20 @@ export function AnswerSentScreen({
     const id = window.setTimeout(onAdvance, holdMs);
     return () => window.clearTimeout(id);
   }, [sent, onAdvance, holdMs]);
+
+  /* PLAYBACK IS MOCKED, AS THE RECORDING IS. Nothing was captured, so there is
+     nothing to play: the control does what the frame shows — Play turns to
+     Stop, and comes back to Play when the "take" ends or the student stops it.
+     The design owner's call (the transcript is shown on the evaluation screen
+     instead). `transcript` is still carried so the stories and the session
+     keep the words. */
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    if (!playing) return;
+    const id = window.setTimeout(() => setPlaying(false), PLAYBACK_MS);
+    return () => window.clearTimeout(id);
+  }, [playing]);
+  void transcript;
 
   const handleSend = () => {
     if (sent) return;
@@ -1468,29 +1512,32 @@ export function AnswerSentScreen({
             </MascotSlot>
           </div>
 
-          {/* What was heard, not what was asked. The question belongs to the
-              turn before this one — by now the student needs to check the
-              transcript, which is the whole reason this beat exists. */}
-          <div className="knw-recall__said">
-            <TranscriptSection transcript={transcript} />
+          {/* THE QUESTION STAYS UP, where the iteration keeps it on every
+              turn (16301:6933) — the student plays the take back against what
+              was asked. */}
+          <div className="knw-recall__prompt">
+            <QuestionBubble question={prompt} />
           </div>
 
-          <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
           <div className="knw-recall__fab">
-            {/* THE ORB IS STATUS HERE, NOT A CONTROL. Figma captions it
-                "Answer sent" on both beats and puts the decisions in the
-                buttons — which is what makes the trash, Retry and Continue
-                three different things rather than three ways to leave. */}
-            {/* THE TRASH ASKS FIRST. `bottom sheet for delete control`
-                (16073:26275) puts a confirmation between the pill and the
-                discard, which is what a destructive control with no undo
-                needs — the take is the only copy of what the student said. */}
-            <VoiceFab
-              state="Sent"
-              onPress={undefined}
-              showDiscard={!sent}
-              onDiscard={() => setDiscardRaised(true)}
-            />
+            {/* PLAY / STOP ON THE ORB, the bin beside it. `voiceFab` state=Sent
+                with its icon swapped — Figma's own instance-swap property —
+                so no second orb is drawn. The bin still asks first. On beat 2
+                the take is gone to the judge, so the orb reads "Answer sent"
+                and plays nothing. */}
+            {sent ? (
+              <VoiceFab state="Sent" onPress={undefined} />
+            ) : (
+              <VoiceFab
+                state="Sent"
+                label={playing ? 'Stop playback' : 'Play your answer'}
+                showLabel={false}
+                icon={playing ? <StopIcon /> : <PlayIcon />}
+                onPress={() => setPlaying((p) => !p)}
+                showDiscard
+                onDiscard={() => setDiscardRaised(true)}
+              />
+            )}
           </div>
         </div>
       }
@@ -1513,11 +1560,13 @@ export function AnswerSentScreen({
           {/* Horizontal, and it clears buttonGroup's own DON'T — the pair is
               not being treated as equals. Continue is Primary and carries the
               rung; Retry is Secondary and costs nothing. */}
+          {/* Retry, then Submit answer — the frame's order, the compact
+              secondary beside the wide primary that carries the rung. */}
           {!sent && (
-            <ButtonGroup variant="Horizontal" size="M">
-              <Button variant="Primary" size="M" CTA="Continue" onClick={handleSend} />
+            <div className="knw-recall__take-actions">
               <Button variant="Secondary" size="M" CTA="Retry" onClick={onRetry} />
-            </ButtonGroup>
+              <Button variant="Primary" size="M" CTA="Submit answer" onClick={handleSend} />
+            </div>
           )}
           <RecallEscapes {...escapes} />
         </div>
@@ -1582,177 +1631,122 @@ export function AnswerSentScreen({
 /* ------------------------------------------------------------------ */
 
 export interface TextFallbackScreenProps extends Pick<RecallEscapesProps, 'onSkip' | 'skipLabel'> {
+  /** The question — a node, because the app bolds the key term. */
   prompt?: ReactNode;
-  /** What the student has typed. */
-  answer?: string;
-  /**
-   * Which beat of the typing turn this is.
-   *
-   * THE SCREEN HAD ONE STATE AND THE TURN HAS THREE. It always drew a finished
-   * answer sitting in the composer with Send live — so there was no picture of
-   * the answer being written, and none of it having gone. A typed turn is:
-   *
-   *   Typing  the answer is going in, caret up, nothing sendable yet
-   *   Ready   the answer is complete and Send is live
-   *   Sent    it has left the composer and become the student's message
-   *
-   * `Sent` is what Figma's `text fallback` frame actually draws: the answer is
-   * a message in the thread and the composer has reset to a placeholder. The
-   * build was drawing it in the box instead, which is the Ready beat.
-   */
-  state?: 'Typing' | 'Ready' | 'Sent';
-  /** What the composer offers once the answer has gone. Figma's own line. */
-  placeholder?: string;
-  /** The student's initial, on the avatar beside their own message. */
-  initial?: string;
+  /** What the student has typed. Controlled by the route. */
+  value?: string;
+  /** Every keystroke. Without it the box is read-only. */
+  onChange?: (value: string) => void;
+  /** Submitted — the beat before the judge takes it. */
+  sent?: boolean;
+  /** "Send answer". */
   onSend?: () => void;
-  /** Back to the voice path — the student is never locked into text either. */
+  /** "Switch to voice". */
   onUseVoice?: () => void;
-  /** Where the turn is in the session, for the header's bar. */
   progress?: number;
   progressText?: string;
   onExit?: () => void;
 }
 
 /**
- * Follows the `text fallback` screen, node `15794:20147`.
+ * Follows `15 Text fallback, empty` (16311:12322) and `16 Text fallback, typed`
+ * (16311:12479) in the recall flow iteration.
  *
  * Voice_UX, Must: "Text fallback turn — Accessibility + situational.
  * Non-negotiable." Principle 5: some students cannot speak at all, many more
  * cannot speak right now.
  *
- * ONLY THE STUDENT'S TURN GETS A SURFACE. The question is plain text with
- * Knowie small beneath it — Figma's container is 358 x 140 at radius 4 with no
- * fill at all. An earlier build put the question in a filled bubble with a
- * tail, which made Knowie's turn look like the student's. Giving one side of
- * the conversation a surface is what makes it read as a conversation.
+ * THE STUDENT REALLY TYPES NOW. The old turn was a chat composer that filled
+ * itself with the script's answer over a drawn keyboard; this is a real
+ * multi-line field. The judge is still scripted, so whatever is typed climbs
+ * the same ladder — the helper line says exactly that, and it is true.
  *
- * THE KEYBOARD IS UP, BY DEFINITION. This is the typing turn, so the screen is
- * laid out against the height the keyboard leaves — which is also what closes
- * the ~500px of dead space an earlier build had between the answer and the
- * composer. Figma draws the frame 1018 tall for the same reason: 342 of it is
- * the keyboard.
+ * "SEND ANSWER" WAITS FOR WORDS. Disabled while the box is empty, so an empty
+ * answer cannot be sent and judged. "Switch to voice" is always there: the
+ * text path is a way of answering, not a trap.
  *
- * The conversation is bottom-aligned, the way a chat is: turns stack upward
- * from just above the composer, so the empty space sits above the first
- * message rather than below the last one.
+ * SKIP IS IN THE BAR, where this frame draws it — the bottom already carries
+ * the two ways on.
  *
- * TOKEN NOTE: Figma resizes the `mascotSlot` instance to 44, below every step
- * of the set (XL 64, 2XL 120, 3XL 200, 4XL 320). `XL` is used.
+ * TOKEN NOTE: Figma's mascot is 44, below every step (XL 64 is the smallest).
+ * `XL` is used, as it was on the old turn.
  */
 export function TextFallbackScreen({
-  /* Figma's own strings, and now the folder's subject. The defaults described
-     the Neolithic Revolution while the session asked about World War II — and
-     the route never passed `answer` at all, so every real student typing an
-     answer watched "Neolithic settelment is" appear in the box. A fixture
-     standing in for live state, the same shape as the summary's demo data. */
-  prompt = 'Could you explain what were the main causes of World War II, and how did the Treaty of Versailles contribute to the situation?',
-  answer = 'The main causes of World War II included the harsh terms of the Treaty of Versailles, economic hardship, the rise of Nazi Germany and Adolf Hitler, and aggressive expansion by Germany,',
-  state = 'Ready',
-  placeholder = 'Tell me about why Germany attacked Poland in 1939?',
-  initial = 'L',
+  prompt = (
+    <>
+      In your own words, what does <strong>appeasement</strong> mean?
+    </>
+  ),
+  value = '',
+  onChange,
+  sent = false,
   onSend,
   onUseVoice,
   progress = 0,
   progressText = '1 of 4',
   onExit,
   onSkip,
-  skipLabel,
 }: TextFallbackScreenProps) {
-  const sent = state === 'Sent';
-
+  const empty = value.trim().length === 0;
   return (
     <Screen
       topNavigation={
-        <RecallHeader progress={progress} progressText={progressText} onExit={onExit} />
+        <RecallHeader progress={progress} progressText={progressText} onExit={onExit} onSkip={onSkip} />
       }
       middleContent={
-        <div className="knw-recall knw-recall--chat">
-          <div className="knw-recall__ask">
-            <p className="knw-recall__ask-text">{prompt}</p>
+        <div className="knw-typed">
+          <div className="knw-typed__prompt">
             <MascotSlot size="XL" label="Knowie, asking">
-              <Knowie pose="standby" />
+              <Knowie pose="excited" />
             </MascotSlot>
-          </div>
-
-          <div className="knw-recall__turn-escapes">
-            {/* The way BACK to voice. It lived on the composer's mic, and the
-                mic is gone now that the trailing slot carries Send — so it
-                moves here, beside skip, in the same bare-text treatment. The
-                text path has to be reversible: CLAUDE.md requires text in one
-                tap, and a student who switched because the room was loud
-                should not be stuck in it once the room is quiet. */}
-            <button type="button" className="knw-recall__skip-control" onClick={onUseVoice}>
-              Answer out loud
-            </button>
-            <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
-          </div>
-
-          {/* The student's turn, mirrored right and given the surface.
-              ONLY ONCE IT HAS BEEN SENT. An answer still in the composer is
-              not yet a message: drawing it in both places at once said the
-              student had said something they had not finished saying. */}
-          {sent ? (
-            <div className="knw-recall__answer">
-              <p className="knw-recall__answer-text">{answer}</p>
-              <span className="knw-recall__avatar" aria-hidden="true">
-                {initial}
-              </span>
+            <div className="knw-typed__text">
+              <h2 className="knw-typed__question">{prompt}</h2>
+              <p className="knw-typed__hint">Explain it like you would to a classmate.</p>
             </div>
-          ) : null}
+          </div>
         </div>
       }
       bottomContent={
-        <div className="knw-recall__composer">
-          {/* status="Ready to send", because on this screen there IS an answer
-              in the box — `chat-learning.png` shows exactly this: typed text
-              with the send control inside the field on the right.
-
-              IT USED TO BE "Inactive", AND SEND WAS UNREACHABLE. chatInput's
-              trailing slot is Send OR the mic depending on status, and Inactive
-              draws the mic — so `onSend` had been wired to the LEADING control,
-              which is labelled "Add attachment". A typed answer could not be
-              sent, and the button that claimed to attach a file submitted it. */}
-          {/* THE COMPOSER IS THE STATE. Typing draws the caret against the
-              words going in and offers no Send, because there is nothing
-              finished to send. Ready holds the whole answer with Send live.
-              Sent is empty again — the answer has become the message above —
-              and carries Figma's own placeholder, unwired, so it draws no
-              trailing control at all. */}
-          {state === 'Typing' ? (
-            <ChatInput status="Typing" placeholder={answer} />
-          ) : sent ? (
-            <ChatInput status="Inactive" placeholder={placeholder} />
-          ) : (
-            <ChatInput status="Ready to send" value={answer} onTrailingPress={onSend} />
-          )}
-          {/* THE KEYBOARD IS DRAWN, NOT JUST RESERVED.
-
-              This was an empty 342px box on the reasoning that the real
-              keyboard belongs to the operating system. That is true of a
-              shipped app and false of a prototype: in a browser no keyboard
-              ever rises, so the one screen whose whole premise is typing was
-              the one screen showing no way to type. The blank read as a bug,
-              not as restraint.
-
-              The asset is the `Keyboard` COMPONENT, node 3086:16935 on the
-              Knowunity components page — not the resized instance sitting in
-              the `text fallback` frame. Same rule as the alert icon: a frame
-              shows one instance, the component page shows the thing itself.
-              Exported at 3x to public/images/ios-keyboard.png.
-
-              Like the 390px device width, it is device chrome rather than a
-              design value, so its dimensions are constants and not tokens —
-              the same call .storybook/withKeyboardInset.tsx already makes. */}
-          <Image
-            className="knw-recall__keyboard"
-            src="/images/ios-keyboard.png"
-            alt=""
-            aria-hidden="true"
-            width={390}
-            height={342}
-            unoptimized
-          />
+        <div className="knw-typed__foot">
+          <div className="knw-typed__field">
+            <TextField
+              multiline
+              rows={6}
+              showTitle={false}
+              titleText="Your explanation"
+              showLeadingIcon={false}
+              placeholder="Type your explanation"
+              value={value}
+              readOnly={!onChange || sent}
+              onChange={(e) => onChange?.(e.target.value)}
+            />
+            <p className="knw-typed__helper">
+              Typed answers are judged the same way and count the same.
+            </p>
+          </div>
+          <div className="knw-recall__fab">
+            <ButtonGroup variant="Vertical" size="L">
+              <Button
+                variant="Primary"
+                size="L"
+                CTA={sent ? 'Sent' : 'Send answer'}
+                state={empty || sent ? 'Disabled' : 'Default'}
+                showRightIcon={!sent}
+                rightIcon={<ArrowRightIcon />}
+                onClick={onSend}
+              />
+            </ButtonGroup>
+            {onUseVoice ? (
+              <Button
+                variant="Tertiary"
+                size="M"
+                CTA="Switch to voice"
+                showLeftIcon
+                leftIcon={<MicIcon />}
+                onClick={onUseVoice}
+              />
+            ) : null}
+          </div>
         </div>
       }
     />
@@ -2372,13 +2366,17 @@ export function IdleScreen({
           <div className="knw-recall__prompt">
             <QuestionBubble intro={intro} question={prompt} />
           </div>
-          <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
+          {/* "Tap to answer" over the mic and "Type instead" under it —
+              the iteration frame's words (16301:6756). */}
           <div className="knw-recall__fab">
-            <VoiceFab state="Idle" onPress={onRecord} />
-            <RecallEscapes {...escapes} />
+            <VoiceFab state="Idle" label="Tap to answer" onPress={onRecord} />
+            <RecallEscapes {...escapes} typeLabel="Type instead" />
           </div>
         </div>
       }
+      /* SKIP IS PINNED LOW NOW, a full-width bar under everything — where the
+         iteration moves it from the link under the question. */
+      bottomContent={<RecallSkip onSkip={onSkip} skipLabel={skipLabel} />}
     />
   );
 }
@@ -2454,33 +2452,54 @@ export function ListeningScreen({
   skipLabel,
   ...escapes
 }: ListeningScreenProps) {
+  /* HOW LONG THEY HAVE BEEN TALKING. Figma's live status reads "Listening,
+     0:11" — a clock that runs is the plainest proof the app is still
+     recording, which is Voice_UX principle 1's whole worry. It counts from
+     the moment this turn mounts; nothing is captured, so it measures the
+     turn, not audio. */
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setSeconds((n) => n + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
   return (
     <Screen
       topNavigation={
         <RecallHeader progress={progress} progressText={progressText} onExit={onExit} />
       }
       middleContent={
+        /* `student talking` (16301:6570): the question stays where idle put
+           it, tucked under Knowie, so the student answers while reading it.
+           The waveform moves from a panel above the question to the bare bars
+           under the orb, beside the clock. */
         <div className="knw-recall">
           <div className="knw-recall__mascot">
             <MascotSlot size="2XL" label="Knowie, listening">
               <Knowie pose="excited" />
             </MascotSlot>
           </div>
-          {/* Same tuck wrapper the bubble uses — the waveform is the panel
-              Knowie leans over here. */}
           <div className="knw-recall__prompt">
-            <WaveformCard state={talking ? 'Talking' : 'Idle'} amplitudes={amplitudes} />
+            <QuestionBubble question={prompt} />
           </div>
-          {/* Restated, not re-asked: the same bubble idle draws, without the
-              intro line Knowie already delivered a turn ago. */}
-          <QuestionBubble question={prompt} />
-          <RecallSkip onSkip={onSkip} skipLabel={skipLabel} />
           <div className="knw-recall__fab">
             <VoiceFab state="Recording" label="Listening" onPress={onSend} />
+            <div className="knw-recall__live">
+              {/* The clock is not a live region: announcing it every second
+                  would talk over the student. The orb's own name says
+                  "Listening". */}
+              <p className="knw-recall__live-status">
+                <span className="knw-recall__live-dot" aria-hidden="true" />
+                {talking ? `Listening, ${clock}` : 'Waiting for you to speak'}
+              </p>
+              <WaveformCard state={talking ? 'Talking' : 'Idle'} amplitudes={amplitudes} surface={false} />
+            </div>
             <RecallEscapes {...escapes} />
           </div>
         </div>
       }
+      bottomContent={<RecallSkip onSkip={onSkip} skipLabel={skipLabel} />}
     />
   );
 }
@@ -2730,8 +2749,10 @@ export function ResultScreen({
                  "here is the idea" on the warm last hint. */
               hintTone={lastHint ? 'warm' : 'default'}
               hintIcon={lastHint ? <HintBulbIcon /> : undefined}
-              nextActionLabel={offerReveal ? 'Reveal answer' : nextActionLabel}
-              onNextAction={offerReveal ? onReveal : onNextAction}
+              /* Only "Reveal answer" stays on the card. The skip moved to the
+                 bottom bar with every other turn's (recall iteration). */
+              nextActionLabel="Reveal answer"
+              onNextAction={offerReveal ? onReveal : undefined}
             />
           </div>
 
@@ -2740,6 +2761,11 @@ export function ResultScreen({
             <RecallEscapes {...escapes} />
           </div>
         </div>
+      }
+      /* SKIP, PINNED LOW — the same full-width bar every turn now carries.
+         Not on rung 3: there the card offers the answer instead. */
+      bottomContent={
+        offerReveal ? undefined : <RecallSkip onSkip={onNextAction} skipLabel={nextActionLabel} />
       }
     />
   );

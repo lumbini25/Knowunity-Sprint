@@ -505,3 +505,44 @@ export function ChevronLeftIcon() {
     </svg>
   );
 }
+
+/**
+ * Play your take back — the take screen's resting glyph (`student talking`,
+ * 16301:6933). Drawn filled, as the frame renders it; its own icon layer
+ * exported empty.
+ */
+export function PlayIcon() {
+  return (
+    <svg viewBox="0 0 32 32" width="100%" height="100%" fill="none" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M10 6.9c0-1.3 1.4-2.1 2.5-1.4l13.3 8.5c1 .6 1 2.1 0 2.8L12.5 25.3c-1.1.7-2.5-.1-2.5-1.4V6.9Z" />
+    </svg>
+  );
+}
+
+/**
+ * Stop the playback — the same screen while it "plays" (16311:13086). Figma's
+ * export is the outlined `square`; the frame renders it filled, and the frame
+ * is what the student sees.
+ */
+export function StopIcon() {
+  return (
+    <svg viewBox="0 0 32 32" width="100%" height="100%" fill="none" aria-hidden="true" focusable="false">
+      <rect x="6" y="6" width="20" height="20" rx="3" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** "Send answer →" on the text fallback (16311:12479) — Figma's arrow-right. */
+export function ArrowRightIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="100%" height="100%" fill="none" aria-hidden="true" focusable="false">
+      <path
+        d="M4.167 10h11.666M10.833 5l5 5-5 5"
+        stroke="currentColor"
+        strokeWidth="1.667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

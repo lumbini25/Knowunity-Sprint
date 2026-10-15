@@ -90,6 +90,37 @@
   outline: none;
 }
 
+/* THE FIELD SHOWS IT HAS FOCUS. The input's own outline is removed above and
+   nothing replaced it, so a focused field looked exactly like an idle one —
+   against CLAUDE.md's "every control shows that it was focused". The edge
+   takes `border/focus`, which is also what the text fallback's typed frame
+   (16311:12479) draws: a violet outline while the student writes. */
+.knw-textfield__field {
+  transition: border-color var(--semantic-motion-duration-quick) var(--semantic-motion-easing-standard);
+}
+
+.knw-textfield:not(.knw-textfield--Error) .knw-textfield__field:focus-within {
+  border-color: var(--semantic-border-focus);
+}
+
+/* Multi-line: the text starts at the top and wraps, and the student can see a
+   paragraph at once. Body S Regular — an explanation, not a label. */
+.knw-textfield__input--multiline {
+  display: block;
+  resize: none;
+  font-family: var(--semantic-type-scale-body-s-regular-font-family);
+  font-weight: var(--semantic-type-scale-body-s-regular-font-weight);
+  font-size: var(--semantic-type-scale-body-s-regular-font-size);
+  line-height: var(--semantic-type-scale-body-s-regular-line-height);
+  letter-spacing: var(--semantic-type-scale-body-s-regular-letter-spacing);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knw-textfield__field {
+    transition: none;
+  }
+}
+
 .knw-textfield__input::placeholder {
   color: var(--semantic-text-secondary);
   opacity: 1;

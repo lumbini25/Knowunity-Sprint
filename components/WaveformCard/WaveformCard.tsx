@@ -43,11 +43,19 @@ export interface WaveformCardProps extends HTMLAttributes<HTMLDivElement> {
    * production passes live values; the default is Figma's resting position.
    */
   amplitudes?: readonly number[];
+  /**
+   * Draw the card behind the bars. Default true — the component as Figma
+   * builds it. The recall flow iteration (`student talking`, 16301:6570) sets
+   * the bars bare under the orb, beside a live status line, where a card would
+   * read as a second panel competing with the question above.
+   */
+  surface?: boolean;
 }
 
 export function WaveformCard({
   state = 'Idle',
   amplitudes = RESTING_AMPLITUDES,
+  surface = true,
   ...rest
 }: WaveformCardProps) {
   // Figma's row is 44 tall at its tallest bar; heights arrive as a share of it
@@ -56,7 +64,7 @@ export function WaveformCard({
 
   return (
     <div
-      className={`knw-waveform knw-waveform--${state}`}
+      className={`knw-waveform knw-waveform--${state}${surface ? '' : ' knw-waveform--bare'}`}
       role="img"
       aria-label={state === 'Talking' ? 'Recording your answer' : 'Microphone on, waiting for you to speak'}
       {...rest}

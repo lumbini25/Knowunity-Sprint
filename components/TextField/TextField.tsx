@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useId, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { SearchIcon } from './icons';
 import './TextField.css';
 
@@ -55,6 +55,16 @@ export interface TextFieldProps
   onTrailingClick?: () => void;
   /** Announced name for the trailing control. */
   trailingLabel?: string;
+  /**
+   * A multi-line field — a <textarea> in the same frame. The text fallback's
+   * iteration (`15 Text fallback, empty`, 16311:12322) draws a 160-tall box
+   * for an explanation, which one line cannot hold. Not a Figma variant: the
+   * set has no multi-line axis, so this is the build's, and it changes only
+   * the input element, never the field's chrome.
+   */
+  multiline?: boolean;
+  /** Visible lines when `multiline`. */
+  rows?: number;
 }
 
 export function TextField({
@@ -70,6 +80,8 @@ export function TextField({
   trailingIcon,
   onTrailingClick,
   trailingLabel = 'Clear',
+  multiline = false,
+  rows = 6,
   ...rest
 }: TextFieldProps) {
   const inputId = useId();
@@ -96,16 +108,29 @@ export function TextField({
           )}
 
           <span className="knw-textfield__input-wrap">
-            <input
-              id={inputId}
-              className="knw-textfield__input"
-              type="text"
-              placeholder={placeholder}
-              aria-invalid={variant === 'Error' || undefined}
-              aria-describedby={hasCaption ? captionId : undefined}
-              aria-label={showTitle ? undefined : titleText}
-              {...rest}
-            />
+            {multiline ? (
+              <textarea
+                id={inputId}
+                className="knw-textfield__input knw-textfield__input--multiline"
+                rows={rows}
+                placeholder={placeholder}
+                aria-invalid={variant === 'Error' || undefined}
+                aria-describedby={hasCaption ? captionId : undefined}
+                aria-label={showTitle ? undefined : titleText}
+                {...(rest as TextareaHTMLAttributes<HTMLTextAreaElement>)}
+              />
+            ) : (
+              <input
+                id={inputId}
+                className="knw-textfield__input"
+                type="text"
+                placeholder={placeholder}
+                aria-invalid={variant === 'Error' || undefined}
+                aria-describedby={hasCaption ? captionId : undefined}
+                aria-label={showTitle ? undefined : titleText}
+                {...rest}
+              />
+            )}
           </span>
 
           {showTrailingIcon && (

@@ -43,11 +43,12 @@ export default function Page() {
   return (
     <AnswerSentScreen
       transcript={session.take?.transcript}
+      /* The question stays up while the take is played back. */
+      prompt={session.term.question}
       onAdvance={goTo('processing')}
       onRetry={goTo('recording')}
       onDiscard={() => go(session.skip())}
       onTypeAnswer={goTo('text-fallback')}
-      onSkip={() => go(session.skip())}
       onExit={session.requestExit}
     />
   );
