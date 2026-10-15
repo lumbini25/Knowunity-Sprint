@@ -467,6 +467,12 @@ export interface HomeScreenProps {
   /** The rail's Explain out loud chip — the chat path into a set. */
   onExplainOutLoud?: () => void;
   /**
+   * The chat box — a tap on the field or its send circle opens the composer.
+   * Figma's prototype sends a tap anywhere on this frame to `selecting explain
+   * feature`; the box is the part of the screen that reads as "write here".
+   */
+  onOpenChat?: () => void;
+  /**
    * The rail's other two live features, one screen each. Scan has no screen,
    * so it stays a label — `Chips` draws a `<span>` without `onPress`.
    */
@@ -511,6 +517,7 @@ export function HomeScreen({
   topics = HOME_TOPICS,
   onSelectTopic,
   onExplainOutLoud,
+  onOpenChat,
   onQuiz,
   onSummarize,
   onMenu,
@@ -528,9 +535,13 @@ export function HomeScreen({
         <div className="knw-home">
           {/* 3XL — Figma draws 181, and 3XL (200) is the nearest step. The
               hero of the front door, not a tucked turn mascot. */}
-          <MascotSlot size="3XL" label="Knowie, waiting">
-            <Knowie pose="standby" />
-          </MascotSlot>
+          {/* Knowie stands on a soft ground shadow — Figma's `Ellipse 75`
+              under the feet, white at 10%. */}
+          <div className="knw-home__hero">
+            <MascotSlot size="3XL" label="Knowie, waiting">
+              <Knowie pose="standby" />
+            </MascotSlot>
+          </div>
           <h1 className="knw-home__greeting">{greeting}</h1>
 
           <div className="knw-home__topics">
@@ -572,7 +583,20 @@ export function HomeScreen({
             ))}
           </div>
 
-          <ChatInput status="Inactive" placeholder="Ask anything" />
+          {/* THE BOX AND ITS SEND OPEN THE CHAT. Figma also draws a "+" and a
+              mic. The "+" is the component's "Add attachment", and the
+              composer has nothing to attach, so the label would promise what
+              the tap does not deliver; the mic would be a second drawing of
+              the rail's Explain out loud mic, and `chatInput` draws send or mic,
+              never both. Both are left out on purpose. */}
+          <ChatInput
+            status="Inactive"
+            placeholder="Ask anything"
+            onFieldPress={onOpenChat}
+            showSend={Boolean(onOpenChat)}
+            sendLabel="Open the chat"
+            onTrailingPress={onOpenChat}
+          />
 
           <nav className="knw-home__nav" aria-label="Main">
             {HOME_NAV.map(({ label, Icon, current }) => (

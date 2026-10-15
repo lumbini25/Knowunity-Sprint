@@ -30,6 +30,9 @@ export default function Page() {
         router.push('/recall/idle');
       }}
       onExplainOutLoud={() => router.push('/entry/compose')}
+      /* The chat box opens the same composer — Figma's prototype sends a tap
+         on this frame there. */
+      onOpenChat={() => router.push('/entry/compose')}
       /* The rail's other two features. One screen each, and both end back
          here. */
       onQuiz={() => router.push('/entry/quiz')}

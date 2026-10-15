@@ -435,6 +435,14 @@ span.knw-recall__exit {
   display: flex;
   flex-direction: column;
   width: 100%;
+  /* AT LEAST 48 BETWEEN THE TEXT PATH AND THIS BAR — what the design owner
+     asked for. On a tall screen the middle's spare room already separates
+     them; on a short one (a phone with its browser chrome up) the middle runs
+     out and "Type instead" sat 32 above the bar. The middle pads 16 below its
+     content and the bottom slot 16 above its own, so 16 more here makes the
+     floor 48 out of three `space/layout/l` steps — measured at 600, 700 and
+     844 tall. No 48 semantic token exists, and none was added. */
+  padding-top: var(--semantic-space-layout-l);
 }
 
 /* ===== the text fallback — 16311:12322 / 16311:12479 ===== */
@@ -1186,6 +1194,38 @@ span.knw-recall__exit {
   text-align: center;
 }
 
+/* Knowie's ground shadow — Figma's `Ellipse 75`, 134 × 24 under a ~181
+   mascot, white at 10% (the value of `background/elevated`). Sized as a share
+   of the mascot so it scales with whatever step the slot takes, and drawn
+   behind the art. */
+.knw-home__hero {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.knw-home__hero::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  /* The art does not reach the slot's bottom edge, so the shadow rises 8% —
+     a share of the slot, like the 37.5% tuck — to sit behind the feet as
+     Figma's does, not under them. */
+  bottom: 8%;
+  width: 74%;
+  aspect-ratio: 134 / 24;
+  transform: translateX(-50%);
+  /* 50%, not `radius/pill`: a pill radius on a wide box draws a stadium, and
+     Figma's is an ellipse. This is the shape, not a corner size, so no radius
+     token applies. */
+  border-radius: 50%;
+  background: var(--semantic-background-elevated);
+}
+
+.knw-home__hero > * {
+  position: relative;
+}
+
 /* Figma: the prompt over the list, 16 apart. */
 .knw-home__topics {
   display: flex;
@@ -1212,6 +1252,11 @@ span.knw-recall__exit {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  /* The list's edge. Figma strokes every row on all four sides in
+     `interactive/secondary` (white 10%), which reads as a hairline round the
+     whole card as well as between rows; `border/default` is the same value in
+     the border role. */
+  border: var(--semantic-stroke-default) solid var(--semantic-border-default);
   border-radius: var(--semantic-radius-card);
   background: var(--semantic-background-surface);
 }
