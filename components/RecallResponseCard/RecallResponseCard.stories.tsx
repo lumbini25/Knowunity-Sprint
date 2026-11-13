@@ -148,8 +148,11 @@ export const IncorrectWithMissing: Story = {
     await expect(canvas.getByText('WHAT WAS MISSING')).toBeVisible();
 
     // A red 0% ring beside the badge — the revise ladder's Wrong (16301:5565).
-    const ring = canvasElement.querySelector('.knw-rrc__score-ring') as HTMLElement;
-    await expect(getComputedStyle(ring).borderTopColor).toBe('rgb(255, 107, 107)');
+    // The arc, not a border: at 0% it is a dash of no length, which the round
+    // cap paints as the tick Figma draws.
+    const arc = canvasElement.querySelector('.knw-rrc__score-arc') as SVGCircleElement;
+    await expect(getComputedStyle(arc).stroke).toBe('rgb(255, 107, 107)');
+    await expect(arc.getAttribute('stroke-dasharray')).toBe('0 100');
     await expect(canvas.getByText('0%')).toBeVisible();
 
     // Proves the token stylesheet reached the card: surface fill, 24px corners,
@@ -352,10 +355,10 @@ export const Correct: Story = {
 
     const score = canvasElement.querySelector('.knw-rrc__score') as HTMLElement;
     await expect(getComputedStyle(score).width).toBe('44px');
-    const ring = canvasElement.querySelector('.knw-rrc__score-ring') as HTMLElement;
-    const rs = getComputedStyle(ring);
-    await expect(rs.borderTopWidth).toBe('2px');
-    await expect(rs.borderTopColor).toBe('rgb(0, 195, 134)');
+    const arc = canvasElement.querySelector('.knw-rrc__score-arc') as SVGCircleElement;
+    const rs = getComputedStyle(arc);
+    await expect(rs.strokeWidth).toBe('2px');
+    await expect(rs.stroke).toBe('rgb(0, 195, 134)');
 
     // THE FIGURE STAYS INSIDE THE RING. Not a style check — a guard against the
     // data. `/recall/correct` once multiplied an already-percentage score by

@@ -236,6 +236,9 @@ export function RecallResponseCard({
   /* Figma draws 65 on Partial and 100 on Correct. One default for both put a
      Partial card at 100%, which contradicts its own "Almost there". */
   const percentage = percentageText ?? DEFAULTS[State].score;
+  // The arc reads the number out of the label, so the two can never disagree.
+  const parsed = Number.parseFloat(percentage);
+  const arcPercent = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 0;
   const badgeIcon = DEFAULTS[State].icon;
 
   // Figma wraps every verdict glyph in an iconSlot at Size=200.
@@ -262,7 +265,18 @@ export function RecallResponseCard({
             {scored ? (
               <div className="knw-rrc__header">
                 <div className="knw-rrc__score">
-                  <span className="knw-rrc__score-ring" aria-hidden="true" />
+                  {/* THE RING IS THE SCORE. It was a CSS border, so 0%, 65% and
+                      100% all drew the same full circle and the figure inside
+                      was the only thing that moved. pathLength normalises the
+                      circumference to 100, so the dash array is the percentage
+                      itself — the same technique Percentage uses. */}
+                  <svg className="knw-rrc__score-ring" aria-hidden="true" focusable="false">
+                    <circle
+                      className="knw-rrc__score-arc"
+                      pathLength={100}
+                      strokeDasharray={`${arcPercent} 100`}
+                    />
+                  </svg>
                   <p className="knw-rrc__score-text">{percentage}</p>
                 </div>
                 {badgePill}
